@@ -27,7 +27,9 @@ export async function createTugas(mataKuliahId: string, formData: FormData) {
     const subValid = await prisma.subCPMK.findMany({
       where: {
         id: { in: subCpmkManualIds },
-        cpmkTerkait: { some: { cpmk: { mataKuliahId, tahunAjaranId: ta.id } } },
+        mataKuliahId,
+        tahunAjaranId: ta.id,
+        cpmkTerkait: { some: {} },
       },
       select: { id: true },
     });

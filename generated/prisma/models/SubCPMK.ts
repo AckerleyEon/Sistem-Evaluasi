@@ -28,6 +28,7 @@ export type SubCPMKMinAggregateOutputType = {
   id: string | null
   kode: string | null
   deskripsi: string | null
+  mataKuliahId: string | null
   tahunAjaranId: string | null
 }
 
@@ -35,6 +36,7 @@ export type SubCPMKMaxAggregateOutputType = {
   id: string | null
   kode: string | null
   deskripsi: string | null
+  mataKuliahId: string | null
   tahunAjaranId: string | null
 }
 
@@ -42,6 +44,7 @@ export type SubCPMKCountAggregateOutputType = {
   id: number
   kode: number
   deskripsi: number
+  mataKuliahId: number
   tahunAjaranId: number
   _all: number
 }
@@ -51,6 +54,7 @@ export type SubCPMKMinAggregateInputType = {
   id?: true
   kode?: true
   deskripsi?: true
+  mataKuliahId?: true
   tahunAjaranId?: true
 }
 
@@ -58,6 +62,7 @@ export type SubCPMKMaxAggregateInputType = {
   id?: true
   kode?: true
   deskripsi?: true
+  mataKuliahId?: true
   tahunAjaranId?: true
 }
 
@@ -65,6 +70,7 @@ export type SubCPMKCountAggregateInputType = {
   id?: true
   kode?: true
   deskripsi?: true
+  mataKuliahId?: true
   tahunAjaranId?: true
   _all?: true
 }
@@ -145,6 +151,7 @@ export type SubCPMKGroupByOutputType = {
   id: string
   kode: string
   deskripsi: string
+  mataKuliahId: string
   tahunAjaranId: string
   _count: SubCPMKCountAggregateOutputType | null
   _min: SubCPMKMinAggregateOutputType | null
@@ -173,7 +180,9 @@ export type SubCPMKWhereInput = {
   id?: Prisma.StringFilter<"SubCPMK"> | string
   kode?: Prisma.StringFilter<"SubCPMK"> | string
   deskripsi?: Prisma.StringFilter<"SubCPMK"> | string
+  mataKuliahId?: Prisma.StringFilter<"SubCPMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"SubCPMK"> | string
+  mataKuliah?: Prisma.XOR<Prisma.MataKuliahScalarRelationFilter, Prisma.MataKuliahWhereInput>
   tahunAjaran?: Prisma.XOR<Prisma.TahunAjaranScalarRelationFilter, Prisma.TahunAjaranWhereInput>
   cpmkTerkait?: Prisma.CpmkSubListRelationFilter
   distribusi?: Prisma.DistribusiSubCPMKListRelationFilter
@@ -184,7 +193,9 @@ export type SubCPMKOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   kode?: Prisma.SortOrder
   deskripsi?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
+  mataKuliah?: Prisma.MataKuliahOrderByWithRelationInput
   tahunAjaran?: Prisma.TahunAjaranOrderByWithRelationInput
   cpmkTerkait?: Prisma.CpmkSubOrderByRelationAggregateInput
   distribusi?: Prisma.DistribusiSubCPMKOrderByRelationAggregateInput
@@ -193,23 +204,26 @@ export type SubCPMKOrderByWithRelationInput = {
 
 export type SubCPMKWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  kode_tahunAjaranId?: Prisma.SubCPMKKodeTahunAjaranIdCompoundUniqueInput
+  mataKuliahId_tahunAjaranId_kode?: Prisma.SubCPMKMataKuliahIdTahunAjaranIdKodeCompoundUniqueInput
   AND?: Prisma.SubCPMKWhereInput | Prisma.SubCPMKWhereInput[]
   OR?: Prisma.SubCPMKWhereInput[]
   NOT?: Prisma.SubCPMKWhereInput | Prisma.SubCPMKWhereInput[]
   kode?: Prisma.StringFilter<"SubCPMK"> | string
   deskripsi?: Prisma.StringFilter<"SubCPMK"> | string
+  mataKuliahId?: Prisma.StringFilter<"SubCPMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"SubCPMK"> | string
+  mataKuliah?: Prisma.XOR<Prisma.MataKuliahScalarRelationFilter, Prisma.MataKuliahWhereInput>
   tahunAjaran?: Prisma.XOR<Prisma.TahunAjaranScalarRelationFilter, Prisma.TahunAjaranWhereInput>
   cpmkTerkait?: Prisma.CpmkSubListRelationFilter
   distribusi?: Prisma.DistribusiSubCPMKListRelationFilter
   hasil?: Prisma.HasilSubCPMKListRelationFilter
-}, "id" | "kode_tahunAjaranId">
+}, "id" | "mataKuliahId_tahunAjaranId_kode">
 
 export type SubCPMKOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   kode?: Prisma.SortOrder
   deskripsi?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
   _count?: Prisma.SubCPMKCountOrderByAggregateInput
   _max?: Prisma.SubCPMKMaxOrderByAggregateInput
@@ -223,6 +237,7 @@ export type SubCPMKScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"SubCPMK"> | string
   kode?: Prisma.StringWithAggregatesFilter<"SubCPMK"> | string
   deskripsi?: Prisma.StringWithAggregatesFilter<"SubCPMK"> | string
+  mataKuliahId?: Prisma.StringWithAggregatesFilter<"SubCPMK"> | string
   tahunAjaranId?: Prisma.StringWithAggregatesFilter<"SubCPMK"> | string
 }
 
@@ -230,6 +245,7 @@ export type SubCPMKCreateInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutSubCPMKInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutSubCPMKInput
   cpmkTerkait?: Prisma.CpmkSubCreateNestedManyWithoutSubCpmkInput
   distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutSubCpmkInput
@@ -240,6 +256,7 @@ export type SubCPMKUncheckedCreateInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliahId: string
   tahunAjaranId: string
   cpmkTerkait?: Prisma.CpmkSubUncheckedCreateNestedManyWithoutSubCpmkInput
   distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
@@ -250,6 +267,7 @@ export type SubCPMKUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutSubCPMKNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutSubCPMKNestedInput
   cpmkTerkait?: Prisma.CpmkSubUpdateManyWithoutSubCpmkNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutSubCpmkNestedInput
@@ -260,6 +278,7 @@ export type SubCPMKUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkTerkait?: Prisma.CpmkSubUncheckedUpdateManyWithoutSubCpmkNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
@@ -270,6 +289,7 @@ export type SubCPMKCreateManyInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliahId: string
   tahunAjaranId: string
 }
 
@@ -283,6 +303,7 @@ export type SubCPMKUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -296,15 +317,17 @@ export type SubCPMKOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type SubCPMKKodeTahunAjaranIdCompoundUniqueInput = {
-  kode: string
+export type SubCPMKMataKuliahIdTahunAjaranIdKodeCompoundUniqueInput = {
+  mataKuliahId: string
   tahunAjaranId: string
+  kode: string
 }
 
 export type SubCPMKCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   kode?: Prisma.SortOrder
   deskripsi?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
 }
 
@@ -312,6 +335,7 @@ export type SubCPMKMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   kode?: Prisma.SortOrder
   deskripsi?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
 }
 
@@ -319,6 +343,7 @@ export type SubCPMKMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   kode?: Prisma.SortOrder
   deskripsi?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
 }
 
@@ -369,6 +394,48 @@ export type SubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput = {
   deleteMany?: Prisma.SubCPMKScalarWhereInput | Prisma.SubCPMKScalarWhereInput[]
 }
 
+export type SubCPMKCreateNestedManyWithoutMataKuliahInput = {
+  create?: Prisma.XOR<Prisma.SubCPMKCreateWithoutMataKuliahInput, Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput> | Prisma.SubCPMKCreateWithoutMataKuliahInput[] | Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput[]
+  connectOrCreate?: Prisma.SubCPMKCreateOrConnectWithoutMataKuliahInput | Prisma.SubCPMKCreateOrConnectWithoutMataKuliahInput[]
+  createMany?: Prisma.SubCPMKCreateManyMataKuliahInputEnvelope
+  connect?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+}
+
+export type SubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput = {
+  create?: Prisma.XOR<Prisma.SubCPMKCreateWithoutMataKuliahInput, Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput> | Prisma.SubCPMKCreateWithoutMataKuliahInput[] | Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput[]
+  connectOrCreate?: Prisma.SubCPMKCreateOrConnectWithoutMataKuliahInput | Prisma.SubCPMKCreateOrConnectWithoutMataKuliahInput[]
+  createMany?: Prisma.SubCPMKCreateManyMataKuliahInputEnvelope
+  connect?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+}
+
+export type SubCPMKUpdateManyWithoutMataKuliahNestedInput = {
+  create?: Prisma.XOR<Prisma.SubCPMKCreateWithoutMataKuliahInput, Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput> | Prisma.SubCPMKCreateWithoutMataKuliahInput[] | Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput[]
+  connectOrCreate?: Prisma.SubCPMKCreateOrConnectWithoutMataKuliahInput | Prisma.SubCPMKCreateOrConnectWithoutMataKuliahInput[]
+  upsert?: Prisma.SubCPMKUpsertWithWhereUniqueWithoutMataKuliahInput | Prisma.SubCPMKUpsertWithWhereUniqueWithoutMataKuliahInput[]
+  createMany?: Prisma.SubCPMKCreateManyMataKuliahInputEnvelope
+  set?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+  disconnect?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+  delete?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+  connect?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+  update?: Prisma.SubCPMKUpdateWithWhereUniqueWithoutMataKuliahInput | Prisma.SubCPMKUpdateWithWhereUniqueWithoutMataKuliahInput[]
+  updateMany?: Prisma.SubCPMKUpdateManyWithWhereWithoutMataKuliahInput | Prisma.SubCPMKUpdateManyWithWhereWithoutMataKuliahInput[]
+  deleteMany?: Prisma.SubCPMKScalarWhereInput | Prisma.SubCPMKScalarWhereInput[]
+}
+
+export type SubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput = {
+  create?: Prisma.XOR<Prisma.SubCPMKCreateWithoutMataKuliahInput, Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput> | Prisma.SubCPMKCreateWithoutMataKuliahInput[] | Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput[]
+  connectOrCreate?: Prisma.SubCPMKCreateOrConnectWithoutMataKuliahInput | Prisma.SubCPMKCreateOrConnectWithoutMataKuliahInput[]
+  upsert?: Prisma.SubCPMKUpsertWithWhereUniqueWithoutMataKuliahInput | Prisma.SubCPMKUpsertWithWhereUniqueWithoutMataKuliahInput[]
+  createMany?: Prisma.SubCPMKCreateManyMataKuliahInputEnvelope
+  set?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+  disconnect?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+  delete?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+  connect?: Prisma.SubCPMKWhereUniqueInput | Prisma.SubCPMKWhereUniqueInput[]
+  update?: Prisma.SubCPMKUpdateWithWhereUniqueWithoutMataKuliahInput | Prisma.SubCPMKUpdateWithWhereUniqueWithoutMataKuliahInput[]
+  updateMany?: Prisma.SubCPMKUpdateManyWithWhereWithoutMataKuliahInput | Prisma.SubCPMKUpdateManyWithWhereWithoutMataKuliahInput[]
+  deleteMany?: Prisma.SubCPMKScalarWhereInput | Prisma.SubCPMKScalarWhereInput[]
+}
+
 export type SubCPMKCreateNestedOneWithoutCpmkTerkaitInput = {
   create?: Prisma.XOR<Prisma.SubCPMKCreateWithoutCpmkTerkaitInput, Prisma.SubCPMKUncheckedCreateWithoutCpmkTerkaitInput>
   connectOrCreate?: Prisma.SubCPMKCreateOrConnectWithoutCpmkTerkaitInput
@@ -415,6 +482,7 @@ export type SubCPMKCreateWithoutTahunAjaranInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutSubCPMKInput
   cpmkTerkait?: Prisma.CpmkSubCreateNestedManyWithoutSubCpmkInput
   distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutSubCpmkInput
   hasil?: Prisma.HasilSubCPMKCreateNestedManyWithoutSubCpmkInput
@@ -424,6 +492,7 @@ export type SubCPMKUncheckedCreateWithoutTahunAjaranInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliahId: string
   cpmkTerkait?: Prisma.CpmkSubUncheckedCreateNestedManyWithoutSubCpmkInput
   distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
   hasil?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
@@ -462,13 +531,61 @@ export type SubCPMKScalarWhereInput = {
   id?: Prisma.StringFilter<"SubCPMK"> | string
   kode?: Prisma.StringFilter<"SubCPMK"> | string
   deskripsi?: Prisma.StringFilter<"SubCPMK"> | string
+  mataKuliahId?: Prisma.StringFilter<"SubCPMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"SubCPMK"> | string
+}
+
+export type SubCPMKCreateWithoutMataKuliahInput = {
+  id?: string
+  kode: string
+  deskripsi: string
+  tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutSubCPMKInput
+  cpmkTerkait?: Prisma.CpmkSubCreateNestedManyWithoutSubCpmkInput
+  distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutSubCpmkInput
+  hasil?: Prisma.HasilSubCPMKCreateNestedManyWithoutSubCpmkInput
+}
+
+export type SubCPMKUncheckedCreateWithoutMataKuliahInput = {
+  id?: string
+  kode: string
+  deskripsi: string
+  tahunAjaranId: string
+  cpmkTerkait?: Prisma.CpmkSubUncheckedCreateNestedManyWithoutSubCpmkInput
+  distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
+  hasil?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
+}
+
+export type SubCPMKCreateOrConnectWithoutMataKuliahInput = {
+  where: Prisma.SubCPMKWhereUniqueInput
+  create: Prisma.XOR<Prisma.SubCPMKCreateWithoutMataKuliahInput, Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput>
+}
+
+export type SubCPMKCreateManyMataKuliahInputEnvelope = {
+  data: Prisma.SubCPMKCreateManyMataKuliahInput | Prisma.SubCPMKCreateManyMataKuliahInput[]
+  skipDuplicates?: boolean
+}
+
+export type SubCPMKUpsertWithWhereUniqueWithoutMataKuliahInput = {
+  where: Prisma.SubCPMKWhereUniqueInput
+  update: Prisma.XOR<Prisma.SubCPMKUpdateWithoutMataKuliahInput, Prisma.SubCPMKUncheckedUpdateWithoutMataKuliahInput>
+  create: Prisma.XOR<Prisma.SubCPMKCreateWithoutMataKuliahInput, Prisma.SubCPMKUncheckedCreateWithoutMataKuliahInput>
+}
+
+export type SubCPMKUpdateWithWhereUniqueWithoutMataKuliahInput = {
+  where: Prisma.SubCPMKWhereUniqueInput
+  data: Prisma.XOR<Prisma.SubCPMKUpdateWithoutMataKuliahInput, Prisma.SubCPMKUncheckedUpdateWithoutMataKuliahInput>
+}
+
+export type SubCPMKUpdateManyWithWhereWithoutMataKuliahInput = {
+  where: Prisma.SubCPMKScalarWhereInput
+  data: Prisma.XOR<Prisma.SubCPMKUpdateManyMutationInput, Prisma.SubCPMKUncheckedUpdateManyWithoutMataKuliahInput>
 }
 
 export type SubCPMKCreateWithoutCpmkTerkaitInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutSubCPMKInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutSubCPMKInput
   distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutSubCpmkInput
   hasil?: Prisma.HasilSubCPMKCreateNestedManyWithoutSubCpmkInput
@@ -478,6 +595,7 @@ export type SubCPMKUncheckedCreateWithoutCpmkTerkaitInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliahId: string
   tahunAjaranId: string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
   hasil?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
@@ -503,6 +621,7 @@ export type SubCPMKUpdateWithoutCpmkTerkaitInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutSubCPMKNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutSubCPMKNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutSubCpmkNestedInput
   hasil?: Prisma.HasilSubCPMKUpdateManyWithoutSubCpmkNestedInput
@@ -512,6 +631,7 @@ export type SubCPMKUncheckedUpdateWithoutCpmkTerkaitInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
   hasil?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
@@ -521,6 +641,7 @@ export type SubCPMKCreateWithoutDistribusiInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutSubCPMKInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutSubCPMKInput
   cpmkTerkait?: Prisma.CpmkSubCreateNestedManyWithoutSubCpmkInput
   hasil?: Prisma.HasilSubCPMKCreateNestedManyWithoutSubCpmkInput
@@ -530,6 +651,7 @@ export type SubCPMKUncheckedCreateWithoutDistribusiInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliahId: string
   tahunAjaranId: string
   cpmkTerkait?: Prisma.CpmkSubUncheckedCreateNestedManyWithoutSubCpmkInput
   hasil?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
@@ -555,6 +677,7 @@ export type SubCPMKUpdateWithoutDistribusiInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutSubCPMKNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutSubCPMKNestedInput
   cpmkTerkait?: Prisma.CpmkSubUpdateManyWithoutSubCpmkNestedInput
   hasil?: Prisma.HasilSubCPMKUpdateManyWithoutSubCpmkNestedInput
@@ -564,6 +687,7 @@ export type SubCPMKUncheckedUpdateWithoutDistribusiInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkTerkait?: Prisma.CpmkSubUncheckedUpdateManyWithoutSubCpmkNestedInput
   hasil?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
@@ -573,6 +697,7 @@ export type SubCPMKCreateWithoutHasilInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutSubCPMKInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutSubCPMKInput
   cpmkTerkait?: Prisma.CpmkSubCreateNestedManyWithoutSubCpmkInput
   distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutSubCpmkInput
@@ -582,6 +707,7 @@ export type SubCPMKUncheckedCreateWithoutHasilInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliahId: string
   tahunAjaranId: string
   cpmkTerkait?: Prisma.CpmkSubUncheckedCreateNestedManyWithoutSubCpmkInput
   distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutSubCpmkInput
@@ -607,6 +733,7 @@ export type SubCPMKUpdateWithoutHasilInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutSubCPMKNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutSubCPMKNestedInput
   cpmkTerkait?: Prisma.CpmkSubUpdateManyWithoutSubCpmkNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutSubCpmkNestedInput
@@ -616,6 +743,7 @@ export type SubCPMKUncheckedUpdateWithoutHasilInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkTerkait?: Prisma.CpmkSubUncheckedUpdateManyWithoutSubCpmkNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
@@ -625,12 +753,14 @@ export type SubCPMKCreateManyTahunAjaranInput = {
   id?: string
   kode: string
   deskripsi: string
+  mataKuliahId: string
 }
 
 export type SubCPMKUpdateWithoutTahunAjaranInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutSubCPMKNestedInput
   cpmkTerkait?: Prisma.CpmkSubUpdateManyWithoutSubCpmkNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutSubCpmkNestedInput
   hasil?: Prisma.HasilSubCPMKUpdateManyWithoutSubCpmkNestedInput
@@ -640,6 +770,7 @@ export type SubCPMKUncheckedUpdateWithoutTahunAjaranInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkTerkait?: Prisma.CpmkSubUncheckedUpdateManyWithoutSubCpmkNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
   hasil?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
@@ -649,6 +780,41 @@ export type SubCPMKUncheckedUpdateManyWithoutTahunAjaranInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type SubCPMKCreateManyMataKuliahInput = {
+  id?: string
+  kode: string
+  deskripsi: string
+  tahunAjaranId: string
+}
+
+export type SubCPMKUpdateWithoutMataKuliahInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kode?: Prisma.StringFieldUpdateOperationsInput | string
+  deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutSubCPMKNestedInput
+  cpmkTerkait?: Prisma.CpmkSubUpdateManyWithoutSubCpmkNestedInput
+  distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutSubCpmkNestedInput
+  hasil?: Prisma.HasilSubCPMKUpdateManyWithoutSubCpmkNestedInput
+}
+
+export type SubCPMKUncheckedUpdateWithoutMataKuliahInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kode?: Prisma.StringFieldUpdateOperationsInput | string
+  deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
+  cpmkTerkait?: Prisma.CpmkSubUncheckedUpdateManyWithoutSubCpmkNestedInput
+  distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
+  hasil?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutSubCpmkNestedInput
+}
+
+export type SubCPMKUncheckedUpdateManyWithoutMataKuliahInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kode?: Prisma.StringFieldUpdateOperationsInput | string
+  deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -704,7 +870,9 @@ export type SubCPMKSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   kode?: boolean
   deskripsi?: boolean
+  mataKuliahId?: boolean
   tahunAjaranId?: boolean
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
   cpmkTerkait?: boolean | Prisma.SubCPMK$cpmkTerkaitArgs<ExtArgs>
   distribusi?: boolean | Prisma.SubCPMK$distribusiArgs<ExtArgs>
@@ -716,7 +884,9 @@ export type SubCPMKSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   kode?: boolean
   deskripsi?: boolean
+  mataKuliahId?: boolean
   tahunAjaranId?: boolean
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subCPMK"]>
 
@@ -724,7 +894,9 @@ export type SubCPMKSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   kode?: boolean
   deskripsi?: boolean
+  mataKuliahId?: boolean
   tahunAjaranId?: boolean
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subCPMK"]>
 
@@ -732,11 +904,13 @@ export type SubCPMKSelectScalar = {
   id?: boolean
   kode?: boolean
   deskripsi?: boolean
+  mataKuliahId?: boolean
   tahunAjaranId?: boolean
 }
 
-export type SubCPMKOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kode" | "deskripsi" | "tahunAjaranId", ExtArgs["result"]["subCPMK"]>
+export type SubCPMKOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kode" | "deskripsi" | "mataKuliahId" | "tahunAjaranId", ExtArgs["result"]["subCPMK"]>
 export type SubCPMKInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
   cpmkTerkait?: boolean | Prisma.SubCPMK$cpmkTerkaitArgs<ExtArgs>
   distribusi?: boolean | Prisma.SubCPMK$distribusiArgs<ExtArgs>
@@ -744,15 +918,18 @@ export type SubCPMKInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   _count?: boolean | Prisma.SubCPMKCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SubCPMKIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }
 export type SubCPMKIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }
 
 export type $SubCPMKPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "SubCPMK"
   objects: {
+    mataKuliah: Prisma.$MataKuliahPayload<ExtArgs>
     tahunAjaran: Prisma.$TahunAjaranPayload<ExtArgs>
     cpmkTerkait: Prisma.$CpmkSubPayload<ExtArgs>[]
     distribusi: Prisma.$DistribusiSubCPMKPayload<ExtArgs>[]
@@ -762,6 +939,7 @@ export type $SubCPMKPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     kode: string
     deskripsi: string
+    mataKuliahId: string
     tahunAjaranId: string
   }, ExtArgs["result"]["subCPMK"]>
   composites: {}
@@ -1157,6 +1335,7 @@ readonly fields: SubCPMKFieldRefs;
  */
 export interface Prisma__SubCPMKClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  mataKuliah<T extends Prisma.MataKuliahDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MataKuliahDefaultArgs<ExtArgs>>): Prisma.Prisma__MataKuliahClient<runtime.Types.Result.GetResult<Prisma.$MataKuliahPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   tahunAjaran<T extends Prisma.TahunAjaranDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaranDefaultArgs<ExtArgs>>): Prisma.Prisma__TahunAjaranClient<runtime.Types.Result.GetResult<Prisma.$TahunAjaranPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   cpmkTerkait<T extends Prisma.SubCPMK$cpmkTerkaitArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SubCPMK$cpmkTerkaitArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CpmkSubPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   distribusi<T extends Prisma.SubCPMK$distribusiArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SubCPMK$distribusiArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DistribusiSubCPMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1193,6 +1372,7 @@ export interface SubCPMKFieldRefs {
   readonly id: Prisma.FieldRef<"SubCPMK", 'String'>
   readonly kode: Prisma.FieldRef<"SubCPMK", 'String'>
   readonly deskripsi: Prisma.FieldRef<"SubCPMK", 'String'>
+  readonly mataKuliahId: Prisma.FieldRef<"SubCPMK", 'String'>
   readonly tahunAjaranId: Prisma.FieldRef<"SubCPMK", 'String'>
 }
     

@@ -109,7 +109,7 @@ export async function cekDampakHapusMK(id: string) {
   const [pendaftaran, penugasan, cpmk, tugas] = await Promise.all([
     prisma.pendaftaranMK.count({ where: { mataKuliahId: id } }),
     prisma.penugasanDosenMK.count({ where: { mataKuliahId: id } }),
-    prisma.cPMK.count({ where: { mataKuliahId: id } }),
+        prisma.cPMK.count({ where: { mataKuliahId: id } }),
     prisma.tugas.count({ where: { mataKuliahId: id } }),
   ]);
   return { pendaftaran, penugasan, cpmk, tugas };

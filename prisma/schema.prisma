@@ -27,11 +27,6 @@ enum StatusTahunAjaran {
   ARSIP
 }
 
-model Pengaturan {
-    kunci String @id
-    nilai String
-}
-
 model User {
   id                  String                 @id @default(cuid())
   username            String                 @unique
@@ -71,22 +66,7 @@ model TahunAjaran {
   hasilCPL       HasilCPL[]
   pendaftaran    PendaftaranMK[]
   penugasanDosen PenugasanDosenMK[]
-  kelasMK KelasMK[]
 }
-
-model KelasMK {
-id            String      @id @default(cuid())
-nama          String      // "A", "B", "C"
-mataKuliahId  String
-dosenId       String
-tahunAjaranId String
-mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
-dosen         Dosen       @relation(fields: [dosenId], references: [id])
-tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
-createdAt     DateTime    @default(now())
-@@unique([mataKuliahId, tahunAjaranId, nama])
-}
-
 
 model Dosen {
   id        String             @id @default(cuid())
@@ -96,7 +76,6 @@ model Dosen {
   userId    String             @unique
   user      User               @relation(fields: [userId], references: [id])
   penugasan PenugasanDosenMK[]
-  kelas KelasMK[]
 }
 
 model Mahasiswa {
@@ -117,12 +96,12 @@ model MataKuliah {
   nama         String
   sks          Int
   cpmk         CPMK[]
+  subCPMK      SubCPMK[]
   tugas        Tugas[]
   pendaftaran  PendaftaranMK[]
   penugasan    PenugasanDosenMK[]
   hasilSubCPMK HasilSubCPMK[]
-  semester Int?          // semester ke-1..8; kosong bila file tidak berisi angka
-  kelas    KelasMK[]
+  hasilCPMK    HasilCPMK[]
 }
 
 model PenugasanDosenMK {
@@ -159,21 +138,21 @@ model CPL {
   hasilCPL    HasilCPL[]
 }
 
-// CPMK = komponen mandiri. Terkait ke paling banyak satu mata kuliah pada satu waktu.
+// CPMK dimiliki satu mata kuliah. Kodenya unik per mata kuliah (CPMK-1 di RL dan CPMK-1 di ET adalah komponen berbeda).
 model CPMK {
   id            String      @id @default(cuid())
   kode          String
   deskripsi     String
   bobot         Int         @default(0)
-  mataKuliahId  String?
+  mataKuliahId  String
   tahunAjaranId String
-  mataKuliah    MataKuliah? @relation(fields: [mataKuliahId], references: [id], onDelete: SetNull)
+  mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
   tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
   cpl           CpmkCpl[]
   sub           CpmkSub[]
   hasilCPMK     HasilCPMK[]
 
-  @@unique([kode, tahunAjaranId])
+  @@unique([kode, mataKuliahId, tahunAjaranId])
 }
 
 model CpmkCpl {
@@ -186,21 +165,23 @@ model CpmkCpl {
   @@unique([cpmkId, cplId])
 }
 
-// Sub-CPMK = komponen mandiri. Boleh dipakai di banyak CPMK lewat CpmkSub.
+// Sub-CPMK dimiliki satu mata kuliah. Boleh dipakai di beberapa CPMK dalam mata kuliah yang sama lewat CpmkSub.
 model SubCPMK {
   id            String              @id @default(cuid())
   kode          String
   deskripsi     String
+  mataKuliahId  String
   tahunAjaranId String
+  mataKuliah    MataKuliah          @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
   tahunAjaran   TahunAjaran         @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
   cpmkTerkait   CpmkSub[]
   distribusi    DistribusiSubCPMK[]
   hasil         HasilSubCPMK[]
 
-  @@unique([kode, tahunAjaranId])
+  @@unique([kode, mataKuliahId, tahunAjaranId])
 }
 
-// Kaitan CPMK <-> Sub-CPMK. Bobot melekat pada kaitan, bukan pada Sub-CPMK.
+// Kaitan CPMK <-> Sub-CPMK (keduanya dari mata kuliah yang sama). Total bobot per CPMK = bobot CPMK.
 model CpmkSub {
   id        String  @id @default(cuid())
   cpmkId    String
@@ -251,7 +232,6 @@ model Nilai {
   @@unique([mahasiswaId, tugasId])
 }
 
-// Hasil Sub-CPMK dihitung per mata kuliah, karena satu Sub-CPMK bisa dipakai di beberapa mata kuliah.
 model HasilSubCPMK {
   id            String      @id @default(cuid())
   mahasiswaId   String
@@ -273,15 +253,17 @@ model HasilCPMK {
   id            String      @id @default(cuid())
   mahasiswaId   String
   cpmkId        String
+  mataKuliahId  String
   tahunAjaranId String
   nilai         Float
   statusLengkap Boolean     @default(true)
   mahasiswa     Mahasiswa   @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
   cpmk          CPMK        @relation(fields: [cpmkId], references: [id], onDelete: Cascade)
+  mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
   tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
   updatedAt     DateTime    @updatedAt
 
-  @@unique([mahasiswaId, cpmkId, tahunAjaranId])
+  @@unique([mahasiswaId, cpmkId, mataKuliahId, tahunAjaranId])
 }
 
 model HasilCPL {

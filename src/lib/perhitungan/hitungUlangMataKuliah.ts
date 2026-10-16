@@ -16,7 +16,7 @@ export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId:
   ]);
   const mahasiswaIds = pendaftaran.map((p) => p.mahasiswaId);
 
-  // Tugas per Sub-CPMK, hanya yang milik mata kuliah ini (Sub-CPMK boleh dipakai di mata kuliah lain).
+  // Tugas per Sub-CPMK (satu Sub-CPMK bisa dipakai beberapa CPMK, jadi dihitung sekali).
   const tugasPerSub = new Map<string, { id: string; bobot: number }[]>();
   for (const c of daftarCpmk) {
     for (const k of c.sub) {
@@ -58,6 +58,7 @@ export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId:
   const barisCpmk: {
     mahasiswaId: string;
     cpmkId: string;
+    mataKuliahId: string;
     tahunAjaranId: string;
     nilai: number;
     statusLengkap: boolean;
@@ -74,21 +75,19 @@ export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId:
       barisSub.push({ mahasiswaId, subCpmkId: subId, mataKuliahId, tahunAjaranId, ...hasil });
     }
 
-    for (const cpmk of daftarCpmk) {
+    for (const c of daftarCpmk) {
       const hasilCpmk = hitungCPMK(
-        cpmk.sub.map((k) => ({ id: k.subCpmkId, bobot: k.bobot })),
+        c.sub.map((k) => ({ id: k.subCpmkId, bobot: k.bobot })),
         hasilSub
       );
-      if (hasilCpmk) barisCpmk.push({ mahasiswaId, cpmkId: cpmk.id, tahunAjaranId, ...hasilCpmk });
+      if (hasilCpmk) barisCpmk.push({ mahasiswaId, cpmkId: c.id, mataKuliahId, tahunAjaranId, ...hasilCpmk });
     }
   }
-
-  const idCpmk = daftarCpmk.map((c) => c.id);
 
   // Hapus-lalu-tulis dalam satu transaksi, jadi hasil basi (kaitan diputus, mahasiswa keluar kelas) ikut bersih.
   await prisma.$transaction([
     prisma.hasilSubCPMK.deleteMany({ where: { tahunAjaranId, mataKuliahId } }),
-    prisma.hasilCPMK.deleteMany({ where: { tahunAjaranId, cpmkId: { in: idCpmk } } }),
+    prisma.hasilCPMK.deleteMany({ where: { tahunAjaranId, mataKuliahId } }),
     prisma.hasilSubCPMK.createMany({ data: barisSub }),
     prisma.hasilCPMK.createMany({ data: barisCpmk }),
   ]);
@@ -96,7 +95,7 @@ export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId:
   await hitungUlangCPL(mahasiswaIds, tahunAjaranId);
 }
 
-// CPL bersifat lintas mata kuliah, jadi dihitung dari seluruh HasilCPMK mahasiswa di T.A. ini.
+// CPL bersifat lintas mata kuliah, jadi dihitung dari hasil CPMK di semua mata kuliah yang diikuti mahasiswa.
 export async function hitungUlangCPL(mahasiswaIds: string[], tahunAjaranId: string) {
   if (mahasiswaIds.length === 0) return;
 
@@ -122,7 +121,6 @@ export async function hitungUlangCPL(mahasiswaIds: string[], tahunAjaranId: stri
 
   const cpmkPerMk = new Map<string, typeof semuaCpmk>();
   for (const c of semuaCpmk) {
-    if (!c.mataKuliahId) continue;
     const daftar = cpmkPerMk.get(c.mataKuliahId) ?? [];
     daftar.push(c);
     cpmkPerMk.set(c.mataKuliahId, daftar);
@@ -153,11 +151,11 @@ export async function hitungUlangCPL(mahasiswaIds: string[], tahunAjaranId: stri
     >();
 
     for (const mkId of mkPerMhs.get(mahasiswaId) ?? []) {
-      for (const cpmk of cpmkPerMk.get(mkId) ?? []) {
-        const hasil = hasilPer.get(`${mahasiswaId}|${cpmk.id}`);
-        for (const pemetaan of cpmk.cpl) {
+      for (const c of cpmkPerMk.get(mkId) ?? []) {
+        const hasil = hasilPer.get(`${mahasiswaId}|${c.id}`);
+        for (const pemetaan of c.cpl) {
           const entri = perCpl.get(pemetaan.cplId) ?? { item: [], adaKosong: false };
-          if (hasil) entri.item.push({ nilai: hasil.nilai, bobot: cpmk.bobot, statusLengkap: hasil.statusLengkap });
+          if (hasil) entri.item.push({ nilai: hasil.nilai, bobot: c.bobot, statusLengkap: hasil.statusLengkap });
           else entri.adaKosong = true;
           perCpl.set(pemetaan.cplId, entri);
         }

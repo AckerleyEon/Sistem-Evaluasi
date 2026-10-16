@@ -49,7 +49,7 @@ export function LogAktivitas({ entri }: { entri: EntriLog[] }) {
               role="tab"
               aria-selected={tab === t.kunci}
               onClick={() => setTab(t.kunci)}
-              className={`min-h-[28px] rounded-md px-3 text-[11px] font-semibold transition ${
+              className={`min-h-7 rounded-md px-3 text-[11px] font-semibold transition ${
                 tab === t.kunci ? "bg-white text-[#0F172A] shadow-sm" : "text-[#64748B]"
               }`}
             >

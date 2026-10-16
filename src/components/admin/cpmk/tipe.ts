@@ -4,20 +4,21 @@ import type { cekDampakSub } from "@/lib/actions/sub-cpmk";
 export type MkRingkas = { id: string; kode: string; nama: string; sks: number };
 export type CplOpsi = { id: string; kode: string };
 
-// Sub-CPMK = komponen mandiri. Kaitannya ke CPMK (beserta bobot) ada di TautanSub.
+// Semua komponen di sini milik satu mata kuliah (yang sedang dipilih).
 export type KomponenSub = { id: string; kode: string; deskripsi: string };
+export type KomponenCpmk = { id: string; kode: string; deskripsi: string; bobot: number; cpl: CplOpsi[] };
 export type TautanSub = { cpmkId: string; subCpmkId: string; bobot: number };
-export type SubTerkait = KomponenSub & { bobot: number };
 
-export type KomponenCpmk = {
-  id: string;
-  kode: string;
-  deskripsi: string;
-  bobot: number;
-  mataKuliahId: string | null; // null = belum dikaitkan ke mata kuliah
-  cpl: CplOpsi[];
-};
+export type SubTerkait = KomponenSub & { bobot: number };
 export type CpmkTerkait = KomponenCpmk & { sub: SubTerkait[] };
+
+export type KonteksSub = {
+  cpmkId: string;
+  cpmkKode: string;
+  bobotAwal: number;
+  terisiLain: number;
+  batas: number;
+};
 
 export type DampakCpmk = Awaited<ReturnType<typeof cekDampakCPMK>>;
 export type DampakSub = Awaited<ReturnType<typeof cekDampakSub>>;

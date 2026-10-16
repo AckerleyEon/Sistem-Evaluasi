@@ -24,35 +24,39 @@ export default async function KonfigurasiCpmkPage({
     );
   }
 
-  const [daftarMK, cplMentah, cpmkMentah, subMentah, tautanMentah] = await Promise.all([
+  const [daftarMK, cplMentah] = await Promise.all([
     prisma.mataKuliah.findMany({
       orderBy: { kode: "asc" },
       select: { id: true, kode: true, nama: true, sks: true },
     }),
     prisma.cPL.findMany({ select: { id: true, kode: true } }),
-    prisma.cPMK.findMany({
-      where: { tahunAjaranId: ta.id },
-      include: { cpl: { include: { cpl: { select: { id: true, kode: true } } } } },
-    }),
-    prisma.subCPMK.findMany({
-      where: { tahunAjaranId: ta.id },
-      select: { id: true, kode: true, deskripsi: true },
-    }),
-    prisma.cpmkSub.findMany({
-      where: { cpmk: { tahunAjaranId: ta.id } },
-      select: { cpmkId: true, subCpmkId: true, bobot: true },
-    }),
   ]);
 
   const selectedId = daftarMK.find((m) => m.id === sp.mk)?.id ?? daftarMK[0]?.id ?? null;
 
-  const semuaCpmk = cpmkMentah
+  // Hanya komponen milik mata kuliah terpilih yang dimuat. Id kosong tidak cocok dengan apa pun.
+  const mkId = selectedId ?? "";
+  const [cpmkMentah, subMentah, tautanSub] = await Promise.all([
+    prisma.cPMK.findMany({
+      where: { mataKuliahId: mkId, tahunAjaranId: ta.id },
+      include: { cpl: { include: { cpl: { select: { id: true, kode: true } } } } },
+    }),
+    prisma.subCPMK.findMany({
+      where: { mataKuliahId: mkId, tahunAjaranId: ta.id },
+      select: { id: true, kode: true, deskripsi: true },
+    }),
+    prisma.cpmkSub.findMany({
+      where: { cpmk: { mataKuliahId: mkId, tahunAjaranId: ta.id } },
+      select: { cpmkId: true, subCpmkId: true, bobot: true },
+    }),
+  ]);
+
+  const cpmkMk = cpmkMentah
     .map((c) => ({
       id: c.id,
       kode: c.kode,
       deskripsi: c.deskripsi,
       bobot: c.bobot,
-      mataKuliahId: c.mataKuliahId,
       cpl: c.cpl.map((r) => r.cpl).sort(urut),
     }))
     .sort(urut);
@@ -62,9 +66,9 @@ export default async function KonfigurasiCpmkPage({
       daftarMK={daftarMK}
       daftarCpl={[...cplMentah].sort(urut)}
       selectedId={selectedId}
-      semuaCpmk={semuaCpmk}
-      semuaSub={[...subMentah].sort(urut)}
-      tautanSub={tautanMentah}
+      cpmkMk={cpmkMk}
+      subMk={[...subMentah].sort(urut)}
+      tautanSub={tautanSub}
     />
   );
 }

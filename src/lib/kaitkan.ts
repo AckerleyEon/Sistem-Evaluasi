@@ -21,13 +21,13 @@ export function parseItemKaitkan(json: string): ItemKaitkan[] | null {
   }
 }
 
-// Sub-CPMK yang tidak lagi dipakai CPMK manapun di mata kuliah ini kehilangan pemetaannya ke tugas
-// mata kuliah ini. Nilai mahasiswa tidak disentuh. Yang masih dipakai CPMK lain di MK yang sama dibiarkan.
+// Sub-CPMK yang tidak lagi terkait ke CPMK manapun kehilangan pemetaannya ke tugas mata kuliah ini.
+// Nilai mahasiswa tidak disentuh. Yang masih terkait ke CPMK lain dibiarkan.
 export async function bersihkanDistribusiYatim(subIds: string[], mataKuliahId: string) {
   if (subIds.length === 0) return;
 
   const masihTerkait = await prisma.cpmkSub.findMany({
-    where: { subCpmkId: { in: subIds }, cpmk: { mataKuliahId } },
+    where: { subCpmkId: { in: subIds } },
     select: { subCpmkId: true },
   });
   const aman = new Set(masihTerkait.map((m) => m.subCpmkId));

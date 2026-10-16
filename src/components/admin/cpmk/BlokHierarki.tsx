@@ -22,12 +22,21 @@ const ikonPensil = (
   </svg>
 );
 
+const ikonSampah = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M3 6h18" />
+    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+  </svg>
+);
+
 export function BlokHierarki({
   cpmk,
   terbuka,
   onToggle,
   onKaitkanSub,
-  onLepasCpmk,
+  onEditCpmk,
+  onHapusCpmk,
   onEditSub,
   onLepasSub,
 }: {
@@ -35,7 +44,8 @@ export function BlokHierarki({
   terbuka: boolean;
   onToggle: () => void;
   onKaitkanSub: () => void;
-  onLepasCpmk: () => void;
+  onEditCpmk: () => void;
+  onHapusCpmk: () => void;
   onEditSub: (s: KomponenSub) => void;
   onLepasSub: (s: KomponenSub) => void;
 }) {
@@ -76,12 +86,20 @@ export function BlokHierarki({
           <p className="text-lg font-bold leading-6 text-[#2F6BE8]">{cpmk.bobot}%</p>
         </div>
         <button
-          onClick={onLepasCpmk}
-          aria-label={`Lepas ${cpmk.kode} dari mata kuliah`}
-          title="Lepas dari mata kuliah"
+          onClick={onEditCpmk}
+          aria-label={`Sesuaikan ${cpmk.kode}`}
+          title="Sesuaikan CPMK"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#2F6BE8] [@media(hover:hover)]:hover:bg-[#DCE7FB]"
+        >
+          {ikonPensil}
+        </button>
+        <button
+          onClick={onHapusCpmk}
+          aria-label={`Hapus ${cpmk.kode}`}
+          title="Hapus CPMK"
           className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#DC2626] [@media(hover:hover)]:hover:bg-[#FEE2E2]"
         >
-          <IkonLepas />
+          {ikonSampah}
         </button>
         <button
           onClick={onToggle}

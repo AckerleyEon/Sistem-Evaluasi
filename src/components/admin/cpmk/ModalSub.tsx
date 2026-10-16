@@ -4,36 +4,38 @@ import { useState } from "react";
 import { createSubCPMK, updateSubCPMK } from "@/lib/actions/sub-cpmk";
 import { ModalShell } from "@/components/admin/mk/ModalShell";
 import { BobotField, bobotValid } from "./BobotField";
-import { kodeBerikutnya, type KomponenCpmk, type KomponenSub } from "./tipe";
+import { kodeBerikutnya, type KomponenSub, type KonteksSub } from "./tipe";
 
 const POLA_KODE = /^Sub-CPMK-\d{1,3}$/;
 
 const kelasInput =
   "h-11 w-full rounded-[10px] bg-[#EEF3FD] px-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40";
 
-export type KonteksKaitan = { cpmk: KomponenCpmk; bobotAwal: number; terisiLain: number };
-
 export function ModalSub({
-  semuaSub,
+  mkId,
+  mkKode,
+  subMk,
   sub,
   konteks,
   onTutup,
   onBerhasil,
 }: {
-  semuaSub: KomponenSub[];
+  mkId: string;
+  mkKode: string;
+  subMk: KomponenSub[]; // Sub-CPMK milik mata kuliah ini
   sub: KomponenSub | null; // null = mode tambah
-  konteks: KonteksKaitan | null; // diisi kalau dibuka dari hierarki (bobot kaitan ikut diubah)
+  konteks: KonteksSub | null; // diisi kalau dibuka dari hierarki (bobot di CPMK itu ikut diubah)
   onTutup: () => void;
   onBerhasil: (pesan: string) => void;
 }) {
-  const [kode, setKode] = useState(sub?.kode ?? kodeBerikutnya("Sub-CPMK", semuaSub.map((s) => s.kode)));
+  const [kode, setKode] = useState(sub?.kode ?? kodeBerikutnya("Sub-CPMK", subMk.map((s) => s.kode)));
   const [deskripsi, setDeskripsi] = useState(sub?.deskripsi ?? "");
   const [bobot, setBobot] = useState(konteks ? String(konteks.bobotAwal) : "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const deskripsiOk = deskripsi.trim().length >= 10 && deskripsi.trim().length <= 500;
-  const bobotOk = !konteks || bobotValid(bobot, konteks.terisiLain, konteks.cpmk.bobot);
+  const bobotOk = !konteks || bobotValid(bobot, konteks.terisiLain, konteks.batas);
   const valid = POLA_KODE.test(kode.trim()) && deskripsiOk && bobotOk;
 
   const berubah = sub
@@ -55,16 +57,16 @@ export function ModalSub({
     fd.set("kode", kode.trim());
     fd.set("deskripsi", deskripsi);
     if (konteks) {
-      fd.set("cpmkId", konteks.cpmk.id);
+      fd.set("cpmkId", konteks.cpmkId);
       fd.set("bobot", bobot);
     }
-    const hasil = sub ? await updateSubCPMK(sub.id, fd) : await createSubCPMK(fd);
+    const hasil = sub ? await updateSubCPMK(sub.id, fd) : await createSubCPMK(mkId, fd);
     setLoading(false);
     if (hasil.error) {
       setError(hasil.error);
       return;
     }
-    onBerhasil(sub ? `${hasil.kode} berhasil diperbarui` : `${hasil.kode} berhasil dibuat`);
+    onBerhasil(sub ? `${hasil.kode} berhasil diperbarui` : `${hasil.kode} ditambahkan ke ${mkKode}`);
   }
 
   return (
@@ -81,9 +83,9 @@ export function ModalSub({
           <p className="text-[13px] text-[#6B7280]">
             {sub
               ? konteks
-                ? `Bobot berlaku untuk kaitan ke ${konteks.cpmk.kode}. Kode dan deskripsi berlaku di semua CPMK yang memakainya.`
-                : "Kode dan deskripsi berlaku di semua CPMK yang memakai Sub-CPMK ini."
-              : "Sub-CPMK baru berdiri sendiri. Kaitkan ke CPMK lewat hierarki di bawah."}
+                ? `Bobot berlaku untuk kaitan ke ${konteks.cpmkKode}. Kode dan deskripsi berlaku di semua CPMK yang memakai Sub-CPMK ini.`
+                : `Sub-CPMK milik ${mkKode}.`
+              : `Sub-CPMK ini milik ${mkKode} dan berdiri sendiri. Kaitkan ke CPMK lewat tombol Kaitkan Sub-CPMK.`}
           </p>
         </div>
         <button type="button" onClick={tutup} aria-label="Tutup" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F1F3F5] text-[#4B5563]">
@@ -123,7 +125,7 @@ export function ModalSub({
             nilai={bobot}
             onChange={setBobot}
             terisiLain={konteks.terisiLain}
-            batas={konteks.cpmk.bobot}
+            batas={konteks.batas}
           />
         )}
 

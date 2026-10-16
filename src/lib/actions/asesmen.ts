@@ -48,7 +48,7 @@ export async function buatTugas(input: InputBuatTugas): Promise<HasilAksi & { ri
     where: {
       id: { in: subIds },
       tahunAjaranId: k.tahunAjaranId,
-      cpmkTerkait: { some: { cpmk: { mataKuliahId: input.mataKuliahId } } },
+      mataKuliahId: input.mataKuliahId, // Sub-CPMK dimiliki satu MK
     },
     select: { id: true },
   });

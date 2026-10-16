@@ -226,6 +226,7 @@ export type MataKuliahWhereInput = {
   penugasan?: Prisma.PenugasanDosenMKListRelationFilter
   hasilSubCPMK?: Prisma.HasilSubCPMKListRelationFilter
   kelas?: Prisma.KelasMKListRelationFilter
+  subCPMK?: Prisma.SubCPMKListRelationFilter
 }
 
 export type MataKuliahOrderByWithRelationInput = {
@@ -240,6 +241,7 @@ export type MataKuliahOrderByWithRelationInput = {
   penugasan?: Prisma.PenugasanDosenMKOrderByRelationAggregateInput
   hasilSubCPMK?: Prisma.HasilSubCPMKOrderByRelationAggregateInput
   kelas?: Prisma.KelasMKOrderByRelationAggregateInput
+  subCPMK?: Prisma.SubCPMKOrderByRelationAggregateInput
 }
 
 export type MataKuliahWhereUniqueInput = Prisma.AtLeast<{
@@ -257,6 +259,7 @@ export type MataKuliahWhereUniqueInput = Prisma.AtLeast<{
   penugasan?: Prisma.PenugasanDosenMKListRelationFilter
   hasilSubCPMK?: Prisma.HasilSubCPMKListRelationFilter
   kelas?: Prisma.KelasMKListRelationFilter
+  subCPMK?: Prisma.SubCPMKListRelationFilter
 }, "id" | "kode">
 
 export type MataKuliahOrderByWithAggregationInput = {
@@ -295,6 +298,7 @@ export type MataKuliahCreateInput = {
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahUncheckedCreateInput = {
@@ -309,6 +313,7 @@ export type MataKuliahUncheckedCreateInput = {
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahUpdateInput = {
@@ -323,6 +328,7 @@ export type MataKuliahUpdateInput = {
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahUncheckedUpdateInput = {
@@ -337,6 +343,7 @@ export type MataKuliahUncheckedUpdateInput = {
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahCreateManyInput = {
@@ -402,11 +409,6 @@ export type MataKuliahSumOrderByAggregateInput = {
   semester?: Prisma.SortOrder
 }
 
-export type MataKuliahNullableScalarRelationFilter = {
-  is?: Prisma.MataKuliahWhereInput | null
-  isNot?: Prisma.MataKuliahWhereInput | null
-}
-
 export type MataKuliahCreateNestedOneWithoutKelasInput = {
   create?: Prisma.XOR<Prisma.MataKuliahCreateWithoutKelasInput, Prisma.MataKuliahUncheckedCreateWithoutKelasInput>
   connectOrCreate?: Prisma.MataKuliahCreateOrConnectWithoutKelasInput
@@ -463,14 +465,26 @@ export type MataKuliahCreateNestedOneWithoutCpmkInput = {
   connect?: Prisma.MataKuliahWhereUniqueInput
 }
 
-export type MataKuliahUpdateOneWithoutCpmkNestedInput = {
+export type MataKuliahUpdateOneRequiredWithoutCpmkNestedInput = {
   create?: Prisma.XOR<Prisma.MataKuliahCreateWithoutCpmkInput, Prisma.MataKuliahUncheckedCreateWithoutCpmkInput>
   connectOrCreate?: Prisma.MataKuliahCreateOrConnectWithoutCpmkInput
   upsert?: Prisma.MataKuliahUpsertWithoutCpmkInput
-  disconnect?: Prisma.MataKuliahWhereInput | boolean
-  delete?: Prisma.MataKuliahWhereInput | boolean
   connect?: Prisma.MataKuliahWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.MataKuliahUpdateToOneWithWhereWithoutCpmkInput, Prisma.MataKuliahUpdateWithoutCpmkInput>, Prisma.MataKuliahUncheckedUpdateWithoutCpmkInput>
+}
+
+export type MataKuliahCreateNestedOneWithoutSubCPMKInput = {
+  create?: Prisma.XOR<Prisma.MataKuliahCreateWithoutSubCPMKInput, Prisma.MataKuliahUncheckedCreateWithoutSubCPMKInput>
+  connectOrCreate?: Prisma.MataKuliahCreateOrConnectWithoutSubCPMKInput
+  connect?: Prisma.MataKuliahWhereUniqueInput
+}
+
+export type MataKuliahUpdateOneRequiredWithoutSubCPMKNestedInput = {
+  create?: Prisma.XOR<Prisma.MataKuliahCreateWithoutSubCPMKInput, Prisma.MataKuliahUncheckedCreateWithoutSubCPMKInput>
+  connectOrCreate?: Prisma.MataKuliahCreateOrConnectWithoutSubCPMKInput
+  upsert?: Prisma.MataKuliahUpsertWithoutSubCPMKInput
+  connect?: Prisma.MataKuliahWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MataKuliahUpdateToOneWithWhereWithoutSubCPMKInput, Prisma.MataKuliahUpdateWithoutSubCPMKInput>, Prisma.MataKuliahUncheckedUpdateWithoutSubCPMKInput>
 }
 
 export type MataKuliahCreateNestedOneWithoutTugasInput = {
@@ -512,6 +526,7 @@ export type MataKuliahCreateWithoutKelasInput = {
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutMataKuliahInput
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahUncheckedCreateWithoutKelasInput = {
@@ -525,6 +540,7 @@ export type MataKuliahUncheckedCreateWithoutKelasInput = {
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutMataKuliahInput
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahCreateOrConnectWithoutKelasInput = {
@@ -554,6 +570,7 @@ export type MataKuliahUpdateWithoutKelasInput = {
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutMataKuliahNestedInput
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahUncheckedUpdateWithoutKelasInput = {
@@ -567,6 +584,7 @@ export type MataKuliahUncheckedUpdateWithoutKelasInput = {
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahCreateWithoutPenugasanInput = {
@@ -580,6 +598,7 @@ export type MataKuliahCreateWithoutPenugasanInput = {
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahUncheckedCreateWithoutPenugasanInput = {
@@ -593,6 +612,7 @@ export type MataKuliahUncheckedCreateWithoutPenugasanInput = {
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahCreateOrConnectWithoutPenugasanInput = {
@@ -622,6 +642,7 @@ export type MataKuliahUpdateWithoutPenugasanInput = {
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahUncheckedUpdateWithoutPenugasanInput = {
@@ -635,6 +656,7 @@ export type MataKuliahUncheckedUpdateWithoutPenugasanInput = {
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahCreateWithoutPendaftaranInput = {
@@ -648,6 +670,7 @@ export type MataKuliahCreateWithoutPendaftaranInput = {
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahUncheckedCreateWithoutPendaftaranInput = {
@@ -661,6 +684,7 @@ export type MataKuliahUncheckedCreateWithoutPendaftaranInput = {
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahCreateOrConnectWithoutPendaftaranInput = {
@@ -690,6 +714,7 @@ export type MataKuliahUpdateWithoutPendaftaranInput = {
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahUncheckedUpdateWithoutPendaftaranInput = {
@@ -703,6 +728,7 @@ export type MataKuliahUncheckedUpdateWithoutPendaftaranInput = {
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahCreateWithoutCpmkInput = {
@@ -716,6 +742,7 @@ export type MataKuliahCreateWithoutCpmkInput = {
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahUncheckedCreateWithoutCpmkInput = {
@@ -729,6 +756,7 @@ export type MataKuliahUncheckedCreateWithoutCpmkInput = {
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahCreateOrConnectWithoutCpmkInput = {
@@ -758,6 +786,7 @@ export type MataKuliahUpdateWithoutCpmkInput = {
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahUncheckedUpdateWithoutCpmkInput = {
@@ -766,6 +795,79 @@ export type MataKuliahUncheckedUpdateWithoutCpmkInput = {
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   sks?: Prisma.IntFieldUpdateOperationsInput | number
   semester?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  tugas?: Prisma.TugasUncheckedUpdateManyWithoutMataKuliahNestedInput
+  pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  kelas?: Prisma.KelasMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+}
+
+export type MataKuliahCreateWithoutSubCPMKInput = {
+  id?: string
+  kode: string
+  nama: string
+  sks: number
+  semester?: number | null
+  cpmk?: Prisma.CPMKCreateNestedManyWithoutMataKuliahInput
+  tugas?: Prisma.TugasCreateNestedManyWithoutMataKuliahInput
+  pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutMataKuliahInput
+  penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutMataKuliahInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMataKuliahInput
+  kelas?: Prisma.KelasMKCreateNestedManyWithoutMataKuliahInput
+}
+
+export type MataKuliahUncheckedCreateWithoutSubCPMKInput = {
+  id?: string
+  kode: string
+  nama: string
+  sks: number
+  semester?: number | null
+  cpmk?: Prisma.CPMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  tugas?: Prisma.TugasUncheckedCreateNestedManyWithoutMataKuliahInput
+  pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutMataKuliahInput
+}
+
+export type MataKuliahCreateOrConnectWithoutSubCPMKInput = {
+  where: Prisma.MataKuliahWhereUniqueInput
+  create: Prisma.XOR<Prisma.MataKuliahCreateWithoutSubCPMKInput, Prisma.MataKuliahUncheckedCreateWithoutSubCPMKInput>
+}
+
+export type MataKuliahUpsertWithoutSubCPMKInput = {
+  update: Prisma.XOR<Prisma.MataKuliahUpdateWithoutSubCPMKInput, Prisma.MataKuliahUncheckedUpdateWithoutSubCPMKInput>
+  create: Prisma.XOR<Prisma.MataKuliahCreateWithoutSubCPMKInput, Prisma.MataKuliahUncheckedCreateWithoutSubCPMKInput>
+  where?: Prisma.MataKuliahWhereInput
+}
+
+export type MataKuliahUpdateToOneWithWhereWithoutSubCPMKInput = {
+  where?: Prisma.MataKuliahWhereInput
+  data: Prisma.XOR<Prisma.MataKuliahUpdateWithoutSubCPMKInput, Prisma.MataKuliahUncheckedUpdateWithoutSubCPMKInput>
+}
+
+export type MataKuliahUpdateWithoutSubCPMKInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kode?: Prisma.StringFieldUpdateOperationsInput | string
+  nama?: Prisma.StringFieldUpdateOperationsInput | string
+  sks?: Prisma.IntFieldUpdateOperationsInput | number
+  semester?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cpmk?: Prisma.CPMKUpdateManyWithoutMataKuliahNestedInput
+  tugas?: Prisma.TugasUpdateManyWithoutMataKuliahNestedInput
+  pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutMataKuliahNestedInput
+  penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutMataKuliahNestedInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMataKuliahNestedInput
+  kelas?: Prisma.KelasMKUpdateManyWithoutMataKuliahNestedInput
+}
+
+export type MataKuliahUncheckedUpdateWithoutSubCPMKInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kode?: Prisma.StringFieldUpdateOperationsInput | string
+  nama?: Prisma.StringFieldUpdateOperationsInput | string
+  sks?: Prisma.IntFieldUpdateOperationsInput | number
+  semester?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  cpmk?: Prisma.CPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   tugas?: Prisma.TugasUncheckedUpdateManyWithoutMataKuliahNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutMataKuliahNestedInput
@@ -784,6 +886,7 @@ export type MataKuliahCreateWithoutTugasInput = {
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahUncheckedCreateWithoutTugasInput = {
@@ -797,6 +900,7 @@ export type MataKuliahUncheckedCreateWithoutTugasInput = {
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutMataKuliahInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahCreateOrConnectWithoutTugasInput = {
@@ -826,6 +930,7 @@ export type MataKuliahUpdateWithoutTugasInput = {
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahUncheckedUpdateWithoutTugasInput = {
@@ -839,6 +944,7 @@ export type MataKuliahUncheckedUpdateWithoutTugasInput = {
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahCreateWithoutHasilSubCPMKInput = {
@@ -852,6 +958,7 @@ export type MataKuliahCreateWithoutHasilSubCPMKInput = {
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutMataKuliahInput
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahUncheckedCreateWithoutHasilSubCPMKInput = {
@@ -865,6 +972,7 @@ export type MataKuliahUncheckedCreateWithoutHasilSubCPMKInput = {
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutMataKuliahInput
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutMataKuliahInput
   kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutMataKuliahInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutMataKuliahInput
 }
 
 export type MataKuliahCreateOrConnectWithoutHasilSubCPMKInput = {
@@ -894,6 +1002,7 @@ export type MataKuliahUpdateWithoutHasilSubCPMKInput = {
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutMataKuliahNestedInput
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutMataKuliahNestedInput
 }
 
 export type MataKuliahUncheckedUpdateWithoutHasilSubCPMKInput = {
@@ -907,6 +1016,7 @@ export type MataKuliahUncheckedUpdateWithoutHasilSubCPMKInput = {
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutMataKuliahNestedInput
   kelas?: Prisma.KelasMKUncheckedUpdateManyWithoutMataKuliahNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput
 }
 
 
@@ -921,6 +1031,7 @@ export type MataKuliahCountOutputType = {
   penugasan: number
   hasilSubCPMK: number
   kelas: number
+  subCPMK: number
 }
 
 export type MataKuliahCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -930,6 +1041,7 @@ export type MataKuliahCountOutputTypeSelect<ExtArgs extends runtime.Types.Extens
   penugasan?: boolean | MataKuliahCountOutputTypeCountPenugasanArgs
   hasilSubCPMK?: boolean | MataKuliahCountOutputTypeCountHasilSubCPMKArgs
   kelas?: boolean | MataKuliahCountOutputTypeCountKelasArgs
+  subCPMK?: boolean | MataKuliahCountOutputTypeCountSubCPMKArgs
 }
 
 /**
@@ -984,6 +1096,13 @@ export type MataKuliahCountOutputTypeCountKelasArgs<ExtArgs extends runtime.Type
   where?: Prisma.KelasMKWhereInput
 }
 
+/**
+ * MataKuliahCountOutputType without action
+ */
+export type MataKuliahCountOutputTypeCountSubCPMKArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SubCPMKWhereInput
+}
+
 
 export type MataKuliahSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -997,6 +1116,7 @@ export type MataKuliahSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   penugasan?: boolean | Prisma.MataKuliah$penugasanArgs<ExtArgs>
   hasilSubCPMK?: boolean | Prisma.MataKuliah$hasilSubCPMKArgs<ExtArgs>
   kelas?: boolean | Prisma.MataKuliah$kelasArgs<ExtArgs>
+  subCPMK?: boolean | Prisma.MataKuliah$subCPMKArgs<ExtArgs>
   _count?: boolean | Prisma.MataKuliahCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["mataKuliah"]>
 
@@ -1032,6 +1152,7 @@ export type MataKuliahInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   penugasan?: boolean | Prisma.MataKuliah$penugasanArgs<ExtArgs>
   hasilSubCPMK?: boolean | Prisma.MataKuliah$hasilSubCPMKArgs<ExtArgs>
   kelas?: boolean | Prisma.MataKuliah$kelasArgs<ExtArgs>
+  subCPMK?: boolean | Prisma.MataKuliah$subCPMKArgs<ExtArgs>
   _count?: boolean | Prisma.MataKuliahCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MataKuliahIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1046,6 +1167,7 @@ export type $MataKuliahPayload<ExtArgs extends runtime.Types.Extensions.Internal
     penugasan: Prisma.$PenugasanDosenMKPayload<ExtArgs>[]
     hasilSubCPMK: Prisma.$HasilSubCPMKPayload<ExtArgs>[]
     kelas: Prisma.$KelasMKPayload<ExtArgs>[]
+    subCPMK: Prisma.$SubCPMKPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1453,6 +1575,7 @@ export interface Prisma__MataKuliahClient<T, Null = never, ExtArgs extends runti
   penugasan<T extends Prisma.MataKuliah$penugasanArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MataKuliah$penugasanArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PenugasanDosenMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hasilSubCPMK<T extends Prisma.MataKuliah$hasilSubCPMKArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MataKuliah$hasilSubCPMKArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilSubCPMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   kelas<T extends Prisma.MataKuliah$kelasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MataKuliah$kelasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KelasMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  subCPMK<T extends Prisma.MataKuliah$subCPMKArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MataKuliah$subCPMKArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubCPMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2021,6 +2144,30 @@ export type MataKuliah$kelasArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.KelasMKScalarFieldEnum | Prisma.KelasMKScalarFieldEnum[]
+}
+
+/**
+ * MataKuliah.subCPMK
+ */
+export type MataKuliah$subCPMKArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SubCPMK
+   */
+  select?: Prisma.SubCPMKSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SubCPMK
+   */
+  omit?: Prisma.SubCPMKOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubCPMKInclude<ExtArgs> | null
+  where?: Prisma.SubCPMKWhereInput
+  orderBy?: Prisma.SubCPMKOrderByWithRelationInput | Prisma.SubCPMKOrderByWithRelationInput[]
+  cursor?: Prisma.SubCPMKWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SubCPMKScalarFieldEnum | Prisma.SubCPMKScalarFieldEnum[]
 }
 
 /**

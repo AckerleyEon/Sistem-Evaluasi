@@ -57,14 +57,14 @@ export async function createTahunAjaran(formData: FormData) {
         });
       }
 
-      // 2. CPMK (simpan peta id lama -> id baru)
+            // 2. CPMK (milik mata kuliahnya masing-masing, bobot ikut tersalin)
       const petaCpmk = new Map<string, string>();
       const cpmkLama = await tx.cPMK.findMany({
         where: { tahunAjaranId: sumberId },
         include: { cpl: true },
       });
       for (const c of cpmkLama) {
-        const baruCpmk = await tx.cPMK.create({
+        const cpmkBaru = await tx.cPMK.create({
           data: {
             kode: c.kode,
             deskripsi: c.deskripsi,
@@ -74,15 +74,20 @@ export async function createTahunAjaran(formData: FormData) {
             cpl: { create: c.cpl.map((r) => ({ cplId: r.cplId })) },
           },
         });
-        petaCpmk.set(c.id, baruCpmk.id);
+        petaCpmk.set(c.id, cpmkBaru.id);
       }
 
-      // 3. Sub-CPMK (komponen mandiri)
+      // 3. Sub-CPMK
       const petaSub = new Map<string, string>();
       const subLama = await tx.subCPMK.findMany({ where: { tahunAjaranId: sumberId } });
       for (const s of subLama) {
         const baruSub = await tx.subCPMK.create({
-          data: { kode: s.kode, deskripsi: s.deskripsi, tahunAjaranId: baru.id },
+          data: {
+            kode: s.kode,
+            deskripsi: s.deskripsi,
+            mataKuliahId: s.mataKuliahId,
+            tahunAjaranId: baru.id,
+          },
         });
         petaSub.set(s.id, baruSub.id);
       }
@@ -90,9 +95,9 @@ export async function createTahunAjaran(formData: FormData) {
       // 3b. Kaitan CPMK <-> Sub-CPMK beserta bobotnya
       const kaitanLama = await tx.cpmkSub.findMany({ where: { cpmk: { tahunAjaranId: sumberId } } });
       const dataKaitan = kaitanLama.flatMap((k) => {
-        const cpmkBaru = petaCpmk.get(k.cpmkId);
-        const subBaru = petaSub.get(k.subCpmkId);
-        return cpmkBaru && subBaru ? [{ cpmkId: cpmkBaru, subCpmkId: subBaru, bobot: k.bobot }] : [];
+        const cpmkBaruId = petaCpmk.get(k.cpmkId);
+        const subBaruId = petaSub.get(k.subCpmkId);
+        return cpmkBaruId && subBaruId ? [{ cpmkId: cpmkBaruId, subCpmkId: subBaruId, bobot: k.bobot }] : [];
       });
       if (dataKaitan.length > 0) await tx.cpmkSub.createMany({ data: dataKaitan });
 

@@ -45,19 +45,14 @@ async function totalBobotKaitanLain(cpmkId: string, kecualiSubId?: string) {
   return agg._sum.bobot ?? 0;
 }
 
-async function hitungNilai(subId: string, mataKuliahId?: string | null) {
+async function hitungNilai(subId: string, mataKuliahId: string) {
   return prisma.nilai.count({
-    where: {
-      tugas: {
-        ...(mataKuliahId ? { mataKuliahId } : {}),
-        distribusi: { some: { subCpmkId: subId } },
-      },
-    },
+    where: { tugas: { mataKuliahId, distribusi: { some: { subCpmkId: subId } } } },
   });
 }
 
-// Sub-CPMK baru berdiri sendiri (belum terkait CPMK). Bobot diisi saat dikaitkan.
-export async function createSubCPMK(formData: FormData): Promise<Hasil> {
+// Sub-CPMK baru menjadi milik mata kuliah yang dipilih dan berdiri sendiri sampai dikaitkan ke CPMK.
+export async function createSubCPMK(mkId: string, formData: FormData): Promise<Hasil> {
   await pastikanAdmin();
   const d = bacaForm(formData);
   const salah = validasi(d);
@@ -65,19 +60,23 @@ export async function createSubCPMK(formData: FormData): Promise<Hasil> {
 
   const ta = await getTahunAjaranAktif();
   if (!ta) return { error: SALAH_TA };
+  const mk = await prisma.mataKuliah.findUnique({ where: { id: mkId } });
+  if (!mk) return { error: "Mata kuliah tidak ditemukan." };
 
   const kembar = await prisma.subCPMK.findUnique({
-    where: { kode_tahunAjaranId: { kode: d.kode, tahunAjaranId: ta.id } },
+    where: { mataKuliahId_tahunAjaranId_kode: { kode: d.kode, mataKuliahId: mkId, tahunAjaranId: ta.id } },
   });
-  if (kembar) return { error: `Kode ${d.kode} sudah dipakai pada T.A. ${ta.label}.` };
+  if (kembar) return { error: `Kode ${d.kode} sudah dipakai di ${mk.kode}.` };
 
-  await prisma.subCPMK.create({ data: { kode: d.kode, deskripsi: d.deskripsi, tahunAjaranId: ta.id } });
+  await prisma.subCPMK.create({
+    data: { kode: d.kode, deskripsi: d.deskripsi, mataKuliahId: mkId, tahunAjaranId: ta.id },
+  });
 
   revalidatePath(HALAMAN);
   return { kode: d.kode };
 }
 
-// Mengubah kode dan deskripsi. Kalau cpmkId dan bobot ikut dikirim, bobot kaitan ke CPMK itu ikut diubah.
+// Mengubah kode dan deskripsi. Kalau cpmkId dan bobot ikut dikirim, bobot Sub-CPMK di CPMK itu ikut diubah.
 export async function updateSubCPMK(id: string, formData: FormData): Promise<Hasil> {
   await pastikanAdmin();
   const d = bacaForm(formData);
@@ -88,11 +87,11 @@ export async function updateSubCPMK(id: string, formData: FormData): Promise<Has
   if (!sub) return { error: "Sub-CPMK tidak ditemukan." };
 
   const kembar = await prisma.subCPMK.findFirst({
-    where: { kode: d.kode, tahunAjaranId: sub.tahunAjaranId, id: { not: id } },
+    where: { kode: d.kode, mataKuliahId: sub.mataKuliahId, tahunAjaranId: sub.tahunAjaranId, id: { not: id } },
   });
-  if (kembar) return { error: `Kode ${d.kode} sudah dipakai pada tahun ajaran ini.` };
+  if (kembar) return { error: `Kode ${d.kode} sudah dipakai di mata kuliah ini.` };
 
-  let ubahBobot: { tautanId: string; bobot: number; mataKuliahId: string | null } | null = null;
+  let ubahBobot: { tautanId: string; bobot: number } | null = null;
   if (d.cpmkId && d.bobot !== null) {
     if (!Number.isInteger(d.bobot) || d.bobot < 1 || d.bobot > 100) {
       return { error: "Bobot harus bilangan bulat 1-100." };
@@ -105,18 +104,16 @@ export async function updateSubCPMK(id: string, formData: FormData): Promise<Has
 
     const sisa = tautan.cpmk.bobot - (await totalBobotKaitanLain(d.cpmkId, id));
     if (d.bobot > sisa) return { error: `Melebihi sisa kuota (${Math.max(0, sisa)}%).` };
-
-    if (d.bobot !== tautan.bobot) {
-      ubahBobot = { tautanId: tautan.id, bobot: d.bobot, mataKuliahId: tautan.cpmk.mataKuliahId };
-    }
+    if (d.bobot !== tautan.bobot) ubahBobot = { tautanId: tautan.id, bobot: d.bobot };
   }
 
+  const kodeBaru = d.kode;
+  const deskripsiBaru = d.deskripsi;
   await prisma.$transaction(async (tx) => {
-    await tx.subCPMK.update({ where: { id }, data: { kode: d.kode, deskripsi: d.deskripsi } });
+    await tx.subCPMK.update({ where: { id }, data: { kode: kodeBaru, deskripsi: deskripsiBaru } });
     if (ubahBobot) await tx.cpmkSub.update({ where: { id: ubahBobot.tautanId }, data: { bobot: ubahBobot.bobot } });
   });
-
-  if (ubahBobot?.mataKuliahId) await hitungUlangMataKuliah(ubahBobot.mataKuliahId, sub.tahunAjaranId);
+  if (ubahBobot) await hitungUlangMataKuliah(sub.mataKuliahId, sub.tahunAjaranId);
 
   revalidatePath(HALAMAN);
   return { kode: d.kode };
@@ -133,17 +130,16 @@ export async function kaitkanSubCPMK(cpmkId: string, itemsJson: string): Promise
 
   const cpmk = await prisma.cPMK.findUnique({ where: { id: cpmkId } });
   if (!cpmk) return { error: "CPMK tidak ditemukan." };
-  if (!cpmk.mataKuliahId) return { error: "CPMK ini belum dikaitkan ke mata kuliah. Kaitkan dulu CPMK-nya." };
 
   const daftar = await prisma.subCPMK.findMany({
     where: { id: { in: ids } },
-    include: { cpmkTerkait: { select: { cpmkId: true } } },
+    include: { cpmkTerkait: { where: { cpmkId }, select: { id: true } } },
   });
   if (daftar.length !== ids.length) return { error: "Ada Sub-CPMK yang tidak ditemukan." };
-  if (daftar.some((s) => s.tahunAjaranId !== cpmk.tahunAjaranId)) {
-    return { error: "Ada Sub-CPMK dari tahun ajaran lain." };
+  if (daftar.some((s) => s.mataKuliahId !== cpmk.mataKuliahId || s.tahunAjaranId !== cpmk.tahunAjaranId)) {
+    return { error: "Ada Sub-CPMK yang bukan milik mata kuliah ini." };
   }
-  if (daftar.some((s) => s.cpmkTerkait.some((t) => t.cpmkId === cpmkId))) {
+  if (daftar.some((s) => s.cpmkTerkait.length > 0)) {
     return { error: "Ada Sub-CPMK yang sudah dikaitkan ke CPMK ini. Muat ulang halaman." };
   }
 
@@ -167,26 +163,17 @@ export async function cekDampakSub(id: string, cpmkId?: string) {
     where: { id },
     include: { cpmkTerkait: { include: { cpmk: true } } },
   });
-  if (!sub) {
-    return {
-      bobot: 0,
-      cpmkKode: null as string | null,
-      lainDiMk: [] as string[],
-      lainDiTempatLain: [] as string[],
-      jumlahNilai: 0,
-    };
-  }
+  if (!sub) return { bobot: 0, cpmkKode: null as string | null, lainDi: [] as string[], jumlahNilai: 0 };
 
   const ini = cpmkId ? sub.cpmkTerkait.find((t) => t.cpmkId === cpmkId) : undefined;
-  const mkId = ini?.cpmk.mataKuliahId ?? null;
-  const lain = sub.cpmkTerkait.filter((t) => t.cpmkId !== cpmkId);
-
   return {
     bobot: ini?.bobot ?? 0,
     cpmkKode: ini?.cpmk.kode ?? null,
-    lainDiMk: mkId ? lain.filter((t) => t.cpmk.mataKuliahId === mkId).map((t) => t.cpmk.kode) : [],
-    lainDiTempatLain: lain.filter((t) => !mkId || t.cpmk.mataKuliahId !== mkId).map((t) => t.cpmk.kode),
-    jumlahNilai: await hitungNilai(id, mkId),
+    lainDi: sub.cpmkTerkait
+      .filter((t) => t.cpmkId !== cpmkId)
+      .map((t) => t.cpmk.kode)
+      .sort(),
+    jumlahNilai: await hitungNilai(id, sub.mataKuliahId),
   };
 }
 
@@ -199,34 +186,29 @@ export async function lepasSubCPMK(id: string, cpmkId: string): Promise<Hasil> {
   });
   if (!tautan) return { error: "Kaitan tidak ditemukan. Muat ulang halaman." };
 
-  const mkId = tautan.cpmk.mataKuliahId;
   await prisma.cpmkSub.delete({ where: { id: tautan.id } });
-  if (mkId) {
-    await bersihkanDistribusiYatim([id], mkId);
-    await hitungUlangMataKuliah(mkId, tautan.cpmk.tahunAjaranId);
-  }
+  await bersihkanDistribusiYatim([id], tautan.cpmk.mataKuliahId);
+  await hitungUlangMataKuliah(tautan.cpmk.mataKuliahId, tautan.cpmk.tahunAjaranId);
 
   revalidatePath(HALAMAN);
   return { kode: tautan.subCpmk.kode };
 }
 
-// Hapus permanen tetap dijaga kalau Sub-CPMK masih punya nilai terkait.
+// Hapus permanen tetap dijaga kalau Sub-CPMK masih punya nilai terkait (lepas dulu dari CPMK).
 export async function hapusSubCPMK(id: string): Promise<Hasil> {
   await pastikanAdmin();
   const sub = await prisma.subCPMK.findUnique({
     where: { id },
-    include: { cpmkTerkait: { include: { cpmk: true } } },
+    include: { cpmkTerkait: { select: { id: true } } },
   });
   if (!sub) return { error: "Sub-CPMK tidak ditemukan." };
 
-  if ((await hitungNilai(id)) > 0) {
+  if ((await hitungNilai(id, sub.mataKuliahId)) > 0) {
     return { error: "Sub-CPMK ini masih punya nilai mahasiswa terkait. Lepas dari CPMK dulu, lalu hapus." };
   }
 
-  const mkIds = [...new Set(sub.cpmkTerkait.map((t) => t.cpmk.mataKuliahId).filter((m): m is string => !!m))];
-
   await prisma.subCPMK.delete({ where: { id } }); // kaitan, pemetaan ke tugas, dan hasil ikut terhapus (cascade)
-  for (const mkId of mkIds) await hitungUlangMataKuliah(mkId, sub.tahunAjaranId);
+  if (sub.cpmkTerkait.length > 0) await hitungUlangMataKuliah(sub.mataKuliahId, sub.tahunAjaranId);
 
   revalidatePath(HALAMAN);
   return { kode: sub.kode };

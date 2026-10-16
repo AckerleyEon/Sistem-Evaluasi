@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createCPMK, updateCPMK } from "@/lib/actions/cpmk";
 import { ModalShell } from "@/components/admin/mk/ModalShell";
 import { BobotField, bobotValid } from "./BobotField";
-import { jumlahBobot, kodeBerikutnya, type CplOpsi, type KomponenCpmk, type TautanSub } from "./tipe";
+import { jumlahBobot, kodeBerikutnya, type CplOpsi, type KomponenCpmk } from "./tipe";
 
 const POLA_KODE = /^CPMK-\d{1,3}$/;
 
@@ -12,42 +12,42 @@ const kelasInput =
   "h-11 w-full rounded-[10px] bg-[#EEF3FD] px-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40";
 
 export function ModalCPMK({
-  semuaCpmk,
-  tautanSub,
+  mkId,
+  mkKode,
+  cpmkMk,
+  totalSub,
   daftarCpl,
   cpmk,
   onTutup,
   onBerhasil,
 }: {
-  semuaCpmk: KomponenCpmk[];
-  tautanSub: TautanSub[];
+  mkId: string;
+  mkKode: string;
+  cpmkMk: KomponenCpmk[]; // CPMK milik mata kuliah ini
+  totalSub: number; // total bobot Sub-CPMK di CPMK yang diedit (0 saat tambah)
   daftarCpl: CplOpsi[];
   cpmk: KomponenCpmk | null; // null = mode tambah
   onTutup: () => void;
   onBerhasil: (pesan: string) => void;
 }) {
-  const mkId = cpmk?.mataKuliahId ?? null;
-  const terkait = mkId !== null;
-  const terisiLain = mkId
-    ? jumlahBobot(semuaCpmk.filter((c) => c.mataKuliahId === mkId && c.id !== cpmk?.id))
-    : 0;
-    const totalSub = cpmk ? jumlahBobot(tautanSub.filter((t) => t.cpmkId === cpmk.id)) : 0;
+  const terisiLain = jumlahBobot(cpmkMk.filter((c) => c.id !== cpmk?.id));
+  const sisaAwal = Math.max(0, 100 - terisiLain);
 
-  const [kode, setKode] = useState(cpmk?.kode ?? kodeBerikutnya("CPMK", semuaCpmk.map((c) => c.kode)));
+  const [kode, setKode] = useState(cpmk?.kode ?? kodeBerikutnya("CPMK", cpmkMk.map((c) => c.kode)));
   const [deskripsi, setDeskripsi] = useState(cpmk?.deskripsi ?? "");
   const [cplIds, setCplIds] = useState<string[]>(cpmk?.cpl.map((c) => c.id) ?? []);
-  const [bobot, setBobot] = useState(terkait && cpmk ? String(cpmk.bobot) : "");
+  const [bobot, setBobot] = useState(cpmk ? String(cpmk.bobot) : sisaAwal > 0 ? String(sisaAwal) : "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const deskripsiOk = deskripsi.trim().length >= 10 && deskripsi.trim().length <= 500;
-  const bobotOk = !terkait || (bobotValid(bobot, terisiLain, 100) && Number(bobot) >= totalSub);
+  const bobotOk = bobotValid(bobot, terisiLain, 100) && Number(bobot) >= totalSub;
   const valid = POLA_KODE.test(kode.trim()) && deskripsiOk && cplIds.length > 0 && bobotOk;
 
   const berubah = cpmk
     ? kode.trim() !== cpmk.kode ||
       deskripsi.trim() !== cpmk.deskripsi ||
-      (terkait && bobot !== String(cpmk.bobot)) ||
+      bobot !== String(cpmk.bobot) ||
       [...cplIds].sort().join() !== cpmk.cpl.map((c) => c.id).sort().join()
     : deskripsi.trim() !== "" || cplIds.length > 0;
 
@@ -67,15 +67,15 @@ export function ModalCPMK({
     const fd = new FormData();
     fd.set("kode", kode.trim());
     fd.set("deskripsi", deskripsi);
-    if (terkait) fd.set("bobot", bobot);
+    fd.set("bobot", bobot);
     cplIds.forEach((id) => fd.append("cplIds", id));
-    const hasil = cpmk ? await updateCPMK(cpmk.id, fd) : await createCPMK(fd);
+    const hasil = cpmk ? await updateCPMK(cpmk.id, fd) : await createCPMK(mkId, fd);
     setLoading(false);
     if (hasil.error) {
       setError(hasil.error);
       return;
     }
-    onBerhasil(cpmk ? `${hasil.kode} berhasil diperbarui` : `${hasil.kode} berhasil dibuat`);
+    onBerhasil(cpmk ? `${hasil.kode} berhasil diperbarui` : `${hasil.kode} ditambahkan ke ${mkKode}`);
   }
 
   return (
@@ -91,8 +91,8 @@ export function ModalCPMK({
           <h2 className="text-base font-bold text-[#111827]">{cpmk ? "Sesuaikan CPMK" : "Tambah Butir CPMK Baru"}</h2>
           <p className="text-[13px] text-[#6B7280]">
             {cpmk
-              ? "Ubah deskripsi dan pemetaan ke CPL program studi."
-              : "CPMK baru berdiri sendiri. Kaitkan ke mata kuliah lewat tombol Kaitkan CPMK."}
+              ? `CPMK milik ${mkKode}.`
+              : `CPMK ini milik ${mkKode} dan langsung masuk hierarki mata kuliah tersebut.`}
           </p>
         </div>
         <button type="button" onClick={tutup} aria-label="Tutup" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F1F3F5] text-[#4B5563]">
@@ -159,15 +159,11 @@ export function ModalCPMK({
           )}
         </fieldset>
 
-        {terkait && (
-          <>
-            <BobotField label="Alokasi Bobot CPMK" nilai={bobot} onChange={setBobot} terisiLain={terisiLain} batas={100} />
-            {bobot !== "" && Number(bobot) < totalSub && (
-              <p className="text-xs font-medium text-[#DC2626]">
-                Bobot lebih kecil dari total Sub-CPMK ({totalSub}%). Kurangi bobot Sub-CPMK dulu.
-              </p>
-            )}
-          </>
+        <BobotField label="Alokasi Bobot CPMK" nilai={bobot} onChange={setBobot} terisiLain={terisiLain} batas={100} />
+        {bobot !== "" && Number(bobot) < totalSub && (
+          <p className="text-xs font-medium text-[#DC2626]">
+            Bobot lebih kecil dari total Sub-CPMK ({totalSub}%). Kurangi bobot Sub-CPMK dulu.
+          </p>
         )}
 
         {error && <p className="text-xs font-medium text-[#DC2626]">{error}</p>}

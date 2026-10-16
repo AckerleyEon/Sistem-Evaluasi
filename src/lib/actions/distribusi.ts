@@ -24,15 +24,15 @@ export async function finalisasiDistribusi(formData: FormData) {
   });
 
   if (daftarTugas.length > 0) {
-    const dalamMk = { cpmk: { mataKuliahId, tahunAjaranId: ta.id } };
-
-    // Sub-CPMK milik mata kuliah ini yang belum dipetakan ke tugas mata kuliah ini.
+    // Sub-CPMK mata kuliah ini yang sudah masuk hierarki (terkait ke CPMK) dan belum dipetakan ke tugas.
     const sisa = await prisma.subCPMK.findMany({
       where: {
-        cpmkTerkait: { some: dalamMk },
-        distribusi: { none: { tugas: { mataKuliahId } } },
+        mataKuliahId,
+        tahunAjaranId: ta.id,
+        cpmkTerkait: { some: {} },
+        distribusi: { none: {} },
       },
-      include: { cpmkTerkait: { where: dalamMk, include: { cpmk: true } } },
+      include: { cpmkTerkait: { include: { cpmk: true } } },
     });
 
     const kodeInduk = (s: { cpmkTerkait: { cpmk: { kode: string } }[] }) =>

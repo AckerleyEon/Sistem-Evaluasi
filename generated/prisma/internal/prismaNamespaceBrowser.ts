@@ -234,6 +234,7 @@ export const SubCPMKScalarFieldEnum = {
   id: 'id',
   kode: 'kode',
   deskripsi: 'deskripsi',
+  mataKuliahId: 'mataKuliahId',
   tahunAjaranId: 'tahunAjaranId'
 } as const
 
