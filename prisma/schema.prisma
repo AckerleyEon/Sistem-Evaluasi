@@ -1,0 +1,300 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  DOSEN
+}
+
+enum SumberDistribusi {
+  MANUAL
+  OTOMATIS
+}
+
+enum StatusPermintaan {
+  MENUNGGU
+  SELESAI
+}
+
+enum StatusTahunAjaran {
+  AKTIF
+  ARSIP
+}
+
+model Pengaturan {
+    kunci String @id
+    nilai String
+}
+
+model User {
+  id                  String                 @id @default(cuid())
+  username            String                 @unique
+  password            String
+  email               String?                @unique
+  role                Role
+  dosen               Dosen?
+  resetToken          String?                @unique
+  resetTokenExpiresAt DateTime?
+  otpKode             String?
+  otpExpiresAt        DateTime?
+  permintaanReset     PermintaanResetSandi[]
+  createdAt           DateTime               @default(now())
+}
+
+model PermintaanResetSandi {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    StatusPermintaan @default(MENUNGGU)
+  createdAt DateTime         @default(now())
+  selesaiAt DateTime?
+}
+
+model TahunAjaran {
+  id        String            @id @default(cuid())
+  label     String            @unique
+  status    StatusTahunAjaran @default(ARSIP)
+  createdAt DateTime          @default(now())
+
+  cpmk           CPMK[]
+  subCPMK        SubCPMK[]
+  tugas          Tugas[]
+  nilai          Nilai[]
+  hasilSubCPMK   HasilSubCPMK[]
+  hasilCPMK      HasilCPMK[]
+  hasilCPL       HasilCPL[]
+  pendaftaran    PendaftaranMK[]
+  penugasanDosen PenugasanDosenMK[]
+  kelasMK KelasMK[]
+}
+
+model KelasMK {
+id            String      @id @default(cuid())
+nama          String      // "A", "B", "C"
+mataKuliahId  String
+dosenId       String
+tahunAjaranId String
+mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
+dosen         Dosen       @relation(fields: [dosenId], references: [id])
+tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+createdAt     DateTime    @default(now())
+@@unique([mataKuliahId, tahunAjaranId, nama])
+}
+
+
+model Dosen {
+  id        String             @id @default(cuid())
+  nama      String
+  gelar     String?
+  nip       String             @unique
+  userId    String             @unique
+  user      User               @relation(fields: [userId], references: [id])
+  penugasan PenugasanDosenMK[]
+  kelas KelasMK[]
+}
+
+model Mahasiswa {
+  id           String          @id @default(cuid())
+  nim          String          @unique
+  nama         String
+  angkatan     Int
+  pendaftaran  PendaftaranMK[]
+  nilai        Nilai[]
+  hasilSubCPMK HasilSubCPMK[]
+  hasilCPMK    HasilCPMK[]
+  hasilCPL     HasilCPL[]
+}
+
+model MataKuliah {
+  id           String             @id @default(cuid())
+  kode         String             @unique
+  nama         String
+  sks          Int
+  cpmk         CPMK[]
+  tugas        Tugas[]
+  pendaftaran  PendaftaranMK[]
+  penugasan    PenugasanDosenMK[]
+  hasilSubCPMK HasilSubCPMK[]
+  semester Int?          // semester ke-1..8; kosong bila file tidak berisi angka
+  kelas    KelasMK[]
+}
+
+model PenugasanDosenMK {
+  id            String      @id @default(cuid())
+  mataKuliahId  String
+  dosenId       String
+  tahunAjaranId String
+  mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
+  dosen         Dosen       @relation(fields: [dosenId], references: [id])
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+
+  @@unique([mataKuliahId, tahunAjaranId])
+}
+
+model PendaftaranMK {
+  id            String      @id @default(cuid())
+  mahasiswaId   String
+  mataKuliahId  String
+  tahunAjaranId String
+  mahasiswa     Mahasiswa   @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
+  mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([mahasiswaId, mataKuliahId, tahunAjaranId])
+}
+
+// CPL tetap global — representasi kurikulum, bukan data operasional tahunan.
+model CPL {
+  id          String     @id @default(cuid())
+  kode        String     @unique
+  deskripsi   String
+  cpmkTerkait CpmkCpl[]
+  hasilCPL    HasilCPL[]
+}
+
+// CPMK = komponen mandiri. Terkait ke paling banyak satu mata kuliah pada satu waktu.
+model CPMK {
+  id            String      @id @default(cuid())
+  kode          String
+  deskripsi     String
+  bobot         Int         @default(0)
+  mataKuliahId  String?
+  tahunAjaranId String
+  mataKuliah    MataKuliah? @relation(fields: [mataKuliahId], references: [id], onDelete: SetNull)
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  cpl           CpmkCpl[]
+  sub           CpmkSub[]
+  hasilCPMK     HasilCPMK[]
+
+  @@unique([kode, tahunAjaranId])
+}
+
+model CpmkCpl {
+  id     String @id @default(cuid())
+  cpmkId String
+  cplId  String
+  cpmk   CPMK   @relation(fields: [cpmkId], references: [id], onDelete: Cascade)
+  cpl    CPL    @relation(fields: [cplId], references: [id])
+
+  @@unique([cpmkId, cplId])
+}
+
+// Sub-CPMK = komponen mandiri. Boleh dipakai di banyak CPMK lewat CpmkSub.
+model SubCPMK {
+  id            String              @id @default(cuid())
+  kode          String
+  deskripsi     String
+  tahunAjaranId String
+  tahunAjaran   TahunAjaran         @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  cpmkTerkait   CpmkSub[]
+  distribusi    DistribusiSubCPMK[]
+  hasil         HasilSubCPMK[]
+
+  @@unique([kode, tahunAjaranId])
+}
+
+// Kaitan CPMK <-> Sub-CPMK. Bobot melekat pada kaitan, bukan pada Sub-CPMK.
+model CpmkSub {
+  id        String  @id @default(cuid())
+  cpmkId    String
+  subCpmkId String
+  bobot     Int     @default(0)
+  cpmk      CPMK    @relation(fields: [cpmkId], references: [id], onDelete: Cascade)
+  subCpmk   SubCPMK @relation(fields: [subCpmkId], references: [id], onDelete: Cascade)
+
+  @@unique([cpmkId, subCpmkId])
+}
+
+model Tugas {
+  id            String              @id @default(cuid())
+  nama          String
+  pertemuanKe   Int
+  bobot         Float
+  mataKuliahId  String
+  tahunAjaranId String
+  mataKuliah    MataKuliah          @relation(fields: [mataKuliahId], references: [id])
+  tahunAjaran   TahunAjaran         @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  distribusi    DistribusiSubCPMK[]
+  nilai         Nilai[]
+}
+
+model DistribusiSubCPMK {
+  id        String           @id @default(cuid())
+  subCpmkId String
+  tugasId   String
+  sumber    SumberDistribusi
+  subCpmk   SubCPMK          @relation(fields: [subCpmkId], references: [id], onDelete: Cascade)
+  tugas     Tugas            @relation(fields: [tugasId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+
+  @@unique([subCpmkId, tugasId])
+}
+
+model Nilai {
+  id            String      @id @default(cuid())
+  mahasiswaId   String
+  tugasId       String
+  tahunAjaranId String
+  skor          Float
+  mahasiswa     Mahasiswa   @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
+  tugas         Tugas       @relation(fields: [tugasId], references: [id], onDelete: Cascade)
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([mahasiswaId, tugasId])
+}
+
+// Hasil Sub-CPMK dihitung per mata kuliah, karena satu Sub-CPMK bisa dipakai di beberapa mata kuliah.
+model HasilSubCPMK {
+  id            String      @id @default(cuid())
+  mahasiswaId   String
+  subCpmkId     String
+  mataKuliahId  String
+  tahunAjaranId String
+  nilai         Float
+  statusLengkap Boolean     @default(true)
+  mahasiswa     Mahasiswa   @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
+  subCpmk       SubCPMK     @relation(fields: [subCpmkId], references: [id], onDelete: Cascade)
+  mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([mahasiswaId, subCpmkId, mataKuliahId, tahunAjaranId])
+}
+
+model HasilCPMK {
+  id            String      @id @default(cuid())
+  mahasiswaId   String
+  cpmkId        String
+  tahunAjaranId String
+  nilai         Float
+  statusLengkap Boolean     @default(true)
+  mahasiswa     Mahasiswa   @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
+  cpmk          CPMK        @relation(fields: [cpmkId], references: [id], onDelete: Cascade)
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([mahasiswaId, cpmkId, tahunAjaranId])
+}
+
+model HasilCPL {
+  id            String      @id @default(cuid())
+  mahasiswaId   String
+  cplId         String
+  tahunAjaranId String
+  nilai         Float
+  statusLengkap Boolean     @default(true)
+  mahasiswa     Mahasiswa   @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
+  cpl           CPL         @relation(fields: [cplId], references: [id])
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([mahasiswaId, cplId, tahunAjaranId])
+}
