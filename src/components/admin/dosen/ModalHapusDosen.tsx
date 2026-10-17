@@ -20,7 +20,7 @@ export function ModalHapusDosen({
   const [error, setError] = useState("");
 
   const memeriksa = penugasan === null;
-  const terblokir = penugasan !== null && penugasan.length > 0;
+  const adaPenugasan = penugasan !== null && penugasan.length > 0;
   const nama = namaDenganGelar(dosen);
 
   async function konfirmasi() {
@@ -56,7 +56,7 @@ export function ModalHapusDosen({
 
         {memeriksa && <p className="mb-5 text-sm text-[#6B7280]">Memeriksa penugasan mengajar…</p>}
 
-        {terblokir && (
+        {adaPenugasan && (
           <div className="mb-5 space-y-2 text-sm text-[#6B7280]">
             <p>Dosen ini masih tercatat sebagai pengampu:</p>
             <ul className="list-disc space-y-0.5 pl-5 text-[#111827]">
@@ -65,13 +65,16 @@ export function ModalHapusDosen({
               ))}
               {penugasan.length > 4 && <li className="list-none text-[#6B7280]">dan {penugasan.length - 4} lainnya</li>}
             </ul>
-            <p>
-              Lepas penugasannya dulu lewat halaman Dosen Pengampu tiap mata kuliah, lalu coba hapus lagi.
-            </p>
+            <p>Jika dihapus, semua penugasan dilepas. Mata kuliah dan kelas tetap ada dengan status tanpa pengampu.</p>
           </div>
         )}
 
-        {penugasan !== null && !terblokir && (
+        {!adaPenugasan && penugasan !== null && (
+          <p className="mb-5 text-sm text-[#6B7280]">
+            Akun login dengan NIP {dosen.nip} ikut dihapus. Tindakan ini tidak bisa dibatalkan.
+          </p>
+        )}
+        {adaPenugasan && (
           <p className="mb-5 text-sm text-[#6B7280]">
             Akun login dengan NIP {dosen.nip} ikut dihapus. Tindakan ini tidak bisa dibatalkan.
           </p>
@@ -89,7 +92,7 @@ export function ModalHapusDosen({
           </button>
           <button
             onClick={konfirmasi}
-            disabled={memeriksa || terblokir || loading}
+            disabled={memeriksa || loading}
             className="h-11 rounded-[10px] bg-[#DC2626] text-sm font-semibold text-white disabled:opacity-50"
           >
             {loading ? "Menghapus…" : "Hapus"}

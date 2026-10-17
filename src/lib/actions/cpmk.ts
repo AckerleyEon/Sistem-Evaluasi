@@ -71,7 +71,7 @@ export async function createCPMK(mkId: string, formData: FormData): Promise<Hasi
   if (!(await cplValid(d.cplIds))) return { error: "Ada CPL terpilih yang tidak ditemukan." };
 
   const kembar = await prisma.cPMK.findUnique({
-    where: { mataKuliahId_tahunAjaranId_kode: { kode: d.kode, mataKuliahId: mkId, tahunAjaranId: ta.id } },
+    where: { kode_mataKuliahId_tahunAjaranId: { kode: d.kode, mataKuliahId: mkId, tahunAjaranId: ta.id } },
   });
   if (kembar) return { error: `Kode ${d.kode} sudah dipakai di ${mk.kode}.` };
 
@@ -116,12 +116,6 @@ export async function updateCPMK(id: string, formData: FormData): Promise<Hasil>
 
   const sisa = 100 - (await totalBobotLain(cpmk.mataKuliahId, cpmk.tahunAjaranId, id));
   if (d.bobot > sisa) return { error: `Melebihi sisa kuota (${Math.max(0, sisa)}%).` };
-
-  const subAgg = await prisma.cpmkSub.aggregate({ where: { cpmkId: id }, _sum: { bobot: true } });
-  const totalSub = subAgg._sum.bobot ?? 0;
-  if (d.bobot < totalSub) {
-    return { error: `Bobot lebih kecil dari total Sub-CPMK (${totalSub}%). Kurangi bobot Sub-CPMK dulu.` };
-  }
 
   await prisma.cPMK.update({
     where: { id },

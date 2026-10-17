@@ -7,6 +7,8 @@ import { DaftarDosen } from "./DaftarDosen";
 import { ModalEditDosen } from "./ModalEditDosen";
 import { ModalGantiSandi } from "./ModalGantiSandi";
 import { ModalHapusDosen } from "./ModalHapusDosen";
+import { ModalImporDosen } from "./ModalImporDosen";
+import { useRouter } from "next/navigation";
 
 export type DosenItem = {
   id: string;
@@ -34,6 +36,8 @@ export function DosenWorkspace({
   totalHasil: number;
   pageSize: number;
 }) {
+  const router = useRouter();
+  const [imporTerbuka, setImporTerbuka] = useState(false);
   const [editTarget, setEditTarget] = useState<DosenItem | null>(null);
   const [gantiSandiTarget, setGantiSandiTarget] = useState<DosenItem | null>(null);
   const [hapusTarget, setHapusTarget] = useState<DosenItem | null>(null);
@@ -71,17 +75,26 @@ export function DosenWorkspace({
           <h1 className="text-lg font-bold leading-6.5 text-[#111827]">Kelola Akun Dosen</h1>
           <p className="text-[13px] text-[#6B7280]">Daftar akun pengampu mata kuliah</p>
         </div>
-        <a
-          href="/api/admin/dosen/export"
-          download
-          className="flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#2F6BE8] px-6 text-[15px] font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
-            <path d="M5 19h14" />
-          </svg>
-          Ekspor Data
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setImporTerbuka(true)}
+            className="flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#EEF3FD] px-5 text-sm font-semibold text-[#2F6BE8] [@media(hover:hover)]:hover:bg-[#DCE7FB]"
+          >
+            Impor dari Excel
+          </button>
+          <a
+            href="/api/admin/dosen/export"
+            download
+            className="flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#2F6BE8] px-6 text-[15px] font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
+              <path d="M5 19h14" />
+            </svg>
+            Ekspor Data
+          </a>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-start">
@@ -143,6 +156,16 @@ export function DosenWorkspace({
           penugasan={hasilCek?.id === hapusTarget.id ? hasilCek.daftar : null}
           onTutup={() => setHapusTarget(null)}
           onBerhasil={tampilToast}
+        />
+      )}
+
+      {imporTerbuka && (
+        <ModalImporDosen
+          onTutup={() => setImporTerbuka(false)}
+          onBerhasil={(pesan) => {
+            tampilToast(pesan);
+            router.refresh();
+          }}
         />
       )}
     </div>

@@ -2134,6 +2134,7 @@ export const PendaftaranMKScalarFieldEnum = {
   mahasiswaId: 'mahasiswaId',
   mataKuliahId: 'mataKuliahId',
   tahunAjaranId: 'tahunAjaranId',
+  kelasId: 'kelasId',
   createdAt: 'createdAt'
 } as const
 
@@ -2197,7 +2198,8 @@ export const TugasScalarFieldEnum = {
   pertemuanKe: 'pertemuanKe',
   bobot: 'bobot',
   mataKuliahId: 'mataKuliahId',
-  tahunAjaranId: 'tahunAjaranId'
+  tahunAjaranId: 'tahunAjaranId',
+  kelasId: 'kelasId'
 } as const
 
 export type TugasScalarFieldEnum = (typeof TugasScalarFieldEnum)[keyof typeof TugasScalarFieldEnum]
@@ -2244,6 +2246,7 @@ export const HasilCPMKScalarFieldEnum = {
   id: 'id',
   mahasiswaId: 'mahasiswaId',
   cpmkId: 'cpmkId',
+  mataKuliahId: 'mataKuliahId',
   tahunAjaranId: 'tahunAjaranId',
   nilai: 'nilai',
   statusLengkap: 'statusLengkap',

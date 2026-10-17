@@ -46,6 +46,7 @@ export interface AnalisisImpor {
   tahunAjaran: { id: string; label: string } | null;
   baris: BarisAnalisis[];
   ringkasan: RingkasanImpor;
+  mkTidakAda: { id: string; kode: string; nama: string; bisaDihapus: boolean }[];
 }
 
 export const MAKS_BARIS = 2000;

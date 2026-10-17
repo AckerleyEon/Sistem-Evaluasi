@@ -29,7 +29,7 @@ export function PemilihMK({ mk, daftarMK }: { mk: MkRingkas; daftarMK: MkRingkas
         onClick={() => setBuka((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={buka}
-        className="flex h-10 max-w-85 items-center gap-2 rounded-full border border-[#D5DAE1] bg-white px-4 text-sm font-semibold text-[#111827] [@media(hover:hover)]:hover:border-[#2F6BE8]"
+        className="flex h-10 max-w-110 items-center gap-2 rounded-full border border-[#D5DAE1] bg-white px-4 text-sm font-semibold text-[#111827] [@media(hover:hover)]:hover:border-[#2F6BE8]"
       >
         <span className="truncate">
           {mk.kode} • {mk.nama}
@@ -40,7 +40,7 @@ export function PemilihMK({ mk, daftarMK }: { mk: MkRingkas; daftarMK: MkRingkas
       </button>
 
       {buka && (
-        <div className="absolute right-0 top-full z-30 mt-2 w-80 max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl border border-[#E8EAEE] bg-white shadow-[0_8px_24px_rgba(16,24,40,.12)]">
+        <div className="absolute right-0 top-full z-30 mt-2 w-80 max-w-[calc(200vw-2.5rem)] overflow-hidden rounded-2xl border border-[#E8EAEE] bg-white shadow-[0_8px_24px_rgba(16,24,40,.12)]">
           <div className="p-3">
             <input
               value={cari}

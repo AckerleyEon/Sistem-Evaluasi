@@ -15,7 +15,6 @@ export function ModalCPMK({
   mkId,
   mkKode,
   cpmkMk,
-  totalSub,
   daftarCpl,
   cpmk,
   onTutup,
@@ -24,7 +23,6 @@ export function ModalCPMK({
   mkId: string;
   mkKode: string;
   cpmkMk: KomponenCpmk[]; // CPMK milik mata kuliah ini
-  totalSub: number; // total bobot Sub-CPMK di CPMK yang diedit (0 saat tambah)
   daftarCpl: CplOpsi[];
   cpmk: KomponenCpmk | null; // null = mode tambah
   onTutup: () => void;
@@ -41,7 +39,7 @@ export function ModalCPMK({
   const [loading, setLoading] = useState(false);
 
   const deskripsiOk = deskripsi.trim().length >= 10 && deskripsi.trim().length <= 500;
-  const bobotOk = bobotValid(bobot, terisiLain, 100) && Number(bobot) >= totalSub;
+  const bobotOk = bobotValid(bobot, terisiLain, 100);
   const valid = POLA_KODE.test(kode.trim()) && deskripsiOk && cplIds.length > 0 && bobotOk;
 
   const berubah = cpmk
@@ -160,11 +158,6 @@ export function ModalCPMK({
         </fieldset>
 
         <BobotField label="Alokasi Bobot CPMK" nilai={bobot} onChange={setBobot} terisiLain={terisiLain} batas={100} />
-        {bobot !== "" && Number(bobot) < totalSub && (
-          <p className="text-xs font-medium text-[#DC2626]">
-            Bobot lebih kecil dari total Sub-CPMK ({totalSub}%). Kurangi bobot Sub-CPMK dulu.
-          </p>
-        )}
 
         {error && <p className="text-xs font-medium text-[#DC2626]">{error}</p>}
 

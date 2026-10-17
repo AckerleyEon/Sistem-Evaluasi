@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { CplWorkspace } from "@/components/admin/cpl/CplWorkspace";
 import { CplToast } from "@/components/admin/cpl/CplToast";
+import { TombolImporCPL } from "@/components/admin/cpl/TombolImporCPL";
 
 function kodeBerikutnya(daftarKode: string[]): string {
   let maks = 0;
@@ -31,18 +32,7 @@ export default async function DataMasterCPLPage() {
             Outcome-Based Education (OBE)
           </p>
         </div>
-        <button
-          type="button"
-          disabled
-          title="Segera hadir — ekspor ke Excel/PDF"
-          className="flex h-11 cursor-not-allowed items-center gap-2 rounded-[10px] bg-[#2F6BE8]/40 px-6 text-[15px] font-semibold text-white"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
-            <path d="M5 19h14" />
-          </svg>
-          Ekspor Data
-        </button>
+        <TombolImporCPL />
       </div>
 
       <CplWorkspace daftarCPL={daftarCPL} kodeBerikutnya={kodeBerikutnya(daftarCPL.map((c) => c.kode))} />

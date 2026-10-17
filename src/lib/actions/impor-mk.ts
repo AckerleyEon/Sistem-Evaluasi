@@ -19,6 +19,14 @@ import {
 } from "@/lib/impor-mk";
 
 const MAKS_UKURAN = 2 * 1024 * 1024; // 2 MB
+const punyaDataTerkait = (jumlah: {
+  cpmk: number;
+  subCPMK: number;
+  tugas: number;
+  pendaftaran: number;
+  hasilSubCPMK: number;
+  hasilCPMK: number;
+}) => Object.values(jumlah).some((nilai) => nilai > 0);
 
 async function adalahAdmin() {
   const session = await auth();
@@ -82,8 +90,8 @@ export async function analisisImpor(baris: BarisMentah[], semester: PilihanSemes
   const kosong: RingkasanImpor = {
     total: 0, valid: 0, galat: 0, dilewati: 0, mkBaru: 0, mkDiperbarui: 0, kelasBaru: 0, kelasGantiPengampu: 0, kelasSama: 0,
   };
-  if (!(await adalahAdmin())) return { tahunAjaran: null, baris: [], ringkasan: kosong };
-  if (baris.length > MAKS_BARIS) return { tahunAjaran: null, baris: [], ringkasan: kosong };
+  if (!(await adalahAdmin())) return { tahunAjaran: null, baris: [], ringkasan: kosong, mkTidakAda: [] };
+  if (baris.length > MAKS_BARIS) return { tahunAjaran: null, baris: [], ringkasan: kosong, mkTidakAda: [] };
 
   const ta = await prisma.tahunAjaran.findFirst({ where: { status: "AKTIF" }, select: { id: true, label: true } });
   const dosen = await prisma.dosen.findMany({ select: { id: true, nama: true, gelar: true } });
@@ -207,23 +215,63 @@ export async function analisisImpor(baris: BarisMentah[], semester: PilihanSemes
     hasil.push({ ...dasar, dosenId: d!.id, dosenNama: d!.nama, status, pesan });
   }
 
-  return { tahunAjaran: ta, baris: hasil, ringkasan };
+  const kodeDiFile = new Set(baris.map((b) => rapikanKode(b.kode)).filter(Boolean));
+  const mkTidakAda =
+    semester === "semua"
+      ? await prisma.mataKuliah.findMany({
+          select: {
+            id: true,
+            kode: true,
+            nama: true,
+            _count: {
+              select: {
+                cpmk: true,
+                subCPMK: true,
+                tugas: true,
+                pendaftaran: true,
+                hasilSubCPMK: true,
+                hasilCPMK: true,
+              },
+            },
+          },
+          orderBy: { kode: "asc" },
+        }).then((daftar) =>
+          daftar
+            .filter((mk) => !kodeDiFile.has(rapikanKode(mk.kode)))
+            .map((mk) => ({
+              id: mk.id,
+              kode: mk.kode,
+              nama: mk.nama,
+              bisaDihapus: !punyaDataTerkait(mk._count),
+            })),
+        )
+      : [];
+
+  return { tahunAjaran: ta, baris: hasil, ringkasan, mkTidakAda };
 }
 
 export async function terapkanImpor(
   baris: BarisMentah[],
   semester: PilihanSemester,
+  hapusMKTidakAda = false,
 ): Promise<{ ok: boolean; pesan: string; ringkasan?: RingkasanImpor }> {
   if (!(await adalahAdmin())) return { ok: false, pesan: "Hanya admin yang boleh mengimpor data." };
 
   // Analisis diulang di server; data dari client tidak dipercaya.
   const analisis = await analisisImpor(baris, semester);
   if (!analisis.tahunAjaran) return { ok: false, pesan: "Belum ada tahun ajaran aktif." };
+  if (hapusMKTidakAda && semester !== "semua") {
+    return { ok: false, pesan: "Pilih impor semua semester sebelum menghapus MK yang tidak ada di file." };
+  }
+  if (hapusMKTidakAda && analisis.ringkasan.galat > 0) {
+    return { ok: false, pesan: "Perbaiki semua baris yang galat sebelum menghapus MK yang tidak ada di file." };
+  }
   const tahunAjaranId = analisis.tahunAjaran.id;
   const valid = analisis.baris.filter((b) => b.dosenId && b.status !== "galat" && b.status !== "dilewati");
   if (valid.length === 0) return { ok: false, pesan: "Tidak ada baris valid untuk diimpor." };
 
-  await prisma.$transaction(
+  const kodeDiFile = new Set(baris.map((b) => rapikanKode(b.kode)).filter(Boolean));
+  const hasilHapus = await prisma.$transaction(
     async (tx) => {
       const mkId = new Map<string, string>();
       const pengampuAwal = new Map<string, string>(); // dosen baris pertama tiap MK
@@ -265,6 +313,31 @@ export async function terapkanImpor(
           });
         }
       }
+
+      if (!hapusMKTidakAda) return { dihapus: 0, dipertahankan: 0 };
+
+      const semuaMK = await tx.mataKuliah.findMany({
+        select: {
+          id: true,
+          kode: true,
+          _count: {
+            select: {
+              cpmk: true,
+              subCPMK: true,
+              tugas: true,
+              pendaftaran: true,
+              hasilSubCPMK: true,
+              hasilCPMK: true,
+            },
+          },
+        },
+      });
+      const hilang = semuaMK.filter((mk) => !kodeDiFile.has(rapikanKode(mk.kode)));
+      const amanDihapus = hilang.filter((mk) => !punyaDataTerkait(mk._count));
+      if (amanDihapus.length > 0) {
+        await tx.mataKuliah.deleteMany({ where: { id: { in: amanDihapus.map((mk) => mk.id) } } });
+      }
+      return { dihapus: amanDihapus.length, dipertahankan: hilang.length - amanDihapus.length };
     },
     { timeout: 60_000 },
   );
@@ -272,7 +345,11 @@ export async function terapkanImpor(
   revalidatePath("/admin/data-master/mata-kuliah");
   return {
     ok: true,
-    pesan: `${valid.length} baris diimpor (${analisis.ringkasan.mkBaru} MK baru, ${analisis.ringkasan.kelasBaru} kelas baru).`,
+    pesan: `${valid.length} baris diimpor (${analisis.ringkasan.mkBaru} MK baru, ${analisis.ringkasan.kelasBaru} kelas baru).${
+      hapusMKTidakAda
+        ? ` ${hasilHapus.dihapus} MK tanpa data terkait dihapus, ${hasilHapus.dipertahankan} MK yang masih memiliki data dipertahankan.`
+        : ""
+    }`,
     ringkasan: analisis.ringkasan,
   };
 }

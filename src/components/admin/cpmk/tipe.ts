@@ -1,5 +1,5 @@
 import type { cekDampakCPMK } from "@/lib/actions/cpmk";
-import type { cekDampakSub } from "@/lib/actions/sub-cpmk";
+import type { DampakLepasSub } from "@/lib/actions/sub-cpmk";
 
 export type MkRingkas = { id: string; kode: string; nama: string; sks: number };
 export type CplOpsi = { id: string; kode: string };
@@ -21,7 +21,8 @@ export type KonteksSub = {
 };
 
 export type DampakCpmk = Awaited<ReturnType<typeof cekDampakCPMK>>;
-export type DampakSub = Awaited<ReturnType<typeof cekDampakSub>>;
+export type DampakSub = DampakLepasSub;
+export type DampakLepas = DampakLepasSub;
 
 export function jumlahBobot(daftar: { bobot: number }[]) {
   return daftar.reduce((jumlah, d) => jumlah + d.bobot, 0);

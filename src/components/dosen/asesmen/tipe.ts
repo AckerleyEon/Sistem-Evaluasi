@@ -18,6 +18,7 @@ export interface CpmkOpsi {
 
 export interface TugasRow {
   id: string;
+  kelasId: string | null;
   kode: string; // "T1", "T2", ... (urutan pembuatan)
   nama: string;
   pertemuanKe: number;
@@ -34,6 +35,9 @@ export interface DataAsesmen {
   mataKuliah: { id: string; kode: string; nama: string; sks: number };
   tahunAjaran: { id: string; label: string };
   daftarMK: { id: string; nama: string }[];
+  daftarKelas: { id: string; nama: string }[];
+  kelas: { id: string; nama: string } | null;
+  koordinator: boolean;
   mahasiswa: number;
   tugas: TugasRow[]; // urut pembuatan (kode T1 -> Tn)
   cpmk: CpmkOpsi[];

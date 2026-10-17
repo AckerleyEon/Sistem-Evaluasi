@@ -6,7 +6,7 @@ import type { HasilHitung } from "./rumus";
 
 export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId: string) {
   const [pendaftaran, daftarCpmk] = await Promise.all([
-    prisma.pendaftaranMK.findMany({ where: { mataKuliahId, tahunAjaranId }, select: { mahasiswaId: true } }),
+    prisma.pendaftaranMK.findMany({ where: { mataKuliahId, tahunAjaranId }, select: { mahasiswaId: true, kelasId: true } }),
     prisma.cPMK.findMany({
       where: { mataKuliahId, tahunAjaranId },
       include: {
@@ -15,9 +15,10 @@ export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId:
     }),
   ]);
   const mahasiswaIds = pendaftaran.map((p) => p.mahasiswaId);
+  const kelasPerMhs = new Map(pendaftaran.map((p) => [p.mahasiswaId, p.kelasId]));
 
   // Tugas per Sub-CPMK (satu Sub-CPMK bisa dipakai beberapa CPMK, jadi dihitung sekali).
-  const tugasPerSub = new Map<string, { id: string; bobot: number }[]>();
+  const tugasPerSub = new Map<string, { id: string; bobot: number; kelasId: string | null }[]>();
   for (const c of daftarCpmk) {
     for (const k of c.sub) {
       if (tugasPerSub.has(k.subCpmkId)) continue;
@@ -25,7 +26,7 @@ export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId:
         k.subCpmkId,
         k.subCpmk.distribusi
           .filter((d) => d.tugas.mataKuliahId === mataKuliahId)
-          .map((d) => ({ id: d.tugasId, bobot: d.tugas.bobot }))
+          .map((d) => ({ id: d.tugasId, bobot: d.tugas.bobot, kelasId: d.tugas.kelasId }))
       );
     }
   }
@@ -68,8 +69,10 @@ export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId:
     const skor = skorPerMhs.get(mahasiswaId) ?? new Map<string, number>();
 
     const hasilSub = new Map<string, HasilHitung>();
+    const kelasId = kelasPerMhs.get(mahasiswaId) ?? null;
     for (const [subId, tugas] of tugasPerSub) {
-      const hasil = hitungSubCPMK(tugas, skor);
+      const tugasKelas = tugas.filter((t) => t.kelasId === null || t.kelasId === kelasId);
+      const hasil = hitungSubCPMK(tugasKelas, skor);
       if (!hasil) continue;
       hasilSub.set(subId, hasil);
       barisSub.push({ mahasiswaId, subCpmkId: subId, mataKuliahId, tahunAjaranId, ...hasil });

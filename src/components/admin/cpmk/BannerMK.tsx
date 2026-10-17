@@ -1,20 +1,25 @@
 "use client";
 
 import type { MkRingkas } from "./tipe";
+import { PemilihMK } from "./PemilihMK";
 
 export function BannerMK({
   mk,
+  daftarMK,
   totalBobot,
   jumlahCpmk,
   jumlahSub,
   semuaTerbuka,
+  onTambahCPMK,
   onToggleSemua,
 }: {
   mk: MkRingkas;
+  daftarMK: MkRingkas[];
   totalBobot: number;
   jumlahCpmk: number;
   jumlahSub: number;
   semuaTerbuka: boolean;
+  onTambahCPMK: () => void;
   onToggleSemua: () => void;
 }) {
   const selisih = 100 - totalBobot;
@@ -27,8 +32,8 @@ export function BannerMK({
 
   return (
     <div className="rounded-2xl bg-[#2F6BE8] p-5 text-white shadow-[0_4px_12px_rgba(47,107,232,.25)]">
-      <div className="flex items-center justify-between gap-4">
-        <div className="min-w-0">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1 basis-60">
           <h2 className="text-lg font-bold leading-6" style={{ overflowWrap: "anywhere" }}>
             • {mk.kode} – {mk.nama} ({mk.sks} SKS)
           </h2>
@@ -41,16 +46,25 @@ export function BannerMK({
           </span>
         </div>
 
-        <button
-          onClick={onToggleSemua}
-          aria-label={semuaTerbuka ? "Tutup seluruh hierarki" : "Buka seluruh hierarki"}
-          title={semuaTerbuka ? "Tutup semua" : "Buka semua"}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#2F6BE8]"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${semuaTerbuka ? "rotate-180" : ""}`} aria-hidden="true">
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <PemilihMK mk={mk} daftarMK={daftarMK} />
+          <button
+            onClick={onTambahCPMK}
+            className="flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-[#2F6BE8] [@media(hover:hover)]:hover:bg-[#EFF6FF]"
+          >
+            <span aria-hidden="true">+</span> Tambah CPMK
+          </button>
+          <button
+            onClick={onToggleSemua}
+            aria-label={semuaTerbuka ? "Tutup seluruh hierarki" : "Buka seluruh hierarki"}
+            title={semuaTerbuka ? "Tutup semua" : "Buka semua"}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#2F6BE8]"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${semuaTerbuka ? "rotate-180" : ""}`} aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

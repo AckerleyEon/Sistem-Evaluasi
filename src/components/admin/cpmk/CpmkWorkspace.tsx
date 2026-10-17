@@ -5,7 +5,6 @@ import Link from "next/link";
 import { cekDampakCPMK, hapusCPMK } from "@/lib/actions/cpmk";
 import { cekDampakSub, hapusSubCPMK, kaitkanSubCPMK, lepasSubCPMK } from "@/lib/actions/sub-cpmk";
 import { BannerMK } from "./BannerMK";
-import { PemilihMK } from "./PemilihMK";
 import { BlokHierarki } from "./BlokHierarki";
 import { BlokSubBebas } from "./BlokSubBebas";
 import { ModalCPMK } from "./ModalCPMK";
@@ -17,6 +16,7 @@ import {
   type CpmkTerkait,
   type CplOpsi,
   type DampakCpmk,
+  type DampakLepas,
   type DampakSub,
   type KomponenCpmk,
   type KomponenSub,
@@ -37,7 +37,7 @@ type ModalState =
 type AksiState =
   | { tipe: "hapus-cpmk"; item: KomponenCpmk; dampak: DampakCpmk | null }
   | { tipe: "hapus-sub"; item: KomponenSub; dampak: DampakSub | null }
-  | { tipe: "lepas-sub"; item: KomponenSub; cpmkId: string; cpmkKode: string; dampak: DampakSub | null }
+  | { tipe: "lepas-sub"; item: KomponenSub; cpmkId: string; cpmkKode: string; dampak: DampakLepas | null }
   | null;
 
 export function CpmkWorkspace({
@@ -81,19 +81,18 @@ export function CpmkWorkspace({
 
   const blokKaitkan = modal?.jenis === "kaitkanSub" ? hierarki.find((c) => c.id === modal.cpmkId) ?? null : null;
   const cpmkEdit = modal?.jenis === "cpmk" ? modal.cpmk : null;
-  const totalSubEdit = cpmkEdit ? jumlahBobot(tautanSub.filter((t) => t.cpmkId === cpmkEdit.id)) : 0;
-
   function bangunKonteksSub(cpmkId: string | null, subId: string | undefined): KonteksSub | null {
-    if (!cpmkId || !subId) return null;
+    if (!cpmkId) return null;
     const blok = hierarki.find((c) => c.id === cpmkId);
-    const entri = blok?.sub.find((s) => s.id === subId);
-    if (!blok || !entri) return null;
+    const entri = subId ? blok?.sub.find((s) => s.id === subId) : undefined;
+    if (!blok || (subId && !entri)) return null;
+    const terisiLain = jumlahBobot(blok.sub.filter((s) => s.id !== subId));
     return {
       cpmkId,
       cpmkKode: blok.kode,
-      bobotAwal: entri.bobot,
-      terisiLain: jumlahBobot(blok.sub.filter((s) => s.id !== subId)),
-      batas: blok.bobot,
+      bobotAwal: entri?.bobot ?? Math.max(0, 100 - terisiLain),
+      terisiLain,
+      batas: 100,
     };
   }
   const konteksSub = modal?.jenis === "sub" ? bangunKonteksSub(modal.cpmkId, modal.sub?.id) : null;
@@ -156,33 +155,18 @@ export function CpmkWorkspace({
           <h1 className="text-2xl font-bold text-[#111827]">Konfigurasi CPMK &amp; Sub-CPMK</h1>
           <p className="text-[13px] text-[#6B7280]">Pilih mata kuliah dulu, lalu atur CPMK dan Sub-CPMK miliknya</p>
         </div>
-        {mk && (
-          <div className="flex flex-wrap items-center gap-2">
-            <PemilihMK mk={mk} daftarMK={daftarMK} />
-            <button
-              onClick={() => setModal({ jenis: "cpmk", cpmk: null })}
-              className="flex h-10 items-center gap-1.5 rounded-full bg-[#2F6BE8] px-4 text-sm font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
-            >
-              <span aria-hidden="true">+</span> Tambah CPMK
-            </button>
-            <button
-              onClick={() => setModal({ jenis: "sub", sub: null, cpmkId: null })}
-              className="flex h-10 items-center gap-1.5 rounded-full bg-[#2F6BE8] px-4 text-sm font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
-            >
-              <span aria-hidden="true">+</span> Tambah Sub-CPMK
-            </button>
-          </div>
-        )}
       </div>
 
       {mk ? (
         <>
           <BannerMK
             mk={mk}
+            daftarMK={daftarMK}
             totalBobot={jumlahBobot(cpmkMk)}
             jumlahCpmk={cpmkMk.length}
             jumlahSub={subMk.length}
             semuaTerbuka={semuaTerbuka}
+            onTambahCPMK={() => setModal({ jenis: "cpmk", cpmk: null })}
             onToggleSemua={() => setTertutup(semuaTerbuka ? new Set(hierarki.map((c) => c.id)) : new Set())}
           />
 
@@ -203,9 +187,6 @@ export function CpmkWorkspace({
               <div className="rounded-2xl bg-white px-6 py-14 text-center shadow-[0_1px_2px_rgba(16,24,40,.04)]">
                 <p className="mb-1 text-base font-bold text-[#111827]">Belum ada CPMK di mata kuliah ini</p>
                 <p className="mb-4 text-sm text-[#6B7280]">Tambahkan CPMK pertama, petakan ke CPL, dan tentukan bobotnya.</p>
-                <button onClick={() => setModal({ jenis: "cpmk", cpmk: null })} className="h-10 rounded-full bg-[#2F6BE8] px-5 text-sm font-semibold text-white">
-                  Tambah CPMK
-                </button>
               </div>
             ) : (
               hierarki.map((c) => (
@@ -214,6 +195,14 @@ export function CpmkWorkspace({
                   cpmk={c}
                   terbuka={!tertutup.has(c.id)}
                   onToggle={() => toggleBlok(c.id)}
+                  onTambahSub={() => {
+                    setTertutup((prev) => {
+                      const baru = new Set(prev);
+                      baru.delete(c.id);
+                      return baru;
+                    });
+                    setModal({ jenis: "sub", sub: null, cpmkId: c.id });
+                  }}
                   onKaitkanSub={() => setModal({ jenis: "kaitkanSub", cpmkId: c.id })}
                   onEditCpmk={() => setModal({ jenis: "cpmk", cpmk: cpmkById.get(c.id) ?? null })}
                   onHapusCpmk={() => {
@@ -224,6 +213,10 @@ export function CpmkWorkspace({
                   onLepasSub={(s) => {
                     const asli = subById.get(s.id);
                     if (asli) bukaLepasSub(asli, c.id, c.kode);
+                  }}
+                  onHapusSub={(s) => {
+                    const asli = subById.get(s.id);
+                    if (asli) bukaHapusSub(asli);
                   }}
                 />
               ))
@@ -252,7 +245,6 @@ export function CpmkWorkspace({
           mkId={mk.id}
           mkKode={mk.kode}
           cpmkMk={cpmkMk}
-          totalSub={totalSubEdit}
           daftarCpl={daftarCpl}
           cpmk={cpmkEdit}
           onTutup={() => setModal(null)}
@@ -283,7 +275,7 @@ export function CpmkWorkspace({
         <ModalKaitkan
           key={blokKaitkan.id}
           judul={`Kaitkan Sub-CPMK ke ${blokKaitkan.kode}`}
-          subjudul={`Pilih Sub-CPMK milik ${mk.kode}, termasuk yang sudah dipakai CPMK lain. Bobot total maksimal ${blokKaitkan.bobot}% (bobot ${blokKaitkan.kode}).`}
+          subjudul={`Pilih Sub-CPMK milik ${mk.kode}, termasuk yang sudah dipakai CPMK lain. Total alokasi bobot Sub-CPMK maksimal 100% untuk ${blokKaitkan.kode}.`}
           kosong={`Belum ada Sub-CPMK yang tersedia di ${mk.kode}. Semua sudah dikaitkan ke CPMK ini, atau belum ada yang dibuat.`}
           labelBuatBaru="Tambah Sub-CPMK baru"
           kandidat={subMk
@@ -297,10 +289,10 @@ export function CpmkWorkspace({
                 .map((t) => `Di ${cpmkById.get(t.cpmkId)?.kode ?? "CPMK lain"}`),
             }))}
           terisiLain={jumlahBobot(blokKaitkan.sub)}
-          batas={blokKaitkan.bobot}
+          batas={100}
           labelSimpan="Kaitkan"
           onSimpan={(items) => kaitkanSubCPMK(blokKaitkan.id, JSON.stringify(items))}
-          onBuatBaru={() => setModal({ jenis: "sub", sub: null, cpmkId: null })}
+          onBuatBaru={() => setModal({ jenis: "sub", sub: null, cpmkId: blokKaitkan.id })}
           onTutup={() => setModal(null)}
           onBerhasil={(jumlah) => {
             setModal(null);

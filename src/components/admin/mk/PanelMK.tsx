@@ -4,10 +4,13 @@ import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MkItem, MhsItem } from "./tipe";
+import { ManajemenKelas } from "./ManajemenKelas";
+import type { DosenOpsi } from "./tipe";
 
-function buatHref(mk: string, q: string, page: number) {
+function buatHref(mk: string, q: string, page: number, kelasId: string | null) {
   const params = new URLSearchParams();
   params.set("mk", mk);
+  if (kelasId) params.set("kelas", kelasId);
   if (q) params.set("q", q);
   if (page > 1) params.set("page", String(page));
   return `/admin/data-master/mata-kuliah?${params.toString()}`;
@@ -33,32 +36,36 @@ export function PanelMK({
   mk,
   taLabel,
   mahasiswa,
+  dosen,
+  kelasId,
   q,
   page,
   totalHalaman,
   totalHasil,
   pageSize,
   onTambahMhs,
-  onEditMk,
-  onHapusMk,
+  onImporMhs,
   onEditMhs,
   onHapusKelas,
   onPindah,
+  onUbahKelas,
 }: {
   mk: MkItem;
   taLabel: string;
   mahasiswa: MhsItem[];
+  dosen: DosenOpsi[];
+  kelasId: string | null;
   q: string;
   page: number;
   totalHalaman: number;
   totalHasil: number;
   pageSize: number;
   onTambahMhs: () => void;
-  onEditMk: () => void;
-  onHapusMk: () => void;
+  onImporMhs: () => void;
   onEditMhs: (m: MhsItem) => void;
   onHapusKelas: (m: MhsItem) => void;
   onPindah: (m: MhsItem) => void;
+  onUbahKelas: (m: MhsItem, kelasId: string) => void;
 }) {
   const router = useRouter();
   const [cari, setCari] = useState(q);
@@ -69,7 +76,7 @@ export function PanelMK({
     setCari(nilai);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      startTransition(() => router.replace(buatHref(mk.id, nilai.trim(), 1), { scroll: false }));
+      startTransition(() => router.replace(buatHref(mk.id, nilai.trim(), 1, kelasId), { scroll: false }));
     }, 300);
   }
 
@@ -85,28 +92,39 @@ export function PanelMK({
             <span className="text-[#6B7280]">{mk.sks} SKS</span>
           </div>
           <h2 className="text-xl font-bold text-[#111827]" style={{ overflowWrap: "anywhere" }}>{mk.nama}</h2>
-          <p className="mt-1 text-xs text-[#6B7280]">PJMK: {mk.pjmkNama ?? "belum ditetapkan"}</p>
+          <p className="mt-1 text-xs text-[#6B7280]">Koordinator MK (PJMK): {mk.pjmkNama ?? "tanpa pengampu"}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={onTambahMhs} className="h-9 rounded-lg border border-[#2F6BE8] bg-white px-3 text-xs font-semibold text-[#2F6BE8] [@media(hover:hover)]:hover:bg-[#EEF3FD]">
             Tambah Mahasiswa
           </button>
-          <button onClick={onEditMk} className="h-9 rounded-lg bg-[#2F6BE8] px-3 text-xs font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]">
-            Edit Mata Kuliah
-          </button>
-          <button onClick={onHapusMk} className="h-9 rounded-lg border border-[#DC2626] bg-white px-3 text-xs font-semibold text-[#DC2626] [@media(hover:hover)]:hover:bg-[#FEF2F2]">
-            Hapus MK
+          <button onClick={onImporMhs} className="h-9 rounded-lg bg-[#2F6BE8] px-3 text-xs font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]">
+            Isi Mahasiswa via Excel
           </button>
         </div>
       </div>
 
       <div className="my-5 border-t border-[#E8EAEE]" />
 
+      <ManajemenKelas mk={mk} kelas={mk.kelas} dosen={dosen} />
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-base font-bold text-[#111827]">Daftar Mahasiswa Terdaftar</h3>
-          <p className="text-xs text-[#6B7280]">{totalHasil} mahasiswa terdaftar aktif pada Tahun Ajaran {taLabel}</p>
+          <h3 className="text-base font-bold text-[#111827]">Mahasiswa per Kelas</h3>
+          <p className="text-xs text-[#6B7280]">{totalHasil} mahasiswa pada pilihan kelas · T.A. {taLabel}</p>
         </div>
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+        <select
+          value={kelasId ?? ""}
+          onChange={(e) => router.replace(buatHref(mk.id, q, 1, e.target.value || null), { scroll: false })}
+          aria-label="Pilih kelas mahasiswa"
+          className="h-10 rounded-[10px] bg-[#EEF3FD] px-3 text-sm text-[#111827] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
+        >
+          <option value="">Belum ditentukan ({mk.jumlahMhs - mk.kelas.reduce((total, k) => total + k.jumlahMhs, 0)})</option>
+          {mk.kelas.map((kelas) => (
+            <option key={kelas.id} value={kelas.id}>{kelas.nama} · {kelas.jumlahMhs} mhs · {kelas.dosenNama ?? "tanpa pengampu"}</option>
+          ))}
+        </select>
         <div className="relative w-full sm:max-w-65">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2">
             <circle cx="11" cy="11" r="7" />
@@ -118,6 +136,7 @@ export function PanelMK({
             placeholder="Cari NIM atau nama mahasiswa..."
             className="h-10 w-full rounded-[10px] bg-[#EEF3FD] pl-10 pr-3 text-sm text-[#111827] placeholder:text-[#6B7280] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
           />
+        </div>
         </div>
       </div>
 
@@ -143,6 +162,7 @@ export function PanelMK({
                 <th scope="col" className="w-14 px-4 py-3">No</th>
                 <th scope="col" className="px-2 py-3">Nama Mahasiswa</th>
                 <th scope="col" className="w-36 px-2 py-3">NIM</th>
+                <th scope="col" className="w-36 px-2 py-3">Kelas</th>
                 <th scope="col" className="w-36 px-4 py-3 text-right">Aksi</th>
               </tr>
             </thead>
@@ -152,6 +172,19 @@ export function PanelMK({
                   <td className="px-4 py-3 text-sm text-[#111827]">{(page - 1) * pageSize + i + 1}</td>
                   <td className="px-2 py-3 text-sm font-semibold text-[#111827]" style={{ overflowWrap: "anywhere" }}>{m.nama}</td>
                   <td className="px-2 py-3 text-sm tabular-nums text-[#4B5563]">{m.nim}</td>
+                  <td className="px-2 py-2">
+                    <select
+                      value={m.kelasId ?? ""}
+                      onChange={(e) => onUbahKelas(m, e.target.value)}
+                      aria-label={`Kelas ${m.nama}`}
+                      className="h-9 max-w-36 rounded-lg bg-[#EEF3FD] px-2 text-xs text-[#111827] outline-none"
+                    >
+                      <option value="">Belum ditentukan</option>
+                      {mk.kelas.map((kelas) => (
+                        <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="px-4 py-2">
                     <div className="flex items-center justify-end gap-1">
                       <button onClick={() => onPindah(m)} aria-label={`Pindah kelas ${m.nama}`} title="Pindah kelas" className={`${kelasIkon} [@media(hover:hover)]:hover:bg-[#EFF6FF] [@media(hover:hover)]:hover:text-[#2563EB]`}>
@@ -191,7 +224,7 @@ export function PanelMK({
         {totalHalaman > 1 && (
           <nav aria-label="Halaman" className="flex items-center gap-1.5">
             {page > 1 ? (
-              <Link href={buatHref(mk.id, q, page - 1)} scroll={false} aria-label="Halaman sebelumnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">‹</Link>
+              <Link href={buatHref(mk.id, q, page - 1, kelasId)} scroll={false} aria-label="Halaman sebelumnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">‹</Link>
             ) : (
               <span className="flex h-8 w-8 items-center justify-center text-[#C4C9D2]">‹</span>
             )}
@@ -201,7 +234,7 @@ export function PanelMK({
               ) : (
                 <Link
                   key={n}
-                  href={buatHref(mk.id, q, n)}
+                  href={buatHref(mk.id, q, n, kelasId)}
                   scroll={false}
                   aria-current={n === page ? "page" : undefined}
                   className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold ${
@@ -213,7 +246,7 @@ export function PanelMK({
               )
             )}
             {page < totalHalaman ? (
-              <Link href={buatHref(mk.id, q, page + 1)} scroll={false} aria-label="Halaman berikutnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">›</Link>
+              <Link href={buatHref(mk.id, q, page + 1, kelasId)} scroll={false} aria-label="Halaman berikutnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">›</Link>
             ) : (
               <span className="flex h-8 w-8 items-center justify-center text-[#C4C9D2]">›</span>
             )}

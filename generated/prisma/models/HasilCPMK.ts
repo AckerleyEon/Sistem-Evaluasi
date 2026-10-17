@@ -38,6 +38,7 @@ export type HasilCPMKMinAggregateOutputType = {
   id: string | null
   mahasiswaId: string | null
   cpmkId: string | null
+  mataKuliahId: string | null
   tahunAjaranId: string | null
   nilai: number | null
   statusLengkap: boolean | null
@@ -48,6 +49,7 @@ export type HasilCPMKMaxAggregateOutputType = {
   id: string | null
   mahasiswaId: string | null
   cpmkId: string | null
+  mataKuliahId: string | null
   tahunAjaranId: string | null
   nilai: number | null
   statusLengkap: boolean | null
@@ -58,6 +60,7 @@ export type HasilCPMKCountAggregateOutputType = {
   id: number
   mahasiswaId: number
   cpmkId: number
+  mataKuliahId: number
   tahunAjaranId: number
   nilai: number
   statusLengkap: number
@@ -78,6 +81,7 @@ export type HasilCPMKMinAggregateInputType = {
   id?: true
   mahasiswaId?: true
   cpmkId?: true
+  mataKuliahId?: true
   tahunAjaranId?: true
   nilai?: true
   statusLengkap?: true
@@ -88,6 +92,7 @@ export type HasilCPMKMaxAggregateInputType = {
   id?: true
   mahasiswaId?: true
   cpmkId?: true
+  mataKuliahId?: true
   tahunAjaranId?: true
   nilai?: true
   statusLengkap?: true
@@ -98,6 +103,7 @@ export type HasilCPMKCountAggregateInputType = {
   id?: true
   mahasiswaId?: true
   cpmkId?: true
+  mataKuliahId?: true
   tahunAjaranId?: true
   nilai?: true
   statusLengkap?: true
@@ -195,6 +201,7 @@ export type HasilCPMKGroupByOutputType = {
   id: string
   mahasiswaId: string
   cpmkId: string
+  mataKuliahId: string
   tahunAjaranId: string
   nilai: number
   statusLengkap: boolean
@@ -228,12 +235,14 @@ export type HasilCPMKWhereInput = {
   id?: Prisma.StringFilter<"HasilCPMK"> | string
   mahasiswaId?: Prisma.StringFilter<"HasilCPMK"> | string
   cpmkId?: Prisma.StringFilter<"HasilCPMK"> | string
+  mataKuliahId?: Prisma.StringFilter<"HasilCPMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"HasilCPMK"> | string
   nilai?: Prisma.FloatFilter<"HasilCPMK"> | number
   statusLengkap?: Prisma.BoolFilter<"HasilCPMK"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"HasilCPMK"> | Date | string
   mahasiswa?: Prisma.XOR<Prisma.MahasiswaScalarRelationFilter, Prisma.MahasiswaWhereInput>
   cpmk?: Prisma.XOR<Prisma.CPMKScalarRelationFilter, Prisma.CPMKWhereInput>
+  mataKuliah?: Prisma.XOR<Prisma.MataKuliahScalarRelationFilter, Prisma.MataKuliahWhereInput>
   tahunAjaran?: Prisma.XOR<Prisma.TahunAjaranScalarRelationFilter, Prisma.TahunAjaranWhereInput>
 }
 
@@ -241,36 +250,41 @@ export type HasilCPMKOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   mahasiswaId?: Prisma.SortOrder
   cpmkId?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
   nilai?: Prisma.SortOrder
   statusLengkap?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   mahasiswa?: Prisma.MahasiswaOrderByWithRelationInput
   cpmk?: Prisma.CPMKOrderByWithRelationInput
+  mataKuliah?: Prisma.MataKuliahOrderByWithRelationInput
   tahunAjaran?: Prisma.TahunAjaranOrderByWithRelationInput
 }
 
 export type HasilCPMKWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  mahasiswaId_cpmkId_tahunAjaranId?: Prisma.HasilCPMKMahasiswaIdCpmkIdTahunAjaranIdCompoundUniqueInput
+  mahasiswaId_cpmkId_mataKuliahId_tahunAjaranId?: Prisma.HasilCPMKMahasiswaIdCpmkIdMataKuliahIdTahunAjaranIdCompoundUniqueInput
   AND?: Prisma.HasilCPMKWhereInput | Prisma.HasilCPMKWhereInput[]
   OR?: Prisma.HasilCPMKWhereInput[]
   NOT?: Prisma.HasilCPMKWhereInput | Prisma.HasilCPMKWhereInput[]
   mahasiswaId?: Prisma.StringFilter<"HasilCPMK"> | string
   cpmkId?: Prisma.StringFilter<"HasilCPMK"> | string
+  mataKuliahId?: Prisma.StringFilter<"HasilCPMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"HasilCPMK"> | string
   nilai?: Prisma.FloatFilter<"HasilCPMK"> | number
   statusLengkap?: Prisma.BoolFilter<"HasilCPMK"> | boolean
   updatedAt?: Prisma.DateTimeFilter<"HasilCPMK"> | Date | string
   mahasiswa?: Prisma.XOR<Prisma.MahasiswaScalarRelationFilter, Prisma.MahasiswaWhereInput>
   cpmk?: Prisma.XOR<Prisma.CPMKScalarRelationFilter, Prisma.CPMKWhereInput>
+  mataKuliah?: Prisma.XOR<Prisma.MataKuliahScalarRelationFilter, Prisma.MataKuliahWhereInput>
   tahunAjaran?: Prisma.XOR<Prisma.TahunAjaranScalarRelationFilter, Prisma.TahunAjaranWhereInput>
-}, "id" | "mahasiswaId_cpmkId_tahunAjaranId">
+}, "id" | "mahasiswaId_cpmkId_mataKuliahId_tahunAjaranId">
 
 export type HasilCPMKOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   mahasiswaId?: Prisma.SortOrder
   cpmkId?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
   nilai?: Prisma.SortOrder
   statusLengkap?: Prisma.SortOrder
@@ -289,6 +303,7 @@ export type HasilCPMKScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"HasilCPMK"> | string
   mahasiswaId?: Prisma.StringWithAggregatesFilter<"HasilCPMK"> | string
   cpmkId?: Prisma.StringWithAggregatesFilter<"HasilCPMK"> | string
+  mataKuliahId?: Prisma.StringWithAggregatesFilter<"HasilCPMK"> | string
   tahunAjaranId?: Prisma.StringWithAggregatesFilter<"HasilCPMK"> | string
   nilai?: Prisma.FloatWithAggregatesFilter<"HasilCPMK"> | number
   statusLengkap?: Prisma.BoolWithAggregatesFilter<"HasilCPMK"> | boolean
@@ -302,6 +317,7 @@ export type HasilCPMKCreateInput = {
   updatedAt?: Date | string
   mahasiswa: Prisma.MahasiswaCreateNestedOneWithoutHasilCPMKInput
   cpmk: Prisma.CPMKCreateNestedOneWithoutHasilCPMKInput
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutHasilCPMKInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutHasilCPMKInput
 }
 
@@ -309,6 +325,7 @@ export type HasilCPMKUncheckedCreateInput = {
   id?: string
   mahasiswaId: string
   cpmkId: string
+  mataKuliahId: string
   tahunAjaranId: string
   nilai: number
   statusLengkap?: boolean
@@ -322,6 +339,7 @@ export type HasilCPMKUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mahasiswa?: Prisma.MahasiswaUpdateOneRequiredWithoutHasilCPMKNestedInput
   cpmk?: Prisma.CPMKUpdateOneRequiredWithoutHasilCPMKNestedInput
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutHasilCPMKNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutHasilCPMKNestedInput
 }
 
@@ -329,6 +347,7 @@ export type HasilCPMKUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkId?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.FloatFieldUpdateOperationsInput | number
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -339,6 +358,7 @@ export type HasilCPMKCreateManyInput = {
   id?: string
   mahasiswaId: string
   cpmkId: string
+  mataKuliahId: string
   tahunAjaranId: string
   nilai: number
   statusLengkap?: boolean
@@ -356,6 +376,7 @@ export type HasilCPMKUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkId?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.FloatFieldUpdateOperationsInput | number
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -372,9 +393,10 @@ export type HasilCPMKOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type HasilCPMKMahasiswaIdCpmkIdTahunAjaranIdCompoundUniqueInput = {
+export type HasilCPMKMahasiswaIdCpmkIdMataKuliahIdTahunAjaranIdCompoundUniqueInput = {
   mahasiswaId: string
   cpmkId: string
+  mataKuliahId: string
   tahunAjaranId: string
 }
 
@@ -382,6 +404,7 @@ export type HasilCPMKCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mahasiswaId?: Prisma.SortOrder
   cpmkId?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
   nilai?: Prisma.SortOrder
   statusLengkap?: Prisma.SortOrder
@@ -396,6 +419,7 @@ export type HasilCPMKMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mahasiswaId?: Prisma.SortOrder
   cpmkId?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
   nilai?: Prisma.SortOrder
   statusLengkap?: Prisma.SortOrder
@@ -406,6 +430,7 @@ export type HasilCPMKMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mahasiswaId?: Prisma.SortOrder
   cpmkId?: Prisma.SortOrder
+  mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
   nilai?: Prisma.SortOrder
   statusLengkap?: Prisma.SortOrder
@@ -500,6 +525,48 @@ export type HasilCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput = {
   deleteMany?: Prisma.HasilCPMKScalarWhereInput | Prisma.HasilCPMKScalarWhereInput[]
 }
 
+export type HasilCPMKCreateNestedManyWithoutMataKuliahInput = {
+  create?: Prisma.XOR<Prisma.HasilCPMKCreateWithoutMataKuliahInput, Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput> | Prisma.HasilCPMKCreateWithoutMataKuliahInput[] | Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput[]
+  connectOrCreate?: Prisma.HasilCPMKCreateOrConnectWithoutMataKuliahInput | Prisma.HasilCPMKCreateOrConnectWithoutMataKuliahInput[]
+  createMany?: Prisma.HasilCPMKCreateManyMataKuliahInputEnvelope
+  connect?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+}
+
+export type HasilCPMKUncheckedCreateNestedManyWithoutMataKuliahInput = {
+  create?: Prisma.XOR<Prisma.HasilCPMKCreateWithoutMataKuliahInput, Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput> | Prisma.HasilCPMKCreateWithoutMataKuliahInput[] | Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput[]
+  connectOrCreate?: Prisma.HasilCPMKCreateOrConnectWithoutMataKuliahInput | Prisma.HasilCPMKCreateOrConnectWithoutMataKuliahInput[]
+  createMany?: Prisma.HasilCPMKCreateManyMataKuliahInputEnvelope
+  connect?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+}
+
+export type HasilCPMKUpdateManyWithoutMataKuliahNestedInput = {
+  create?: Prisma.XOR<Prisma.HasilCPMKCreateWithoutMataKuliahInput, Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput> | Prisma.HasilCPMKCreateWithoutMataKuliahInput[] | Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput[]
+  connectOrCreate?: Prisma.HasilCPMKCreateOrConnectWithoutMataKuliahInput | Prisma.HasilCPMKCreateOrConnectWithoutMataKuliahInput[]
+  upsert?: Prisma.HasilCPMKUpsertWithWhereUniqueWithoutMataKuliahInput | Prisma.HasilCPMKUpsertWithWhereUniqueWithoutMataKuliahInput[]
+  createMany?: Prisma.HasilCPMKCreateManyMataKuliahInputEnvelope
+  set?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+  disconnect?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+  delete?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+  connect?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+  update?: Prisma.HasilCPMKUpdateWithWhereUniqueWithoutMataKuliahInput | Prisma.HasilCPMKUpdateWithWhereUniqueWithoutMataKuliahInput[]
+  updateMany?: Prisma.HasilCPMKUpdateManyWithWhereWithoutMataKuliahInput | Prisma.HasilCPMKUpdateManyWithWhereWithoutMataKuliahInput[]
+  deleteMany?: Prisma.HasilCPMKScalarWhereInput | Prisma.HasilCPMKScalarWhereInput[]
+}
+
+export type HasilCPMKUncheckedUpdateManyWithoutMataKuliahNestedInput = {
+  create?: Prisma.XOR<Prisma.HasilCPMKCreateWithoutMataKuliahInput, Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput> | Prisma.HasilCPMKCreateWithoutMataKuliahInput[] | Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput[]
+  connectOrCreate?: Prisma.HasilCPMKCreateOrConnectWithoutMataKuliahInput | Prisma.HasilCPMKCreateOrConnectWithoutMataKuliahInput[]
+  upsert?: Prisma.HasilCPMKUpsertWithWhereUniqueWithoutMataKuliahInput | Prisma.HasilCPMKUpsertWithWhereUniqueWithoutMataKuliahInput[]
+  createMany?: Prisma.HasilCPMKCreateManyMataKuliahInputEnvelope
+  set?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+  disconnect?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+  delete?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+  connect?: Prisma.HasilCPMKWhereUniqueInput | Prisma.HasilCPMKWhereUniqueInput[]
+  update?: Prisma.HasilCPMKUpdateWithWhereUniqueWithoutMataKuliahInput | Prisma.HasilCPMKUpdateWithWhereUniqueWithoutMataKuliahInput[]
+  updateMany?: Prisma.HasilCPMKUpdateManyWithWhereWithoutMataKuliahInput | Prisma.HasilCPMKUpdateManyWithWhereWithoutMataKuliahInput[]
+  deleteMany?: Prisma.HasilCPMKScalarWhereInput | Prisma.HasilCPMKScalarWhereInput[]
+}
+
 export type HasilCPMKCreateNestedManyWithoutCpmkInput = {
   create?: Prisma.XOR<Prisma.HasilCPMKCreateWithoutCpmkInput, Prisma.HasilCPMKUncheckedCreateWithoutCpmkInput> | Prisma.HasilCPMKCreateWithoutCpmkInput[] | Prisma.HasilCPMKUncheckedCreateWithoutCpmkInput[]
   connectOrCreate?: Prisma.HasilCPMKCreateOrConnectWithoutCpmkInput | Prisma.HasilCPMKCreateOrConnectWithoutCpmkInput[]
@@ -549,12 +616,14 @@ export type HasilCPMKCreateWithoutTahunAjaranInput = {
   updatedAt?: Date | string
   mahasiswa: Prisma.MahasiswaCreateNestedOneWithoutHasilCPMKInput
   cpmk: Prisma.CPMKCreateNestedOneWithoutHasilCPMKInput
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutHasilCPMKInput
 }
 
 export type HasilCPMKUncheckedCreateWithoutTahunAjaranInput = {
   id?: string
   mahasiswaId: string
   cpmkId: string
+  mataKuliahId: string
   nilai: number
   statusLengkap?: boolean
   updatedAt?: Date | string
@@ -593,6 +662,7 @@ export type HasilCPMKScalarWhereInput = {
   id?: Prisma.StringFilter<"HasilCPMK"> | string
   mahasiswaId?: Prisma.StringFilter<"HasilCPMK"> | string
   cpmkId?: Prisma.StringFilter<"HasilCPMK"> | string
+  mataKuliahId?: Prisma.StringFilter<"HasilCPMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"HasilCPMK"> | string
   nilai?: Prisma.FloatFilter<"HasilCPMK"> | number
   statusLengkap?: Prisma.BoolFilter<"HasilCPMK"> | boolean
@@ -605,12 +675,14 @@ export type HasilCPMKCreateWithoutMahasiswaInput = {
   statusLengkap?: boolean
   updatedAt?: Date | string
   cpmk: Prisma.CPMKCreateNestedOneWithoutHasilCPMKInput
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutHasilCPMKInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutHasilCPMKInput
 }
 
 export type HasilCPMKUncheckedCreateWithoutMahasiswaInput = {
   id?: string
   cpmkId: string
+  mataKuliahId: string
   tahunAjaranId: string
   nilai: number
   statusLengkap?: boolean
@@ -643,18 +715,66 @@ export type HasilCPMKUpdateManyWithWhereWithoutMahasiswaInput = {
   data: Prisma.XOR<Prisma.HasilCPMKUpdateManyMutationInput, Prisma.HasilCPMKUncheckedUpdateManyWithoutMahasiswaInput>
 }
 
+export type HasilCPMKCreateWithoutMataKuliahInput = {
+  id?: string
+  nilai: number
+  statusLengkap?: boolean
+  updatedAt?: Date | string
+  mahasiswa: Prisma.MahasiswaCreateNestedOneWithoutHasilCPMKInput
+  cpmk: Prisma.CPMKCreateNestedOneWithoutHasilCPMKInput
+  tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutHasilCPMKInput
+}
+
+export type HasilCPMKUncheckedCreateWithoutMataKuliahInput = {
+  id?: string
+  mahasiswaId: string
+  cpmkId: string
+  tahunAjaranId: string
+  nilai: number
+  statusLengkap?: boolean
+  updatedAt?: Date | string
+}
+
+export type HasilCPMKCreateOrConnectWithoutMataKuliahInput = {
+  where: Prisma.HasilCPMKWhereUniqueInput
+  create: Prisma.XOR<Prisma.HasilCPMKCreateWithoutMataKuliahInput, Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput>
+}
+
+export type HasilCPMKCreateManyMataKuliahInputEnvelope = {
+  data: Prisma.HasilCPMKCreateManyMataKuliahInput | Prisma.HasilCPMKCreateManyMataKuliahInput[]
+  skipDuplicates?: boolean
+}
+
+export type HasilCPMKUpsertWithWhereUniqueWithoutMataKuliahInput = {
+  where: Prisma.HasilCPMKWhereUniqueInput
+  update: Prisma.XOR<Prisma.HasilCPMKUpdateWithoutMataKuliahInput, Prisma.HasilCPMKUncheckedUpdateWithoutMataKuliahInput>
+  create: Prisma.XOR<Prisma.HasilCPMKCreateWithoutMataKuliahInput, Prisma.HasilCPMKUncheckedCreateWithoutMataKuliahInput>
+}
+
+export type HasilCPMKUpdateWithWhereUniqueWithoutMataKuliahInput = {
+  where: Prisma.HasilCPMKWhereUniqueInput
+  data: Prisma.XOR<Prisma.HasilCPMKUpdateWithoutMataKuliahInput, Prisma.HasilCPMKUncheckedUpdateWithoutMataKuliahInput>
+}
+
+export type HasilCPMKUpdateManyWithWhereWithoutMataKuliahInput = {
+  where: Prisma.HasilCPMKScalarWhereInput
+  data: Prisma.XOR<Prisma.HasilCPMKUpdateManyMutationInput, Prisma.HasilCPMKUncheckedUpdateManyWithoutMataKuliahInput>
+}
+
 export type HasilCPMKCreateWithoutCpmkInput = {
   id?: string
   nilai: number
   statusLengkap?: boolean
   updatedAt?: Date | string
   mahasiswa: Prisma.MahasiswaCreateNestedOneWithoutHasilCPMKInput
+  mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutHasilCPMKInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutHasilCPMKInput
 }
 
 export type HasilCPMKUncheckedCreateWithoutCpmkInput = {
   id?: string
   mahasiswaId: string
+  mataKuliahId: string
   tahunAjaranId: string
   nilai: number
   statusLengkap?: boolean
@@ -691,6 +811,7 @@ export type HasilCPMKCreateManyTahunAjaranInput = {
   id?: string
   mahasiswaId: string
   cpmkId: string
+  mataKuliahId: string
   nilai: number
   statusLengkap?: boolean
   updatedAt?: Date | string
@@ -703,12 +824,14 @@ export type HasilCPMKUpdateWithoutTahunAjaranInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mahasiswa?: Prisma.MahasiswaUpdateOneRequiredWithoutHasilCPMKNestedInput
   cpmk?: Prisma.CPMKUpdateOneRequiredWithoutHasilCPMKNestedInput
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutHasilCPMKNestedInput
 }
 
 export type HasilCPMKUncheckedUpdateWithoutTahunAjaranInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkId?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.FloatFieldUpdateOperationsInput | number
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -718,6 +841,7 @@ export type HasilCPMKUncheckedUpdateManyWithoutTahunAjaranInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkId?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.FloatFieldUpdateOperationsInput | number
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -726,6 +850,7 @@ export type HasilCPMKUncheckedUpdateManyWithoutTahunAjaranInput = {
 export type HasilCPMKCreateManyMahasiswaInput = {
   id?: string
   cpmkId: string
+  mataKuliahId: string
   tahunAjaranId: string
   nilai: number
   statusLengkap?: boolean
@@ -738,12 +863,14 @@ export type HasilCPMKUpdateWithoutMahasiswaInput = {
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cpmk?: Prisma.CPMKUpdateOneRequiredWithoutHasilCPMKNestedInput
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutHasilCPMKNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutHasilCPMKNestedInput
 }
 
 export type HasilCPMKUncheckedUpdateWithoutMahasiswaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkId?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.FloatFieldUpdateOperationsInput | number
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -752,6 +879,47 @@ export type HasilCPMKUncheckedUpdateWithoutMahasiswaInput = {
 
 export type HasilCPMKUncheckedUpdateManyWithoutMahasiswaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  cpmkId?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
+  tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
+  nilai?: Prisma.FloatFieldUpdateOperationsInput | number
+  statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type HasilCPMKCreateManyMataKuliahInput = {
+  id?: string
+  mahasiswaId: string
+  cpmkId: string
+  tahunAjaranId: string
+  nilai: number
+  statusLengkap?: boolean
+  updatedAt?: Date | string
+}
+
+export type HasilCPMKUpdateWithoutMataKuliahInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nilai?: Prisma.FloatFieldUpdateOperationsInput | number
+  statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  mahasiswa?: Prisma.MahasiswaUpdateOneRequiredWithoutHasilCPMKNestedInput
+  cpmk?: Prisma.CPMKUpdateOneRequiredWithoutHasilCPMKNestedInput
+  tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutHasilCPMKNestedInput
+}
+
+export type HasilCPMKUncheckedUpdateWithoutMataKuliahInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
+  cpmkId?: Prisma.StringFieldUpdateOperationsInput | string
+  tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
+  nilai?: Prisma.FloatFieldUpdateOperationsInput | number
+  statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type HasilCPMKUncheckedUpdateManyWithoutMataKuliahInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   cpmkId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -762,6 +930,7 @@ export type HasilCPMKUncheckedUpdateManyWithoutMahasiswaInput = {
 export type HasilCPMKCreateManyCpmkInput = {
   id?: string
   mahasiswaId: string
+  mataKuliahId: string
   tahunAjaranId: string
   nilai: number
   statusLengkap?: boolean
@@ -774,12 +943,14 @@ export type HasilCPMKUpdateWithoutCpmkInput = {
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mahasiswa?: Prisma.MahasiswaUpdateOneRequiredWithoutHasilCPMKNestedInput
+  mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutHasilCPMKNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutHasilCPMKNestedInput
 }
 
 export type HasilCPMKUncheckedUpdateWithoutCpmkInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.FloatFieldUpdateOperationsInput | number
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -789,6 +960,7 @@ export type HasilCPMKUncheckedUpdateWithoutCpmkInput = {
 export type HasilCPMKUncheckedUpdateManyWithoutCpmkInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.FloatFieldUpdateOperationsInput | number
   statusLengkap?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -801,12 +973,14 @@ export type HasilCPMKSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   id?: boolean
   mahasiswaId?: boolean
   cpmkId?: boolean
+  mataKuliahId?: boolean
   tahunAjaranId?: boolean
   nilai?: boolean
   statusLengkap?: boolean
   updatedAt?: boolean
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   cpmk?: boolean | Prisma.CPMKDefaultArgs<ExtArgs>
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hasilCPMK"]>
 
@@ -814,12 +988,14 @@ export type HasilCPMKSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   mahasiswaId?: boolean
   cpmkId?: boolean
+  mataKuliahId?: boolean
   tahunAjaranId?: boolean
   nilai?: boolean
   statusLengkap?: boolean
   updatedAt?: boolean
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   cpmk?: boolean | Prisma.CPMKDefaultArgs<ExtArgs>
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hasilCPMK"]>
 
@@ -827,12 +1003,14 @@ export type HasilCPMKSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   id?: boolean
   mahasiswaId?: boolean
   cpmkId?: boolean
+  mataKuliahId?: boolean
   tahunAjaranId?: boolean
   nilai?: boolean
   statusLengkap?: boolean
   updatedAt?: boolean
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   cpmk?: boolean | Prisma.CPMKDefaultArgs<ExtArgs>
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["hasilCPMK"]>
 
@@ -840,26 +1018,30 @@ export type HasilCPMKSelectScalar = {
   id?: boolean
   mahasiswaId?: boolean
   cpmkId?: boolean
+  mataKuliahId?: boolean
   tahunAjaranId?: boolean
   nilai?: boolean
   statusLengkap?: boolean
   updatedAt?: boolean
 }
 
-export type HasilCPMKOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mahasiswaId" | "cpmkId" | "tahunAjaranId" | "nilai" | "statusLengkap" | "updatedAt", ExtArgs["result"]["hasilCPMK"]>
+export type HasilCPMKOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mahasiswaId" | "cpmkId" | "mataKuliahId" | "tahunAjaranId" | "nilai" | "statusLengkap" | "updatedAt", ExtArgs["result"]["hasilCPMK"]>
 export type HasilCPMKInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   cpmk?: boolean | Prisma.CPMKDefaultArgs<ExtArgs>
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }
 export type HasilCPMKIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   cpmk?: boolean | Prisma.CPMKDefaultArgs<ExtArgs>
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }
 export type HasilCPMKIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   cpmk?: boolean | Prisma.CPMKDefaultArgs<ExtArgs>
+  mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
 }
 
@@ -868,12 +1050,14 @@ export type $HasilCPMKPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   objects: {
     mahasiswa: Prisma.$MahasiswaPayload<ExtArgs>
     cpmk: Prisma.$CPMKPayload<ExtArgs>
+    mataKuliah: Prisma.$MataKuliahPayload<ExtArgs>
     tahunAjaran: Prisma.$TahunAjaranPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     mahasiswaId: string
     cpmkId: string
+    mataKuliahId: string
     tahunAjaranId: string
     nilai: number
     statusLengkap: boolean
@@ -1274,6 +1458,7 @@ export interface Prisma__HasilCPMKClient<T, Null = never, ExtArgs extends runtim
   readonly [Symbol.toStringTag]: "PrismaPromise"
   mahasiswa<T extends Prisma.MahasiswaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MahasiswaDefaultArgs<ExtArgs>>): Prisma.Prisma__MahasiswaClient<runtime.Types.Result.GetResult<Prisma.$MahasiswaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   cpmk<T extends Prisma.CPMKDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CPMKDefaultArgs<ExtArgs>>): Prisma.Prisma__CPMKClient<runtime.Types.Result.GetResult<Prisma.$CPMKPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  mataKuliah<T extends Prisma.MataKuliahDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MataKuliahDefaultArgs<ExtArgs>>): Prisma.Prisma__MataKuliahClient<runtime.Types.Result.GetResult<Prisma.$MataKuliahPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   tahunAjaran<T extends Prisma.TahunAjaranDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaranDefaultArgs<ExtArgs>>): Prisma.Prisma__TahunAjaranClient<runtime.Types.Result.GetResult<Prisma.$TahunAjaranPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1307,6 +1492,7 @@ export interface HasilCPMKFieldRefs {
   readonly id: Prisma.FieldRef<"HasilCPMK", 'String'>
   readonly mahasiswaId: Prisma.FieldRef<"HasilCPMK", 'String'>
   readonly cpmkId: Prisma.FieldRef<"HasilCPMK", 'String'>
+  readonly mataKuliahId: Prisma.FieldRef<"HasilCPMK", 'String'>
   readonly tahunAjaranId: Prisma.FieldRef<"HasilCPMK", 'String'>
   readonly nilai: Prisma.FieldRef<"HasilCPMK", 'Float'>
   readonly statusLengkap: Prisma.FieldRef<"HasilCPMK", 'Boolean'>

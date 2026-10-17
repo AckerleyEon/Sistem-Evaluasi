@@ -24,13 +24,15 @@ export function ModalSub({
   mkKode: string;
   subMk: KomponenSub[]; // Sub-CPMK milik mata kuliah ini
   sub: KomponenSub | null; // null = mode tambah
-  konteks: KonteksSub | null; // diisi kalau dibuka dari hierarki (bobot di CPMK itu ikut diubah)
+  konteks: KonteksSub | null; // diisi jika butir dibuat atau diedit dari dalam CPMK
   onTutup: () => void;
   onBerhasil: (pesan: string) => void;
 }) {
-  const [kode, setKode] = useState(sub?.kode ?? kodeBerikutnya("Sub-CPMK", subMk.map((s) => s.kode)));
+  const kodeAwal = sub?.kode ?? kodeBerikutnya("Sub-CPMK", subMk.map((s) => s.kode));
+  const bobotAwal = konteks ? String(konteks.bobotAwal) : "";
+  const [kode, setKode] = useState(kodeAwal);
   const [deskripsi, setDeskripsi] = useState(sub?.deskripsi ?? "");
-  const [bobot, setBobot] = useState(konteks ? String(konteks.bobotAwal) : "");
+  const [bobot, setBobot] = useState(bobotAwal);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +44,7 @@ export function ModalSub({
     ? kode.trim() !== sub.kode ||
       deskripsi.trim() !== sub.deskripsi ||
       (konteks !== null && bobot !== String(konteks.bobotAwal))
-    : deskripsi.trim() !== "";
+    : deskripsi.trim() !== "" || kode.trim() !== kodeAwal || bobot !== bobotAwal;
 
   function tutup() {
     if (berubah && !window.confirm("Buang perubahan yang belum disimpan?")) return;
@@ -66,7 +68,13 @@ export function ModalSub({
       setError(hasil.error);
       return;
     }
-    onBerhasil(sub ? `${hasil.kode} berhasil diperbarui` : `${hasil.kode} ditambahkan ke ${mkKode}`);
+    onBerhasil(
+      sub
+        ? `${hasil.kode} berhasil diperbarui`
+        : konteks
+          ? `${hasil.kode} ditambahkan ke ${konteks.cpmkKode}`
+          : `${hasil.kode} ditambahkan ke ${mkKode}`
+    );
   }
 
   return (
@@ -83,9 +91,11 @@ export function ModalSub({
           <p className="text-[13px] text-[#6B7280]">
             {sub
               ? konteks
-                ? `Bobot berlaku untuk kaitan ke ${konteks.cpmkKode}. Kode dan deskripsi berlaku di semua CPMK yang memakai Sub-CPMK ini.`
+                ? `Bobot adalah porsi dari ${konteks.cpmkKode} (total maksimal 100%). Kode dan deskripsi berlaku di semua CPMK yang memakai Sub-CPMK ini.`
                 : `Sub-CPMK milik ${mkKode}.`
-              : `Sub-CPMK ini milik ${mkKode} dan berdiri sendiri. Kaitkan ke CPMK lewat tombol Kaitkan Sub-CPMK.`}
+              : konteks
+                ? `Butir baru akan langsung dikaitkan ke ${konteks.cpmkKode} dengan alokasi dari total bobot Sub-CPMK sebesar 100%.`
+                : `Sub-CPMK ini milik ${mkKode} dan berdiri sendiri. Kaitkan ke CPMK lewat tombol Kaitkan Sub-CPMK.`}
           </p>
         </div>
         <button type="button" onClick={tutup} aria-label="Tutup" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F1F3F5] text-[#4B5563]">

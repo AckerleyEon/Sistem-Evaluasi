@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Ikon } from "../Ikon";
 import { hapusTugas } from "@/lib/actions/asesmen";
@@ -114,7 +115,7 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
         : `Hapus "${t.nama}"? Bobot tugas lain akan dihitung ulang proporsional.`;
     if (!window.confirm(peringatan)) return;
     mulaiHapus(async () => {
-      const hasil = await hapusTugas(data.mataKuliah.id, t.id);
+      const hasil = await hapusTugas(data.mataKuliah.id, t.id, data.kelas?.id);
       setBanner({ nada: hasil.ok ? "ok" : "galat", judul: hasil.ok ? "Tugas dihapus" : "Gagal menghapus", deskripsi: hasil.pesan });
       if (hasil.ok) {
         if (baruId === t.id) setBaruId(null);
@@ -182,6 +183,29 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
           </span>
           <Ikon nama="atasBawah" ukuran={14} className="text-[#64748B]" />
         </label>
+
+        {data.daftarKelas.length > 0 && (
+          <label className="flex min-h-[40px] items-center gap-2 rounded-xl bg-[#F3F5F9] px-3 text-[12px] font-semibold">
+            <span>Kelas</span>
+            <select
+              value={data.kelas?.id ?? ""}
+              onChange={(e) => {
+                const suffix = e.target.value ? `?kelas=${encodeURIComponent(e.target.value)}` : "";
+                router.push(`/dosen/komponen-penilaian/${data.mataKuliah.id}${suffix}`);
+              }}
+              className={`max-w-[180px] cursor-pointer bg-transparent ${FOKUS}`}
+            >
+              {data.daftarKelas.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>)}
+            </select>
+          </label>
+        )}
+
+        {data.kelas && (
+          <div className="flex gap-3 text-[12px] font-semibold text-[#2563EB]">
+            <Link href={`/dosen/input-nilai/${data.mataKuliah.id}?kelas=${encodeURIComponent(data.kelas.id)}`} className="self-center hover:underline">Input nilai</Link>
+            <Link href={`/dosen/hasil/${data.mataKuliah.id}?kelas=${encodeURIComponent(data.kelas.id)}`} className="self-center hover:underline">Hasil</Link>
+          </div>
+        )}
 
         <label className="flex min-h-[40px] min-w-[220px] flex-1 items-center gap-2 rounded-xl bg-[#F3F5F9] px-3 focus-within:ring-2 focus-within:ring-[#60A5FA]">
           <Ikon nama="cari" ukuran={15} className="text-[#64748B]" />

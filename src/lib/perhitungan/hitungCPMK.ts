@@ -1,6 +1,6 @@
 import { rataBerbobot, type HasilHitung } from "./rumus";
 
-// Nilai CPMK = rata-rata berbobot hasil Sub-CPMK (bobot dari SubCPMK.bobot).
+// Nilai CPMK = rata-rata berbobot hasil Sub-CPMK (bobot alokasi dari CpmkSub).
 // Sub-CPMK tanpa hasil (belum terhubung ke tugas) diabaikan dan membuat CPMK belum lengkap.
 export function hitungCPMK(
   daftarSub: { id: string; bobot: number }[],

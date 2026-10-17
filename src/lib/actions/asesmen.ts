@@ -4,23 +4,22 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { dosenSaatIni, tahunAjaranAktif } from "@/lib/asesmen";
 import { angkaKode, bagiProporsional, bobotKePersen } from "@/lib/asesmen-util";
+import { cekAksesMK } from "@/lib/otorisasi";
 // Hitung ulang HasilSubCPMK/HasilCPMK/HasilCPL setelah bobot atau pemetaan tugas berubah.
 // ASUMSI signature: (mataKuliahId, tahunAjaranId). Sesuaikan dengan file aslimu.
 import { hitungUlangMataKuliah } from "@/lib/perhitungan/hitungUlangMataKuliah";
 import type { HasilAksi, RingkasanBuat } from "@/components/dosen/asesmen/tipe";
 
-type Konteks = { dosenId: string; tahunAjaranId: string };
+type Konteks = { dosenId: string; tahunAjaranId: string; kelasId: string | null; koordinator: boolean };
 
-async function pastikanPengampu(mataKuliahId: string): Promise<Konteks | { galat: string }> {
+async function pastikanPengampu(mataKuliahId: string, kelasId?: string): Promise<Konteks | { galat: string }> {
   const dosen = await dosenSaatIni();
   if (!dosen) return { galat: "Sesi tidak valid. Silakan login ulang sebagai dosen." };
   const ta = await tahunAjaranAktif();
   if (!ta) return { galat: "Belum ada tahun ajaran aktif." };
-  const penugasan = await prisma.penugasanDosenMK.findUnique({
-    where: { mataKuliahId_tahunAjaranId: { mataKuliahId, tahunAjaranId: ta.id } },
-  });
-  if (!penugasan || penugasan.dosenId !== dosen.id) return { galat: "Kamu bukan pengampu mata kuliah ini." };
-  return { dosenId: dosen.id, tahunAjaranId: ta.id };
+  const akses = await cekAksesMK(mataKuliahId, kelasId);
+  if (!akses || (!akses.koordinator && !akses.kelasId)) return { galat: "Kamu bukan pengampu mata kuliah atau kelas ini." };
+  return { dosenId: dosen.id, tahunAjaranId: ta.id, kelasId: akses.kelasId, koordinator: akses.koordinator };
 }
 
 export interface InputBuatTugas {
@@ -29,10 +28,11 @@ export interface InputBuatTugas {
   pertemuanKe: number;
   bobot: number; // persen bulat
   subCpmkIds: string[];
+  kelasId?: string;
 }
 
 export async function buatTugas(input: InputBuatTugas): Promise<HasilAksi & { ringkasan?: RingkasanBuat }> {
-  const k = await pastikanPengampu(input.mataKuliahId);
+  const k = await pastikanPengampu(input.mataKuliahId, input.kelasId);
   if ("galat" in k) return { ok: false, pesan: k.galat };
 
   const nama = input.nama.trim();
@@ -56,7 +56,7 @@ export async function buatTugas(input: InputBuatTugas): Promise<HasilAksi & { ri
 
   const hasil = await prisma.$transaction(async (tx) => {
     const lama = await tx.tugas.findMany({
-      where: { mataKuliahId: input.mataKuliahId, tahunAjaranId: k.tahunAjaranId },
+      where: { mataKuliahId: input.mataKuliahId, tahunAjaranId: k.tahunAjaranId, kelasId: k.kelasId },
       orderBy: { id: "asc" },
     });
 
@@ -76,6 +76,7 @@ export async function buatTugas(input: InputBuatTugas): Promise<HasilAksi & { ri
         bobot: bobotBaru / 100,
         mataKuliahId: input.mataKuliahId,
         tahunAjaranId: k.tahunAjaranId,
+        kelasId: k.kelasId,
       },
     });
     await tx.distribusiSubCPMK.createMany({
@@ -105,21 +106,24 @@ export async function buatTugas(input: InputBuatTugas): Promise<HasilAksi & { ri
   };
 }
 
-export async function hapusTugas(mataKuliahId: string, tugasId: string): Promise<HasilAksi> {
-  const k = await pastikanPengampu(mataKuliahId);
+export async function hapusTugas(mataKuliahId: string, tugasId: string, kelasId?: string): Promise<HasilAksi> {
+  const k = await pastikanPengampu(mataKuliahId, kelasId);
   if ("galat" in k) return { ok: false, pesan: k.galat };
 
   const ada = await prisma.tugas.findFirst({
     where: { id: tugasId, mataKuliahId, tahunAjaranId: k.tahunAjaranId },
-    select: { id: true, nama: true },
+    select: { id: true, nama: true, kelasId: true },
   });
   if (!ada) return { ok: false, pesan: "Tugas tidak ditemukan." };
+  if (ada.kelasId !== k.kelasId && !(k.koordinator && ada.kelasId === null)) {
+    return { ok: false, pesan: "Tugas ini bukan milik kelas yang sedang dikelola." };
+  }
 
   await prisma.$transaction(async (tx) => {
     // Nilai dan distribusi ikut terhapus (onDelete: Cascade).
     await tx.tugas.delete({ where: { id: tugasId } });
     const sisa = await tx.tugas.findMany({
-      where: { mataKuliahId, tahunAjaranId: k.tahunAjaranId },
+      where: { mataKuliahId, tahunAjaranId: k.tahunAjaranId, kelasId: ada.kelasId },
       orderBy: { id: "asc" },
     });
     if (sisa.length > 0) {

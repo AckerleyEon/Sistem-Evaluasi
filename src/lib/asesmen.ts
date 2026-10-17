@@ -19,16 +19,26 @@ export function tahunAjaranAktif() {
 }
 
 export async function mataKuliahDiampu(dosenId: string, tahunAjaranId: string) {
-  const daftar = await prisma.penugasanDosenMK.findMany({
-    where: { dosenId, tahunAjaranId },
-    include: { mataKuliah: true },
-    orderBy: { mataKuliah: { nama: "asc" } },
-  });
-  return daftar.map((p) => p.mataKuliah);
+  const [penugasan, kelas] = await Promise.all([
+    prisma.penugasanDosenMK.findMany({
+      where: { dosenId, tahunAjaranId },
+      include: { mataKuliah: true },
+      orderBy: { mataKuliah: { nama: "asc" } },
+    }),
+    prisma.kelasMK.findMany({
+      where: { dosenId, tahunAjaranId },
+      include: { mataKuliah: true },
+      orderBy: { mataKuliah: { nama: "asc" } },
+    }),
+  ]);
+  const hasil = new Map<string, (typeof penugasan)[number]["mataKuliah"]>();
+  for (const p of penugasan) hasil.set(p.mataKuliah.id, p.mataKuliah);
+  for (const k of kelas) hasil.set(k.mataKuliah.id, k.mataKuliah);
+  return [...hasil.values()].sort((a, b) => a.nama.localeCompare(b.nama));
 }
 
 /** Data halaman Kelola Asesmen untuk satu mata kuliah. null = tidak ada/bukan MK yang diampu. */
-export async function ambilAsesmen(dosenId: string, mataKuliahId: string): Promise<DataAsesmen | null> {
+export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasId?: string): Promise<DataAsesmen | null> {
   const ta = await tahunAjaranAktif();
   if (!ta) return null;
 
@@ -36,9 +46,30 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string): Promi
   const mk = diampu.find((m) => m.id === mataKuliahId);
   if (!mk) return null;
 
-  const [tugas, cpmk, mahasiswa, jumlahNilai] = await Promise.all([
+  const penugasan = await prisma.penugasanDosenMK.findFirst({ where: { mataKuliahId, tahunAjaranId: ta.id, dosenId } });
+  const koordinator = Boolean(penugasan);
+  const daftarKelas = await prisma.kelasMK.findMany({
+    where: {
+      mataKuliahId,
+      tahunAjaranId: ta.id,
+      ...(!koordinator ? { dosenId } : {}),
+    },
+    select: { id: true, nama: true },
+    orderBy: { nama: "asc" },
+  });
+  const kelas = kelasId ? daftarKelas.find((item) => item.id === kelasId) ?? null : daftarKelas[0] ?? null;
+  if (kelasId && !kelas) return null;
+  if (!koordinator && !kelas) return null;
+
+  const whereKelas = kelas ? { OR: [{ kelasId: kelas.id }, ...(koordinator ? [{ kelasId: null }] : [])] } : { kelasId: null };
+
+  const pendaftaran = await prisma.pendaftaranMK.findMany({
+    where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelas ? { kelasId: kelas.id } : {}) },
+    select: { mahasiswaId: true },
+  });
+  const [tugas, cpmk, jumlahNilai] = await Promise.all([
     prisma.tugas.findMany({
-      where: { mataKuliahId, tahunAjaranId: ta.id },
+      where: { mataKuliahId, tahunAjaranId: ta.id, ...whereKelas },
       orderBy: { id: "asc" }, // cuid ~ berurutan waktu pembuatan
       include: {
         distribusi: {
@@ -62,15 +93,19 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string): Promi
         cpl: { include: { cpl: true } },
       },
     }),
-    prisma.pendaftaranMK.count({ where: { mataKuliahId, tahunAjaranId: ta.id } }),
     prisma.nilai.groupBy({
       by: ["tugasId"],
-      where: { tahunAjaranId: ta.id, tugas: { mataKuliahId } },
+      where: {
+        tahunAjaranId: ta.id,
+        tugas: { mataKuliahId, ...whereKelas },
+        mahasiswaId: { in: pendaftaran.map((p) => p.mahasiswaId) },
+      },
       _count: { _all: true },
     }),
   ]);
 
   const masukPerTugas = new Map<string, number>(jumlahNilai.map((n): [string, number] => [n.tugasId, n._count._all]));
+  const mahasiswa = pendaftaran.length;
 
   const rows: TugasRow[] = tugas.map((t, i) => {
     const sub = t.distribusi.map((d) => d.subCpmk);
@@ -83,6 +118,7 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string): Promi
     const masuk: number = masukPerTugas.get(t.id) ?? 0;
     return {
       id: t.id,
+      kelasId: t.kelasId,
       kode: `T${i + 1}`,
       nama: t.nama,
       pertemuanKe: t.pertemuanKe,
@@ -109,6 +145,9 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string): Promi
     mataKuliah: { id: mk.id, kode: mk.kode, nama: mk.nama, sks: mk.sks },
     tahunAjaran: { id: ta.id, label: ta.label },
     daftarMK: diampu.map((m) => ({ id: m.id, nama: m.nama })),
+    daftarKelas,
+    kelas,
+    koordinator,
     mahasiswa,
     tugas: rows,
     cpmk: cpmkOpsi,

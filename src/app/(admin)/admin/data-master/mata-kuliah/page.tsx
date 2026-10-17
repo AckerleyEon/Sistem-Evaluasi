@@ -8,7 +8,7 @@ const PAGE_SIZE = 8;
 export default async function MkMahasiswaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mk?: string; q?: string; page?: string }>;
+  searchParams: Promise<{ mk?: string; q?: string; page?: string; kelas?: string }>;
 }) {
   const sp = await searchParams;
   const ta = await getTahunAjaranAktif();
@@ -24,11 +24,12 @@ export default async function MkMahasiswaPage({
     );
   }
 
-  const [mkMentah, dosenMentah, grupMahasiswa, grupPerMk] = await Promise.all([
+  const [mkMentah, dosenMentah, grupMahasiswa, grupPerMk, grupPerKelas] = await Promise.all([
     prisma.mataKuliah.findMany({
       orderBy: { kode: "asc" },
       include: {
         penugasan: { where: { tahunAjaranId: ta.id }, include: { dosen: true } },
+        kelas: { where: { tahunAjaranId: ta.id }, include: { dosen: true }, orderBy: { nama: "asc" } },
         _count: { select: { cpmk: true, tugas: true, pendaftaran: true } },
       },
     }),
@@ -39,9 +40,15 @@ export default async function MkMahasiswaPage({
       where: { tahunAjaranId: ta.id },
       _count: { _all: true },
     }),
+    prisma.pendaftaranMK.groupBy({
+      by: ["kelasId"],
+      where: { tahunAjaranId: ta.id, kelasId: { not: null } },
+      _count: { _all: true },
+    }),
   ]);
 
   const jumlahPerMk = new Map(grupPerMk.map((g) => [g.mataKuliahId, g._count._all]));
+  const jumlahPerKelas = new Map(grupPerKelas.map((g) => [g.kelasId, g._count._all]));
 
   const daftarMK = mkMentah.map((m) => {
     const p = m.penugasan[0];
@@ -53,6 +60,13 @@ export default async function MkMahasiswaPage({
       jumlahMhs: jumlahPerMk.get(m.id) ?? 0,
       pjmkId: p?.dosenId ?? null,
       pjmkNama: p ? namaDenganGelar(p.dosen) : null,
+      kelas: m.kelas.map((kelas) => ({
+        id: kelas.id,
+        nama: kelas.nama,
+        dosenId: kelas.dosenId,
+        dosenNama: kelas.dosen ? namaDenganGelar(kelas.dosen) : null,
+        jumlahMhs: jumlahPerKelas.get(kelas.id) ?? 0,
+      })),
       terpakai: m._count.cpmk + m._count.tugas + m._count.pendaftaran > 0,
     };
   });
@@ -63,15 +77,19 @@ export default async function MkMahasiswaPage({
 
   const q = (sp.q ?? "").trim();
   const halamanDiminta = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
-  let mahasiswa: { id: string; nama: string; nim: string; angkatan: number }[] = [];
+  let mahasiswa: { id: string; nama: string; nim: string; angkatan: number; kelasId: string | null; kelasNama: string | null }[] = [];
   let totalHasil = 0;
   let totalHalaman = 1;
   let page = 1;
+  const mkTerpilih = daftarMK.find((mk) => mk.id === selectedId);
+  const kelasDipilih = mkTerpilih?.kelas.find((kelas) => kelas.id === sp.kelas);
+  const kelasId = kelasDipilih?.id ?? null;
 
   if (selectedId) {
     const where = {
       mataKuliahId: selectedId,
       tahunAjaranId: ta.id,
+      kelasId,
       ...(q
         ? {
             mahasiswa: {
@@ -100,6 +118,8 @@ export default async function MkMahasiswaPage({
       nama: b.mahasiswa.nama,
       nim: b.mahasiswa.nim,
       angkatan: b.mahasiswa.angkatan,
+      kelasId: b.kelasId,
+      kelasNama: b.kelasId ? kelasDipilih?.nama ?? null : null,
     }));
   }
 
@@ -109,6 +129,7 @@ export default async function MkMahasiswaPage({
       daftarMK={daftarMK}
       daftarDosen={daftarDosen}
       selectedId={selectedId}
+      selectedKelasId={kelasId}
       mahasiswa={mahasiswa}
       q={q}
       page={page}

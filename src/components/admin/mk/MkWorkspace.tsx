@@ -3,11 +3,12 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { cekDampakHapusMK } from "@/lib/actions/mata-kuliah";
-import { cekNilaiMahasiswaDiMK, urungkanHapusDariKelas } from "@/lib/actions/pendaftaran";
+import { cekNilaiMahasiswaDiMK, pindahMahasiswaAntarKelas, urungkanHapusDariKelas } from "@/lib/actions/pendaftaran";
 import { DaftarMK } from "./DaftarMK";
 import { PanelMK } from "./PanelMK";
 import { ModalMK, ModalHapusMK } from "./ModalMK";
 import { TombolImporMK } from "@/components/admin/mk/ModalImporMK";
+import { ModalImporMahasiswa } from "@/components/admin/mk/ModalImporMahasiswa";
 
 import {
   ModalTambahMahasiswa,
@@ -26,6 +27,7 @@ export function MkWorkspace({
   daftarMK,
   daftarDosen,
   selectedId,
+  selectedKelasId,
   mahasiswa,
   q,
   page,
@@ -38,6 +40,7 @@ export function MkWorkspace({
   daftarMK: MkItem[];
   daftarDosen: DosenOpsi[];
   selectedId: string | null;
+  selectedKelasId: string | null;
   mahasiswa: MhsItem[];
   q: string;
   page: number;
@@ -52,6 +55,7 @@ export function MkWorkspace({
   const [modalMk, setModalMk] = useState<{ mk: MkItem | null } | null>(null);
   const [hapusMk, setHapusMk] = useState<{ mk: MkItem; dampak: Dampak | null } | null>(null);
   const [tambahMhs, setTambahMhs] = useState(false);
+  const [imporMhs, setImporMhs] = useState(false);
   const [editMhs, setEditMhs] = useState<MhsItem | null>(null);
   const [hapusKelas, setHapusKelas] = useState<{ mhs: MhsItem; jumlahNilai: number | null } | null>(null);
   const [pindah, setPindah] = useState<{ mhs: MhsItem; jumlahNilai: number | null } | null>(null);
@@ -76,6 +80,17 @@ export function MkWorkspace({
     setHapusKelas({ mhs: m, jumlahNilai: null });
     const jumlahNilai = await cekNilaiMahasiswaDiMK(selected.id, m.id);
     setHapusKelas((prev) => (prev && prev.mhs.id === m.id ? { mhs: m, jumlahNilai } : prev));
+  }
+
+  async function ubahKelasMahasiswa(m: MhsItem, kelasId: string) {
+    if (!selected) return;
+    const hasil = await pindahMahasiswaAntarKelas(selected.id, m.id, kelasId);
+    if (hasil.error) {
+      tampilToast(hasil.error);
+      return;
+    }
+    tampilToast(hasil.pesan ?? "Kelas mahasiswa diperbarui.");
+    router.refresh();
   }
 
   async function bukaPindah(m: MhsItem) {
@@ -178,17 +193,19 @@ export function MkWorkspace({
               mk={selected}
               taLabel={ta.label}
               mahasiswa={mahasiswa}
+              dosen={daftarDosen}
+              kelasId={selectedKelasId}
               q={q}
               page={page}
               totalHalaman={totalHalaman}
               totalHasil={totalHasil}
               pageSize={pageSize}
               onTambahMhs={() => setTambahMhs(true)}
-              onEditMk={() => setModalMk({ mk: selected })}
-              onHapusMk={() => bukaHapusMk(selected)}
+              onImporMhs={() => setImporMhs(true)}
               onEditMhs={setEditMhs}
               onHapusKelas={bukaHapusKelas}
               onPindah={bukaPindah}
+              onUbahKelas={ubahKelasMahasiswa}
             />
           ) : (
             <div className="rounded-2xl bg-white px-6 py-14 text-center shadow-[0_1px_2px_rgba(16,24,40,.04)]">
@@ -235,10 +252,25 @@ export function MkWorkspace({
         <ModalTambahMahasiswa
           mk={selected}
           taLabel={ta.label}
+          kelasId={selectedKelasId}
+          kelasNama={selected.kelas.find((kelas) => kelas.id === selectedKelasId)?.nama ?? null}
           onTutup={() => setTambahMhs(false)}
           onBerhasil={(pesan) => {
             setTambahMhs(false);
             tampilToast(pesan);
+          }}
+        />
+      )}
+
+      {imporMhs && selected && (
+        <ModalImporMahasiswa
+          key={selected.id}
+          mk={selected}
+          taLabel={ta.label}
+          onTutup={() => setImporMhs(false)}
+          onBerhasil={(pesan) => {
+            tampilToast(pesan);
+            router.refresh();
           }}
         />
       )}
@@ -273,8 +305,13 @@ export function MkWorkspace({
                 {
                   label: "Urungkan",
                   jalankan: async () => {
-                    await urungkanHapusDariKelas(mkId, mhs.id);
+                    const hasil = await urungkanHapusDariKelas(mkId, mhs.id, mhs.kelasId);
+                    if (hasil.error) {
+                      tampilToast(hasil.error);
+                      return;
+                    }
                     tampilToast(`${mhs.nama} dikembalikan ke kelas`);
+                    router.refresh();
                   },
                 },
                 6000

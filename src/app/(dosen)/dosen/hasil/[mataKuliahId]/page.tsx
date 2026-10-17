@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { cekAksesMK } from "@/lib/otorisasi";
 
@@ -14,21 +15,35 @@ function Status({ lengkap }: { lengkap: boolean }) {
 
 export default async function HasilPerhitunganPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ mataKuliahId: string }>;
+  searchParams: Promise<{ kelas?: string }>;
 }) {
   const { mataKuliahId } = await params;
+  const { kelas: kelasQuery } = await searchParams;
 
-  const akses = await cekAksesMK(mataKuliahId);
+  const akses = await cekAksesMK(mataKuliahId, kelasQuery);
   if (!akses) notFound();
   const { ta } = akses;
+  const kelasId = akses.kelasId;
+  const session = await auth();
+  const daftarKelas = await prisma.kelasMK.findMany({
+    where: {
+      mataKuliahId,
+      tahunAjaranId: ta.id,
+      ...(akses.koordinator ? {} : { dosenId: session?.user.dosenId ?? "" }),
+    },
+    select: { id: true, nama: true },
+    orderBy: { nama: "asc" },
+  });
 
   const mataKuliah = await prisma.mataKuliah.findUnique({ where: { id: mataKuliahId } });
   if (!mataKuliah) notFound();
 
   const [pendaftaran, hasilSub, hasilCpmk] = await Promise.all([
     prisma.pendaftaranMK.findMany({
-      where: { mataKuliahId, tahunAjaranId: ta.id },
+      where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelasId ? { kelasId } : {}) },
       include: { mahasiswa: true },
       orderBy: { mahasiswa: { nim: "asc" } },
     }),
@@ -51,10 +66,21 @@ export default async function HasilPerhitunganPage({
     <div className="p-6 space-y-8">
       <div>
         <h1 className="text-xl font-semibold">
-          Hasil Perhitungan (Preview) — {mataKuliah.kode} {mataKuliah.nama}
+          Hasil Perhitungan (Preview) — {mataKuliah.kode} {mataKuliah.nama}{kelasId ? ` · ${daftarKelas.find((kelas) => kelas.id === kelasId)?.nama ?? "Kelas"}` : ""}
         </h1>
         <p className="text-sm text-gray-500">T.A. {ta.label}</p>
       </div>
+
+      {daftarKelas.length > 0 && (
+        <form action={`/dosen/hasil/${mataKuliahId}`} method="get" className="flex items-center gap-2 text-sm">
+          <label htmlFor="kelas-hasil">Kelas</label>
+          <select id="kelas-hasil" name="kelas" defaultValue={kelasId ?? ""} className="rounded border px-2 py-1">
+            {akses.koordinator && <option value="">Semua kelas</option>}
+            {daftarKelas.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>)}
+          </select>
+          <button type="submit" className="rounded bg-slate-100 px-2 py-1">Pilih</button>
+        </form>
+      )}
 
       {pendaftaran.length === 0 && (
         <p className="text-sm text-gray-500">Belum ada mahasiswa terdaftar di mata kuliah ini.</p>

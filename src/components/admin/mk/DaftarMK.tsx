@@ -73,7 +73,7 @@ export function DaftarMK({
                 </div>
                 <p className="text-[15px] font-bold leading-5" style={{ overflowWrap: "anywhere" }}>{m.nama}</p>
                 <p className={`mt-1 text-xs ${aktif ? "text-white/80" : "text-[#6B7280]"}`}>
-                  {m.pjmkNama ?? "PJMK belum ditetapkan"}
+                  {m.pjmkNama ?? "Mata kuliah tanpa pengampu"}
                 </p>
               </Link>
 

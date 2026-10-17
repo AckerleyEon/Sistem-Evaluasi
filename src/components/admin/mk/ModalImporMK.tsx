@@ -46,12 +46,14 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
   const [tersedia, setTersedia] = useState<("ganjil" | "genap")[]>([]);
   const [semester, setSemester] = useState<PilihanSemester>("semua");
   const [analisis, setAnalisis] = useState<AnalisisImpor | null>(null);
+  const [hapusMKTidakAda, setHapusMKTidakAda] = useState(false);
 
   function pilihFile(file: File | undefined) {
     setGalat("");
     setSelesai("");
     setMentah(null);
     setAnalisis(null);
+    setHapusMKTidakAda(false);
     if (!file) return;
     const fd = new FormData();
     fd.set("file", file);
@@ -71,6 +73,7 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
 
   function gantiSemester(s: PilihanSemester) {
     setSemester(s);
+    setHapusMKTidakAda(false);
     if (!mentah) return;
     mulaiMemuat(async () => setAnalisis(await analisisImpor(mentah, s)));
   }
@@ -79,7 +82,16 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
     if (!mentah) return;
     setGalat("");
     mulaiTerapkan(async () => {
-      const hasil = await terapkanImpor(mentah, semester);
+      if (
+        hapusMKTidakAda &&
+        analisis &&
+        !window.confirm(
+          `Hapus ${analisis.mkTidakAda.filter((mk) => mk.bisaDihapus).length} MK yang tidak ada di Excel dan belum memiliki data terkait? Kelas dan penugasan pada MK tersebut juga akan terhapus.`
+        )
+      ) {
+        return;
+      }
+      const hasil = await terapkanImpor(mentah, semester, hapusMKTidakAda);
       if (!hasil.ok) {
         setGalat(hasil.pesan);
         return;
@@ -92,6 +104,9 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
   }
 
   const r = analisis?.ringkasan;
+  const jumlahBisaDihapus = analisis?.mkTidakAda.filter((mk) => mk.bisaDihapus).length ?? 0;
+  const jumlahDipertahankan = analisis?.mkTidakAda.filter((mk) => !mk.bisaDihapus).length ?? 0;
+  const hapusBolehDipilih = semester === "semua" && (r?.galat ?? 0) === 0 && jumlahBisaDihapus > 0;
 
   return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="judul-impor">
@@ -135,6 +150,41 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
           )}
           {memuat && <span className="text-sm text-[#6B7280]">Memeriksa…</span>}
         </div>
+
+        {analisis && (
+          <div className="mt-4">
+            <label className={`flex items-start gap-3 rounded-xl border p-3 text-sm ${
+              hapusBolehDipilih ? "border-[#FECACA] bg-[#FEF2F2] text-[#7F1D1D]" : "border-[#E8EAEE] bg-[#F8FAFC] text-[#6B7280]"
+            }`}>
+              <input
+                type="checkbox"
+                checked={hapusMKTidakAda}
+                onChange={(e) => setHapusMKTidakAda(e.target.checked)}
+                disabled={!hapusBolehDipilih}
+                className="mt-0.5"
+              />
+              <span>
+                <span className="block font-semibold">
+                  Hapus MK yang tidak ada di file ({jumlahBisaDihapus} dapat dihapus)
+                </span>
+                MK yang memiliki CPMK, Sub-CPMK, tugas, pendaftaran, atau hasil pengukuran akan tetap disimpan
+                {jumlahDipertahankan > 0 ? ` (${jumlahDipertahankan} MK terpakai)` : ""}.
+                {semester !== "semua" && " Pilih “Semua” agar semester lain tidak ikut dianggap hilang."}
+                {(r?.galat ?? 0) > 0 && " Perbaiki semua baris galat sebelum mengaktifkan opsi hapus."}
+              </span>
+            </label>
+            {analisis.mkTidakAda.length > 0 && (
+              <div className="mt-2 max-h-32 overflow-auto rounded-lg border border-[#E8EAEE] p-3 text-xs text-[#4B5563]">
+                {analisis.mkTidakAda.map((mk) => (
+                  <p key={mk.id} className="py-1">
+                    <span className="font-semibold">{mk.kode} — {mk.nama}</span>
+                    {mk.bisaDihapus ? " — belum memiliki data terkait" : " — dipertahankan karena masih memiliki data terkait"}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {galat && (
           <p role="alert" className="mt-3 rounded-lg bg-[#FEE2E2] px-3 py-2 text-sm text-[#DC2626]">

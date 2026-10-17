@@ -247,7 +247,7 @@ export type CPMKOrderByWithRelationInput = {
 
 export type CPMKWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  mataKuliahId_tahunAjaranId_kode?: Prisma.CPMKMataKuliahIdTahunAjaranIdKodeCompoundUniqueInput
+  kode_mataKuliahId_tahunAjaranId?: Prisma.CPMKKodeMataKuliahIdTahunAjaranIdCompoundUniqueInput
   AND?: Prisma.CPMKWhereInput | Prisma.CPMKWhereInput[]
   OR?: Prisma.CPMKWhereInput[]
   NOT?: Prisma.CPMKWhereInput | Prisma.CPMKWhereInput[]
@@ -261,7 +261,7 @@ export type CPMKWhereUniqueInput = Prisma.AtLeast<{
   cpl?: Prisma.CpmkCplListRelationFilter
   sub?: Prisma.CpmkSubListRelationFilter
   hasilCPMK?: Prisma.HasilCPMKListRelationFilter
-}, "id" | "mataKuliahId_tahunAjaranId_kode">
+}, "id" | "kode_mataKuliahId_tahunAjaranId">
 
 export type CPMKOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -372,10 +372,10 @@ export type CPMKOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
-export type CPMKMataKuliahIdTahunAjaranIdKodeCompoundUniqueInput = {
+export type CPMKKodeMataKuliahIdTahunAjaranIdCompoundUniqueInput = {
+  kode: string
   mataKuliahId: string
   tahunAjaranId: string
-  kode: string
 }
 
 export type CPMKCountOrderByAggregateInput = {

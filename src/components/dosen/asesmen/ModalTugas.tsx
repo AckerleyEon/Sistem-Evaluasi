@@ -24,16 +24,20 @@ export function ModalTugas({
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [pending, mulai] = useTransition();
+  const tugasLingkup = useMemo(
+    () => data.tugas.filter((t) => t.kelasId === (data.kelas?.id ?? null)),
+    [data.tugas, data.kelas?.id],
+  );
   const [judul, setJudul] = useState("");
   const [pertemuan, setPertemuan] = useState(data.pertemuanDefault);
-  const [bobot, setBobot] = useState(data.tugas.length === 0 ? 100 : 20);
+  const [bobot, setBobot] = useState(tugasLingkup.length === 0 ? 100 : 20);
   const [subDipilih, setSubDipilih] = useState<Set<string>>(new Set());
   const [sentuh, setSentuh] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
 
-  const adaTugas = data.tugas.length > 0;
-  const kodeBaru = `T${data.tugas.length + 1}`;
-  const totalSekarang = Math.round(data.tugas.reduce((s, t) => s + t.bobot, 0) * 10) / 10;
+  const adaTugas = tugasLingkup.length > 0;
+  const kodeBaru = `T${tugasLingkup.length + 1}`;
+  const totalSekarang = Math.round(tugasLingkup.reduce((s, t) => s + t.bobot, 0) * 10) / 10;
   const kotor = judul.trim() !== "" || subDipilih.size > 0;
   const judulKosong = judul.trim() === "";
   const bisaSimpan = !judulKosong && bobot > 0 && subDipilih.size > 0 && !pending;
@@ -43,8 +47,8 @@ export function ModalTugas({
   }, []);
 
   const bobotLain = useMemo(
-    () => bagiProporsional(data.tugas.map((t) => t.bobot), 100 - bobot),
-    [data.tugas, bobot],
+    () => bagiProporsional(tugasLingkup.map((t) => t.bobot), 100 - bobot),
+    [tugasLingkup, bobot],
   );
 
   const cplTarget = useMemo(() => {
@@ -90,6 +94,7 @@ export function ModalTugas({
         pertemuanKe: pertemuan,
         bobot,
         subCpmkIds: [...subDipilih],
+        kelasId: data.kelas?.id,
       });
       if (!hasil.ok || !hasil.ringkasan) {
         setGalat(hasil.pesan);
@@ -201,7 +206,7 @@ export function ModalTugas({
           </div>
 
           <div className="mt-2 flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-white" aria-hidden="true">
-            {data.tugas.map((t, i) => (
+            {tugasLingkup.map((t, i) => (
               <span
                 key={t.id}
                 title={`${t.kode}: ${bobotLain[i]}%`}

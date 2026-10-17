@@ -4,13 +4,20 @@ import { ambilAsesmen, dosenSaatIni } from "@/lib/asesmen";
 
 export const dynamic = "force-dynamic";
 
-export default async function KelolaAsesmenPage({ params }: { params: Promise<{ mataKuliahId: string }> }) {
+export default async function KelolaAsesmenPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ mataKuliahId: string }>;
+  searchParams: Promise<{ kelas?: string }>;
+}) {
   const { mataKuliahId } = await params;
+  const { kelas } = await searchParams;
   const dosen = await dosenSaatIni();
   if (!dosen) redirect("/login");
 
-  const data = await ambilAsesmen(dosen.id, mataKuliahId);
+  const data = await ambilAsesmen(dosen.id, mataKuliahId, kelas);
   if (!data) notFound();
 
-  return <AsesmenWorkspace key={data.mataKuliah.id} data={data} />;
+  return <AsesmenWorkspace key={`${data.mataKuliah.id}-${data.kelas?.id ?? "global"}`} data={data} />;
 }

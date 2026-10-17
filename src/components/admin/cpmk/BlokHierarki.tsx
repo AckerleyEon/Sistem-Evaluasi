@@ -2,19 +2,6 @@
 
 import { jumlahBobot, type CpmkTerkait, type KomponenSub } from "./tipe";
 
-function IkonLepas() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="m18.84 12.25 1.72-1.71h-.02a5.004 5.004 0 0 0-.12-7.07 5.006 5.006 0 0 0-6.95 0l-1.72 1.71" />
-      <path d="m5.17 11.75-1.71 1.71a5.004 5.004 0 0 0 .12 7.07 5.006 5.006 0 0 0 6.95 0l1.71-1.71" />
-      <line x1="8" x2="8" y1="2" y2="5" />
-      <line x1="2" x2="5" y1="8" y2="8" />
-      <line x1="16" x2="16" y1="19" y2="22" />
-      <line x1="19" x2="22" y1="16" y2="16" />
-    </svg>
-  );
-}
-
 const ikonPensil = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M12 20h9" />
@@ -30,30 +17,42 @@ const ikonSampah = (
   </svg>
 );
 
+const ikonLepas = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    <path d="m3 3 18 18" />
+  </svg>
+);
+
 export function BlokHierarki({
   cpmk,
   terbuka,
   onToggle,
+  onTambahSub,
   onKaitkanSub,
   onEditCpmk,
   onHapusCpmk,
   onEditSub,
   onLepasSub,
+  onHapusSub,
 }: {
   cpmk: CpmkTerkait;
   terbuka: boolean;
   onToggle: () => void;
+  onTambahSub: () => void;
   onKaitkanSub: () => void;
   onEditCpmk: () => void;
   onHapusCpmk: () => void;
   onEditSub: (s: KomponenSub) => void;
   onLepasSub: (s: KomponenSub) => void;
+  onHapusSub: (s: KomponenSub) => void;
 }) {
   const totalSub = jumlahBobot(cpmk.sub);
   const status =
-    totalSub === cpmk.bobot
+    totalSub === 100
       ? { kelas: "text-[#15803D]", ikon: "✓" }
-      : totalSub < cpmk.bobot
+      : totalSub < 100
       ? { kelas: "text-[#B45309]", ikon: "!" }
       : { kelas: "text-[#DC2626]", ikon: "✕" };
   const idTabel = `hierarki-${cpmk.id}`;
@@ -75,6 +74,14 @@ export function BlokHierarki({
             ))}
           </div>
         </div>
+        <button
+          onClick={onTambahSub}
+          disabled={totalSub >= 100}
+          title={totalSub >= 100 ? "Alokasi bobot Sub-CPMK sudah mencapai 100%" : "Tambah butir Sub-CPMK ke CPMK ini"}
+          className="flex h-9 items-center gap-1.5 rounded-full bg-white px-4 text-xs font-semibold text-[#2F6BE8] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <span aria-hidden="true">+</span> Tambah Butir Sub-CPMK
+        </button>
         <button
           onClick={onKaitkanSub}
           className="flex h-9 items-center gap-1.5 rounded-full bg-[#2F6BE8] px-4 text-xs font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
@@ -119,6 +126,13 @@ export function BlokHierarki({
           {cpmk.sub.length === 0 ? (
             <div className="px-5 py-8 text-center text-sm text-[#6B7280]">
               <p className="mb-3">Belum ada Sub-CPMK yang dikaitkan.</p>
+              <button
+                onClick={onTambahSub}
+                disabled={totalSub >= 100}
+                className="mr-2 h-9 rounded-full bg-[#2F6BE8] px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                + Tambah Butir Sub-CPMK
+              </button>
               <button onClick={onKaitkanSub} className="h-9 rounded-full bg-[#2F6BE8] px-4 text-xs font-semibold text-white">
                 Kaitkan Sub-CPMK
               </button>
@@ -161,9 +175,17 @@ export function BlokHierarki({
                             onClick={() => onLepasSub(s)}
                             aria-label={`Lepas ${s.kode} dari ${cpmk.kode}`}
                             title="Lepas dari CPMK"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg text-[#6B7280] [@media(hover:hover)]:hover:bg-[#F3F4F6] [@media(hover:hover)]:hover:text-[#111827]"
+                          >
+                            {ikonLepas}
+                          </button>
+                          <button
+                            onClick={() => onHapusSub(s)}
+                            aria-label={`Hapus ${s.kode}`}
+                            title="Hapus Sub-CPMK"
                             className="flex h-9 w-9 items-center justify-center rounded-lg text-[#DC2626] [@media(hover:hover)]:hover:bg-[#FEE2E2]"
                           >
-                            <IkonLepas />
+                            {ikonSampah}
                           </button>
                         </div>
                       </td>
@@ -176,7 +198,7 @@ export function BlokHierarki({
 
           <div className={`flex items-center gap-1.5 border-t border-[#E8EAEE] px-5 py-3 text-xs font-semibold ${status.kelas}`}>
             <span aria-hidden="true">{status.ikon}</span>
-            Total Sub-CPMK: {totalSub}% dari {cpmk.bobot}%
+            Total alokasi Sub-CPMK: {totalSub}% dari 100%
           </div>
         </div>
       )}

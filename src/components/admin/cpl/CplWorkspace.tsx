@@ -38,28 +38,30 @@ export function CplWorkspace({ daftarCPL, kodeBerikutnya }: { daftarCPL: CplItem
         <FormCPL key={kodeBerikutnya} kodeBerikutnya={kodeBerikutnya} kodeTerpakai={daftarCPL.map((c) => c.kode)} />
       </div>
 
-      <div className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(16,24,40,.04)]">
-        <div className="border-b border-[#E8EAEE] p-5">
-          <div className="relative w-full max-w-95">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4-4" />
-            </svg>
-            <input
-              value={cari}
-              onChange={(e) => setCari(e.target.value)}
-              placeholder="Cari kode CPL atau kata kunci profil"
-              className="h-11 w-full rounded-full bg-[#F1F3F5] pl-11 pr-9 text-sm text-[#111827] placeholder:text-[#6B7280] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
-            />
-            {cari && (
-              <button onClick={() => setCari("")} aria-label="Bersihkan pencarian" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]">
-                ✕
-              </button>
-            )}
+      <div className="min-w-0">
+        <div className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(16,24,40,.04)]">
+          <div className="border-b border-[#E8EAEE] p-5">
+            <div className="relative w-full max-w-95">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4-4" />
+              </svg>
+              <input
+                value={cari}
+                onChange={(e) => setCari(e.target.value)}
+                placeholder="Cari kode CPL atau kata kunci profil"
+                className="h-11 w-full rounded-full bg-[#F1F3F5] pl-11 pr-9 text-sm text-[#111827] placeholder:text-[#6B7280] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
+              />
+              {cari && (
+                <button onClick={() => setCari("")} aria-label="Bersihkan pencarian" className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]">
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        <TabelCPL daftar={hasilCari} totalSemua={daftarCPL.length} kataKunci={cari} />
+          <TabelCPL daftar={hasilCari} totalSemua={daftarCPL.length} kataKunci={cari} />
+        </div>
       </div>
     </div>
   );

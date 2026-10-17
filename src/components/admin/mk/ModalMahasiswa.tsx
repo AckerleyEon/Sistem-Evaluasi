@@ -16,11 +16,15 @@ const kelasInput =
 export function ModalTambahMahasiswa({
   mk,
   taLabel,
+  kelasId,
+  kelasNama,
   onTutup,
   onBerhasil,
 }: {
   mk: MkItem;
   taLabel: string;
+  kelasId: string | null;
+  kelasNama: string | null;
   onTutup: () => void;
   onBerhasil: (pesan: string) => void;
 }) {
@@ -44,6 +48,7 @@ export function ModalTambahMahasiswa({
     const fd = new FormData();
     fd.set("nim", nim);
     fd.set("nama", nama);
+    if (kelasId) fd.set("kelasId", kelasId);
     const hasil = await tambahMahasiswaKeKelas(mk.id, fd);
     setLoading(false);
     if (hasil.error) {
@@ -57,7 +62,7 @@ export function ModalTambahMahasiswa({
     <ModalShell onTutup={onTutup}>
       <h2 className="text-base font-bold text-[#111827]">Tambah Mahasiswa</h2>
       <p className="mb-4 text-[13px] text-[#6B7280]">
-        {mk.kode} • {mk.nama} (T.A. {taLabel}). Jika NIM sudah ada di sistem, mahasiswanya langsung didaftarkan ke kelas.
+        {mk.kode} • {mk.nama} • {kelasNama ?? "Kelas belum ditentukan"} (T.A. {taLabel}). Jika NIM sudah ada di sistem, mahasiswanya langsung didaftarkan.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

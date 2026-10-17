@@ -6,8 +6,9 @@ import { prisma } from "@/lib/prisma";
 import { pastikanPengelolaMK } from "@/lib/otorisasi";
 import { hitungUlangMataKuliah } from "@/lib/perhitungan/hitungUlangMataKuliah";
 
-export async function simpanNilaiMassal(mataKuliahId: string, formData: FormData) {
-  const { ta } = await pastikanPengelolaMK(mataKuliahId);
+export async function simpanNilaiMassal(mataKuliahId: string, kelasId: string | null, formData: FormData) {
+  const akses = await pastikanPengelolaMK(mataKuliahId, kelasId ?? undefined);
+  const { ta } = akses;
 
   const entri: { mahasiswaId: string; tugasId: string; skor: number }[] = [];
 
@@ -26,9 +27,19 @@ export async function simpanNilaiMassal(mataKuliahId: string, formData: FormData
     entri.push({ mahasiswaId, tugasId, skor });
   }
 
+  const whereTugas = {
+    mataKuliahId,
+    tahunAjaranId: ta.id,
+    ...(akses.kelasId
+      ? { OR: [{ kelasId: akses.kelasId }, ...(akses.koordinator ? [{ kelasId: null }] : [])] }
+      : {}),
+  };
   const [tugasValid, terdaftar] = await Promise.all([
-    prisma.tugas.findMany({ where: { mataKuliahId, tahunAjaranId: ta.id }, select: { id: true } }),
-    prisma.pendaftaranMK.findMany({ where: { mataKuliahId, tahunAjaranId: ta.id }, select: { mahasiswaId: true } }),
+    prisma.tugas.findMany({ where: whereTugas, select: { id: true } }),
+    prisma.pendaftaranMK.findMany({
+      where: { mataKuliahId, tahunAjaranId: ta.id, ...(akses.kelasId ? { kelasId: akses.kelasId } : {}) },
+      select: { mahasiswaId: true },
+    }),
   ]);
   const idTugas = new Set(tugasValid.map((t) => t.id));
   const idMahasiswa = new Set(terdaftar.map((p) => p.mahasiswaId));
@@ -49,6 +60,7 @@ export async function simpanNilaiMassal(mataKuliahId: string, formData: FormData
 
   await hitungUlangMataKuliah(mataKuliahId, ta.id);
 
+  const suffix = akses.kelasId ? `?kelas=${encodeURIComponent(akses.kelasId)}` : "";
   revalidatePath(`/dosen/input-nilai/${mataKuliahId}`);
-  redirect(`/dosen/input-nilai/${mataKuliahId}`);
+  redirect(`/dosen/input-nilai/${mataKuliahId}${suffix}`);
 }

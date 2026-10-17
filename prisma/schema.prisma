@@ -27,6 +27,11 @@ enum StatusTahunAjaran {
   ARSIP
 }
 
+model Pengaturan {
+  kunci String @id
+  nilai String
+}
+
 model User {
   id                  String                 @id @default(cuid())
   username            String                 @unique
@@ -66,6 +71,23 @@ model TahunAjaran {
   hasilCPL       HasilCPL[]
   pendaftaran    PendaftaranMK[]
   penugasanDosen PenugasanDosenMK[]
+  kelasMK        KelasMK[]
+}
+
+model KelasMK {
+  id            String      @id @default(cuid())
+  nama          String
+  mataKuliahId  String
+  dosenId       String?
+  tahunAjaranId String
+  mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
+  dosen         Dosen?      @relation(fields: [dosenId], references: [id], onDelete: SetNull)
+  tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  pendaftaran   PendaftaranMK[]
+  tugas         Tugas[]
+  createdAt     DateTime    @default(now())
+
+  @@unique([mataKuliahId, tahunAjaranId, nama])
 }
 
 model Dosen {
@@ -76,6 +98,7 @@ model Dosen {
   userId    String             @unique
   user      User               @relation(fields: [userId], references: [id])
   penugasan PenugasanDosenMK[]
+  kelas     KelasMK[]
 }
 
 model Mahasiswa {
@@ -95,11 +118,13 @@ model MataKuliah {
   kode         String             @unique
   nama         String
   sks          Int
+  semester     Int?
   cpmk         CPMK[]
   subCPMK      SubCPMK[]
   tugas        Tugas[]
   pendaftaran  PendaftaranMK[]
   penugasan    PenugasanDosenMK[]
+  kelas        KelasMK[]
   hasilSubCPMK HasilSubCPMK[]
   hasilCPMK    HasilCPMK[]
 }
@@ -121,9 +146,11 @@ model PendaftaranMK {
   mahasiswaId   String
   mataKuliahId  String
   tahunAjaranId String
+  kelasId       String?
   mahasiswa     Mahasiswa   @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
   mataKuliah    MataKuliah  @relation(fields: [mataKuliahId], references: [id], onDelete: Cascade)
   tahunAjaran   TahunAjaran @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  kelas         KelasMK?     @relation(fields: [kelasId], references: [id], onDelete: SetNull)
   createdAt     DateTime    @default(now())
 
   @@unique([mahasiswaId, mataKuliahId, tahunAjaranId])
@@ -200,8 +227,10 @@ model Tugas {
   bobot         Float
   mataKuliahId  String
   tahunAjaranId String
+  kelasId       String?
   mataKuliah    MataKuliah          @relation(fields: [mataKuliahId], references: [id])
   tahunAjaran   TahunAjaran         @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  kelas         KelasMK?            @relation(fields: [kelasId], references: [id], onDelete: SetNull)
   distribusi    DistribusiSubCPMK[]
   nilai         Nilai[]
 }
