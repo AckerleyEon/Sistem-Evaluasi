@@ -145,12 +145,7 @@ export function PanelMK({
           {q ? (
             "Tidak ada mahasiswa yang cocok dengan kata kunci pencarian."
           ) : (
-            <>
-              <p className="mb-3">Belum ada mahasiswa terdaftar di kelas ini.</p>
-              <button onClick={onTambahMhs} className="h-9 rounded-lg bg-[#2F6BE8] px-4 text-xs font-semibold text-white">
-                Tambah Mahasiswa
-              </button>
-            </>
+            <p>Belum ada mahasiswa terdaftar di kelas ini. Gunakan tombol “Tambah Mahasiswa” di atas untuk mendaftarkan mahasiswa.</p>
           )}
         </div>
       ) : (

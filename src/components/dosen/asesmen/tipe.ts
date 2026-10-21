@@ -33,7 +33,7 @@ export interface TugasRow {
 
 export interface DataAsesmen {
   mataKuliah: { id: string; kode: string; nama: string; sks: number };
-  tahunAjaran: { id: string; label: string };
+  tahunAjaran: { id: string; label: string; status: "AKTIF" | "ARSIP" };
   daftarMK: { id: string; nama: string }[];
   daftarKelas: { id: string; nama: string }[];
   kelas: { id: string; nama: string } | null;

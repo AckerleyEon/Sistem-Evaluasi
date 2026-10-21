@@ -70,13 +70,14 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
   if (!ta) return null;
 
   const where = { tahunAjaranId: ta.id };
-  const [totalCPL, totalDosenAkun, hasilCPL, penugasan, pendaftaran, tugas, nilai, distribusi, pengaturan] =
+  const [totalCPL, totalDosenAkun, mahasiswaPerAngkatan, mataKuliahMaster, hasilCPLSemuaTA, penugasan, pendaftaran, tugas, nilai, distribusi, pengaturan] =
     await Promise.all([
       prisma.cPL.count(),
       prisma.dosen.count(),
+      prisma.mahasiswa.groupBy({ by: ["angkatan"], orderBy: { angkatan: "asc" } }),
+      prisma.mataKuliah.findMany({ select: { id: true, sks: true } }),
       prisma.hasilCPL.findMany({
-        where,
-        select: { nilai: true, statusLengkap: true, mahasiswa: { select: { angkatan: true } } },
+        select: { nilai: true, statusLengkap: true, tahunAjaranId: true, mahasiswa: { select: { angkatan: true } } },
       }),
       prisma.penugasanDosenMK.findMany({
         where,
@@ -99,9 +100,9 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
 
   const sekarang = Date.now();
   const passingGrade = Math.min(100, Math.max(50, Math.round(Number(pengaturan?.nilai)) || PASSING_GRADE_DEFAULT));
+  const hasilCPL = hasilCPLSemuaTA.filter((hasil) => hasil.tahunAjaranId === ta.id);
 
   // ---- KPI ----
-  const mkAktif = new Map(penugasan.map((p) => [p.mataKuliahId, p.mataKuliah]));
   const mahasiswaAktif = new Set(pendaftaran.map((p) => p.mahasiswaId));
   const dosenAktif = new Set(penugasan.map((p) => p.dosenId));
   const kpi = {
@@ -109,8 +110,8 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
     rataCPL: hasilCPL.length ? Math.round(rata(hasilCPL.map((h) => h.nilai))) : null,
     totalDosenAktif: dosenAktif.size,
     totalDosenAkun,
-    totalMK: mkAktif.size,
-    totalSKS: [...mkAktif.values()].reduce((s, m) => s + m.sks, 0),
+    totalMK: mataKuliahMaster.length,
+    totalSKS: mataKuliahMaster.reduce((s, m) => s + m.sks, 0),
     totalMahasiswa: mahasiswaAktif.size,
     persenLengkap: hasilCPL.length
       ? Math.round((hasilCPL.filter((h) => h.statusLengkap).length / hasilCPL.length) * 100)
@@ -119,15 +120,19 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
 
   // ---- Capaian CPL per angkatan ----
   const perAngkatan = new Map<number, number[]>();
-  for (const h of hasilCPL) {
+  for (const h of hasilCPLSemuaTA) {
     const arr = perAngkatan.get(h.mahasiswa.angkatan) ?? [];
     arr.push(h.nilai);
     perAngkatan.set(h.mahasiswa.angkatan, arr);
   }
-  const angkatan: TitikAngkatan[] = [...perAngkatan.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .slice(-8)
-    .map(([thn, arr]) => ({ angkatan: thn, rata: Math.round(rata(arr) * 10) / 10, jumlah: arr.length }));
+  const angkatan: TitikAngkatan[] = mahasiswaPerAngkatan.map(({ angkatan: tahun }) => {
+    const hasil = perAngkatan.get(tahun) ?? [];
+    return {
+      angkatan: tahun,
+      rata: hasil.length ? Math.round(rata(hasil) * 10) / 10 : null,
+      jumlah: hasil.length,
+    };
+  });
 
   // ---- Distribusi predikat (dari skor tugas/UTS) ----
   const histogram = new Array<number>(101).fill(0);

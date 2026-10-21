@@ -1,175 +1,193 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { simpanNilaiMassal } from "@/lib/actions/nilai";
 import { cekAksesMK } from "@/lib/otorisasi";
+import { InputNilaiWorkspace } from "@/components/dosen/input-nilai/InputNilaiWorkspace";
+
+const KUNCI_PASSING_GRADE = "passingGrade";
+const PASSING_GRADE_DEFAULT = 75;
 
 export default async function InputNilaiPage({
   params,
   searchParams,
 }: {
   params: Promise<{ mataKuliahId: string }>;
-  searchParams: Promise<{ kelas?: string }>;
+  searchParams: Promise<{ kelas?: string; tugas?: string }>;
 }) {
-  const { mataKuliahId } = await params;
-  const { kelas: kelasQuery } = await searchParams;
-
-  const akses = await cekAksesMK(mataKuliahId, kelasQuery);
+  const [{ mataKuliahId }, query, session] = await Promise.all([params, searchParams, auth()]);
+  const akses = await cekAksesMK(mataKuliahId, query.kelas);
   if (!akses) notFound();
-  const { ta } = akses;
-  const kelasId = akses.kelasId;
-  const session = await auth();
-  const daftarKelas = await prisma.kelasMK.findMany({
-    where: {
-      mataKuliahId,
-      tahunAjaranId: ta.id,
-      ...(akses.koordinator ? {} : { dosenId: session?.user.dosenId ?? "" }),
-    },
-    select: { id: true, nama: true },
-    orderBy: { nama: "asc" },
-  });
+  const { ta, kelasId, koordinator } = akses;
+  const arsip = ta.status === "ARSIP";
+  const dosenId = session?.user.dosenId;
 
-  const mataKuliah = await prisma.mataKuliah.findUnique({ where: { id: mataKuliahId } });
-  if (!mataKuliah) notFound();
-
-  const whereTugas = {
-    mataKuliahId,
-    tahunAjaranId: ta.id,
-    ...(kelasId
-      ? { OR: [{ kelasId }, ...(akses.koordinator ? [{ kelasId: null }] : [])] }
-      : {}),
-  };
-  const [pendaftaran, daftarTugas, nilaiTersimpan] = await Promise.all([
-    prisma.pendaftaranMK.findMany({
-      where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelasId ? { kelasId } : {}) },
-      include: { mahasiswa: true },
-      orderBy: { mahasiswa: { nim: "asc" } },
+  const aksesMK = session?.user.role === "ADMIN"
+    ? {}
+    : {
+        OR: [
+          { penugasan: { some: { dosenId: dosenId ?? "", tahunAjaranId: ta.id } } },
+          { kelas: { some: { dosenId: dosenId ?? "", tahunAjaranId: ta.id } } },
+        ],
+      };
+  const [daftarMK, jumlahMhsPerMK, mataKuliah, daftarKelas, pengaturan] = await Promise.all([
+    prisma.mataKuliah.findMany({
+      where: aksesMK,
+      select: { id: true, kode: true, nama: true, sks: true },
+      orderBy: { kode: "asc" },
     }),
+    prisma.pendaftaranMK.groupBy({
+      by: ["mataKuliahId"],
+      where: { tahunAjaranId: ta.id },
+      _count: { _all: true },
+    }),
+    prisma.mataKuliah.findUnique({ where: { id: mataKuliahId }, select: { id: true, kode: true, nama: true } }),
+    prisma.kelasMK.findMany({
+      where: {
+        mataKuliahId,
+        tahunAjaranId: ta.id,
+        ...(koordinator ? {} : { dosenId: dosenId ?? "" }),
+      },
+      select: { id: true, nama: true },
+      orderBy: { nama: "asc" },
+    }),
+    prisma.pengaturan.findUnique({ where: { kunci: KUNCI_PASSING_GRADE } }),
+  ]);
+  if (!mataKuliah || !daftarMK.some((mk) => mk.id === mataKuliahId)) notFound();
+
+  const kelasFilter = kelasId
+    ? { OR: [{ kelasId }, ...(koordinator ? [{ kelasId: null }] : [])] }
+    : {};
+  const whereTugas = { mataKuliahId, tahunAjaranId: ta.id, ...kelasFilter };
+  const [daftarTugasMentah, pendaftaran] = await Promise.all([
     prisma.tugas.findMany({
       where: whereTugas,
-      orderBy: { pertemuanKe: "asc" },
+      orderBy: [{ pertemuanKe: "asc" }, { nama: "asc" }],
+      include: {
+        distribusi: {
+          include: {
+            subCpmk: {
+              select: {
+                id: true,
+                kode: true,
+                deskripsi: true,
+                cpmkTerkait: {
+                  select: {
+                    bobot: true,
+                    cpmk: {
+                      select: {
+                        kode: true,
+                        cpl: { select: { cpl: { select: { kode: true } } } },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     }),
-    prisma.nilai.findMany({ where: { tahunAjaranId: ta.id, tugas: whereTugas } }),
+    prisma.pendaftaranMK.findMany({
+      where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelasId ? { kelasId } : {}) },
+      select: {
+        kelasId: true,
+        mahasiswa: { select: { id: true, nim: true, nama: true, angkatan: true } },
+      },
+      orderBy: { mahasiswa: { nim: "asc" } },
+    }),
   ]);
 
-  const daftarMahasiswa = pendaftaran.map((p) => p.mahasiswa);
+  const tugasAktif = daftarTugasMentah.find((tugas) => tugas.id === query.tugas) ?? daftarTugasMentah[0] ?? null;
+  const subCpmkIds = [...new Set(tugasAktif?.distribusi.map((item) => item.subCpmk.id) ?? [])];
+  const [tugasSubCpmk, nilaiTersimpan] = await Promise.all([
+    subCpmkIds.length
+      ? prisma.subCPMK.findMany({
+          where: { id: { in: subCpmkIds }, mataKuliahId, tahunAjaranId: ta.id },
+          select: {
+            id: true,
+            distribusi: {
+              where: { tugas: { mataKuliahId, tahunAjaranId: ta.id, ...kelasFilter } },
+              select: {
+                tugas: { select: { id: true, nama: true, bobot: true, kelasId: true } },
+              },
+            },
+          },
+        })
+      : Promise.resolve([]),
+    pendaftaran.length
+      ? prisma.nilai.findMany({
+          where: {
+            tahunAjaranId: ta.id,
+            mahasiswaId: { in: pendaftaran.map((item) => item.mahasiswa.id) },
+            tugas: whereTugas,
+          },
+          select: { mahasiswaId: true, tugasId: true, skor: true },
+        })
+      : Promise.resolve([]),
+  ]);
 
-  const petaNilai = new Map<string, number>();
-  for (const n of nilaiTersimpan) petaNilai.set(`${n.mahasiswaId}-${n.tugasId}`, n.skor);
-
-  const simpanWithMK = simpanNilaiMassal.bind(null, mataKuliahId, kelasId);
-  const queryKelas = kelasId ? `?kelas=${encodeURIComponent(kelasId)}` : "";
-
-  const judul = (
-    <>
-      <h1 className="text-xl font-semibold">
-        Input Nilai — {mataKuliah.kode} {mataKuliah.nama}{kelasId ? ` · ${daftarKelas.find((kelas) => kelas.id === kelasId)?.nama ?? "Kelas"}` : ""}
-      </h1>
-      <p className="text-sm text-gray-500">T.A. {ta.label}</p>
-    </>
+  const tugasPerSub = new Map(
+    tugasSubCpmk.map((sub) => [
+      sub.id,
+      sub.distribusi.map(({ tugas }) => ({
+        id: tugas.id,
+        nama: tugas.nama,
+        bobot: tugas.bobot,
+        kelasId: tugas.kelasId,
+      })),
+    ]),
   );
-
-  if (daftarMahasiswa.length === 0) {
-    return (
-      <div className="p-6 space-y-2">
-        {judul}
-        {daftarKelas.length > 0 && <PilihKelas mataKuliahId={mataKuliahId} kelasId={kelasId} koordinator={akses.koordinator} daftarKelas={daftarKelas} />}
-        <p className="text-sm text-gray-500">
-          Belum ada mahasiswa terdaftar di mata kuliah ini pada T.A. {ta.label}. Hubungi admin untuk mendaftarkan mahasiswa.
-        </p>
-      </div>
-    );
+  const daftarMahasiswa = pendaftaran.map((item) => ({
+    ...item.mahasiswa,
+    kelasId: item.kelasId,
+  }));
+  const nilaiPerMahasiswa: Record<string, Record<string, number>> = {};
+  for (const nilai of nilaiTersimpan) {
+    (nilaiPerMahasiswa[nilai.mahasiswaId] ??= {})[nilai.tugasId] = nilai.skor;
   }
 
-  if (daftarTugas.length === 0) {
-    return (
-      <div className="p-6 space-y-2">
-        {judul}
-        {daftarKelas.length > 0 && <PilihKelas mataKuliahId={mataKuliahId} kelasId={kelasId} koordinator={akses.koordinator} daftarKelas={daftarKelas} />}
-        <p className="text-sm text-gray-500">
-          Belum ada tugas/komponen penilaian di mata kuliah ini. Buat dulu lewat menu Komponen Penilaian.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-6 space-y-4">
-      <div className="space-y-1">{judul}</div>
-
-      {daftarKelas.length > 0 && <PilihKelas mataKuliahId={mataKuliahId} kelasId={kelasId} koordinator={akses.koordinator} daftarKelas={daftarKelas} />}
-
-      <Link href={`/dosen/hasil/${mataKuliahId}${queryKelas}`} className="text-blue-600 hover:underline text-sm">
-        Lihat Hasil Perhitungan →
-      </Link>
-
-      <form action={simpanWithMK} className="space-y-4">
-        <div className="overflow-x-auto">
-          <table className="border-collapse min-w-full">
-            <thead>
-              <tr className="text-left border-b">
-                <th className="py-2 pr-4 sticky left-0 bg-white">NIM</th>
-                <th className="py-2 pr-4">Nama</th>
-                {daftarTugas.map((t) => (
-                  <th key={t.id} className="py-2 px-2 text-center whitespace-nowrap">
-                    {t.nama}
-                    <div className="text-xs font-normal text-gray-500">bobot {t.bobot}</div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {daftarMahasiswa.map((m) => (
-                <tr key={m.id} className="border-b">
-                  <td className="py-2 pr-4 sticky left-0 bg-white">{m.nim}</td>
-                  <td className="py-2 pr-4">{m.nama}</td>
-                  {daftarTugas.map((t) => (
-                    <td key={t.id} className="py-2 px-2">
-                      <input
-                        type="number"
-                        name={`skor-${m.id}-${t.id}`}
-                        min={0}
-                        max={100}
-                        step="0.01"
-                        defaultValue={petaNilai.get(`${m.id}-${t.id}`) ?? ""}
-                        className="border rounded px-2 py-1 w-20 text-center"
-                      />
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <button type="submit" className="bg-black text-white rounded px-6 py-2">
-          Simpan Semua Nilai
-        </button>
-      </form>
-    </div>
+  const tugas = daftarTugasMentah.map((item) => ({
+    id: item.id,
+    nama: item.nama,
+    pertemuanKe: item.pertemuanKe,
+    bobot: item.bobot,
+    kelasId: item.kelasId,
+    indikator: item.distribusi.map(({ subCpmk }) => ({
+      id: subCpmk.id,
+      kode: subCpmk.kode,
+      deskripsi: subCpmk.deskripsi,
+      cpmk: subCpmk.cpmkTerkait.map((tautan) => ({
+        kode: tautan.cpmk.kode,
+        bobot: tautan.bobot,
+        cpl: tautan.cpmk.cpl.map(({ cpl }) => cpl.kode),
+      })),
+      tugas: tugasPerSub.get(subCpmk.id) ?? [],
+    })),
+  }));
+  const passingGrade = Math.min(
+    100,
+    Math.max(50, Math.round(Number(pengaturan?.nilai)) || PASSING_GRADE_DEFAULT),
   );
-}
+  const kelasMahasiswa = kelasId ? daftarKelas.find((kelas) => kelas.id === kelasId)?.nama ?? null : null;
 
-function PilihKelas({
-  mataKuliahId,
-  kelasId,
-  koordinator,
-  daftarKelas,
-}: {
-  mataKuliahId: string;
-  kelasId: string | null;
-  koordinator: boolean;
-  daftarKelas: { id: string; nama: string }[];
-}) {
   return (
-    <form action={`/dosen/input-nilai/${mataKuliahId}`} method="get" className="flex items-center gap-2 text-sm">
-      <label htmlFor="kelas-nilai">Kelas</label>
-      <select id="kelas-nilai" name="kelas" defaultValue={kelasId ?? ""} className="rounded border px-2 py-1">
-        {koordinator && <option value="">Semua kelas</option>}
-        {daftarKelas.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>)}
-      </select>
-      <button type="submit" className="rounded bg-slate-100 px-2 py-1">Pilih</button>
-    </form>
+    <InputNilaiWorkspace
+      mataKuliah={mataKuliah}
+      daftarMK={daftarMK.map((mk) => ({
+        ...mk,
+        jumlahMahasiswa: jumlahMhsPerMK.find((item) => item.mataKuliahId === mk.id)?._count._all ?? 0,
+      }))}
+      tahunAjaran={ta.label}
+      kelasId={kelasId}
+      kelasNama={kelasMahasiswa}
+      semuaKelasAllowed={koordinator}
+      daftarKelas={daftarKelas}
+      tugas={tugas}
+      tugasDipilihId={tugasAktif?.id ?? null}
+      mahasiswa={daftarMahasiswa}
+      nilaiPerMahasiswa={nilaiPerMahasiswa}
+      passingGrade={passingGrade}
+      readOnly={arsip}
+    />
   );
 }

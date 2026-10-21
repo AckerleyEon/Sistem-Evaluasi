@@ -3,7 +3,7 @@ export type NadaStatus = "hijau" | "biru" | "oranye" | "merah";
 
 export interface TitikAngkatan {
   angkatan: number;
-  rata: number; // 0-100
+  rata: number | null; // 0-100, null bila belum ada hasil CPL di seluruh T.A.
   jumlah: number; // jumlah hasil CPL (sampel)
 }
 

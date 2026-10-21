@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Ikon } from "../Ikon";
 import { hapusTugas } from "@/lib/actions/asesmen";
@@ -144,15 +143,17 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
             <Ikon nama="riwayat" ukuran={14} />
             Salin dari Semester Lalu
           </button>
-          <button
-            ref={tombolBuat}
-            type="button"
-            onClick={() => setModal(true)}
-            className={`flex min-h-[34px] items-center gap-1.5 rounded-full bg-[#2563EB] px-3.5 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] transition hover:bg-[#1D4ED8] ${FOKUS}`}
-          >
-            <Ikon nama="plus" ukuran={14} />
-            Buat Tugas Baru
-          </button>
+          {data.tahunAjaran.status === "AKTIF" && (
+            <button
+              ref={tombolBuat}
+              type="button"
+              onClick={() => setModal(true)}
+              className={`flex min-h-[34px] items-center gap-1.5 rounded-full bg-[#2563EB] px-3.5 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] transition hover:bg-[#1D4ED8] ${FOKUS}`}
+            >
+              <Ikon nama="plus" ukuran={14} />
+              Buat Tugas Baru
+            </button>
+          )}
         </div>
       </div>
 
@@ -198,13 +199,6 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
               {data.daftarKelas.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>)}
             </select>
           </label>
-        )}
-
-        {data.kelas && (
-          <div className="flex gap-3 text-[12px] font-semibold text-[#2563EB]">
-            <Link href={`/dosen/input-nilai/${data.mataKuliah.id}?kelas=${encodeURIComponent(data.kelas.id)}`} className="self-center hover:underline">Input nilai</Link>
-            <Link href={`/dosen/hasil/${data.mataKuliah.id}?kelas=${encodeURIComponent(data.kelas.id)}`} className="self-center hover:underline">Hasil</Link>
-          </div>
         )}
 
         <label className="flex min-h-[40px] min-w-[220px] flex-1 items-center gap-2 rounded-xl bg-[#F3F5F9] px-3 focus-within:ring-2 focus-within:ring-[#60A5FA]">
@@ -275,11 +269,12 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
         namaMK={data.mataKuliah.nama}
         onHapus={hapus}
         sedangHapus={hapusPending}
+        readOnly={data.tahunAjaran.status === "ARSIP"}
       />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
         <KartuPanduan />
-        <KartuUnduh />
+        <KartuUnduh mataKuliahId={data.mataKuliah.id} kelasId={data.kelas?.id ?? null} readOnly={data.tahunAjaran.status === "ARSIP"} />
       </div>
 
       {modal && <ModalTugas data={data} onTutup={() => setModal(false)} onSukses={sukses} />}

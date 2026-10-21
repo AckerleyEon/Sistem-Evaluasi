@@ -82,7 +82,9 @@ export default async function MkMahasiswaPage({
   let totalHalaman = 1;
   let page = 1;
   const mkTerpilih = daftarMK.find((mk) => mk.id === selectedId);
-  const kelasDipilih = mkTerpilih?.kelas.find((kelas) => kelas.id === sp.kelas);
+  const kelasDipilih =
+    mkTerpilih?.kelas.find((kelas) => kelas.id === sp.kelas) ??
+    (!sp.kelas ? mkTerpilih?.kelas[0] : undefined);
   const kelasId = kelasDipilih?.id ?? null;
 
   if (selectedId) {

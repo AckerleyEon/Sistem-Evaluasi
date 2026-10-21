@@ -177,9 +177,13 @@ export function CpmkWorkspace({
                 <span className="rounded-full bg-[#F1F3F5] px-2.5 py-0.5 text-xs text-[#6B7280]">Struktur CPMK &amp; Sub-CPMK</span>
               </div>
               <div className="flex items-center gap-2 text-xs font-semibold">
-                <button onClick={() => setTertutup(new Set())} className="text-[#2F6BE8] hover:underline">Buka Semua</button>
-                <span aria-hidden="true" className="text-[#C4C9D2]">•</span>
-                <button onClick={() => setTertutup(new Set(hierarki.map((c) => c.id)))} className="text-[#6B7280] hover:underline">Tutup Semua</button>
+                <button
+                  type="button"
+                  onClick={() => setTertutup(semuaTerbuka ? new Set(hierarki.map((c) => c.id)) : new Set())}
+                  className="text-[#2F6BE8] hover:underline"
+                >
+                  {semuaTerbuka ? "Tutup Semua" : "Buka Semua"}
+                </button>
               </div>
             </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { jumlahBobot, type CpmkTerkait, type KomponenSub } from "./tipe";
+import { jumlahBobot, labelKodeCpmk, labelKodeSub, type CpmkTerkait, type KomponenSub } from "./tipe";
 
 const ikonPensil = (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -60,7 +60,7 @@ export function BlokHierarki({
   return (
     <section className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(16,24,40,.04)]">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3 bg-[#EFF6FF] px-5 py-4">
-        <span className="rounded-md bg-[#2F6BE8] px-2.5 py-1 text-xs font-bold text-white">{cpmk.kode}</span>
+        <span title={cpmk.kode} className="whitespace-nowrap rounded-md bg-[#2F6BE8] px-2.5 py-1 text-xs font-bold text-white">{labelKodeCpmk(cpmk.kode)}</span>
         <div className="min-w-0 flex-1 basis-56">
           <h3 className="line-clamp-2 text-sm font-semibold text-[#111827]" style={{ overflowWrap: "anywhere" }}>
             {cpmk.deskripsi}
@@ -154,7 +154,7 @@ export function BlokHierarki({
                     <tr key={s.id} className="border-t border-[#E8EAEE]">
                       <td className="px-5 py-3 align-top">
                         <button onClick={() => onEditSub(s)} className="text-sm font-semibold text-[#2F6BE8] hover:underline">
-                          {s.kode}
+                          {labelKodeSub(s.kode)}
                         </button>
                       </td>
                       <td className="px-2 py-3 align-top text-sm text-[#111827]">

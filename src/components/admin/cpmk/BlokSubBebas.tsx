@@ -1,6 +1,6 @@
 "use client";
 
-import type { KomponenSub } from "./tipe";
+import { labelKodeSub, type KomponenSub } from "./tipe";
 
 export function BlokSubBebas({
   daftar,
@@ -26,7 +26,7 @@ export function BlokSubBebas({
       <ul className="divide-y divide-[#F1F3F5]">
         {daftar.map((s) => (
           <li key={s.id} className="flex items-start gap-4 px-5 py-3">
-            <span className="w-28 shrink-0 text-sm font-semibold text-[#111827]">{s.kode}</span>
+            <span title={s.kode} className="w-28 shrink-0 whitespace-nowrap text-sm font-semibold text-[#111827]">{labelKodeSub(s.kode)}</span>
             <p className="min-w-0 flex-1 text-sm text-[#4B5563]" style={{ overflowWrap: "anywhere" }}>
               {s.deskripsi}
             </p>

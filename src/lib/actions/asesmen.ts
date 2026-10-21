@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { dosenSaatIni, tahunAjaranAktif } from "@/lib/asesmen";
+import { dosenSaatIni } from "@/lib/asesmen";
 import { angkaKode, bagiProporsional, bobotKePersen } from "@/lib/asesmen-util";
 import { cekAksesMK } from "@/lib/otorisasi";
 // Hitung ulang HasilSubCPMK/HasilCPMK/HasilCPL setelah bobot atau pemetaan tugas berubah.
@@ -15,11 +15,10 @@ type Konteks = { dosenId: string; tahunAjaranId: string; kelasId: string | null;
 async function pastikanPengampu(mataKuliahId: string, kelasId?: string): Promise<Konteks | { galat: string }> {
   const dosen = await dosenSaatIni();
   if (!dosen) return { galat: "Sesi tidak valid. Silakan login ulang sebagai dosen." };
-  const ta = await tahunAjaranAktif();
-  if (!ta) return { galat: "Belum ada tahun ajaran aktif." };
   const akses = await cekAksesMK(mataKuliahId, kelasId);
   if (!akses || (!akses.koordinator && !akses.kelasId)) return { galat: "Kamu bukan pengampu mata kuliah atau kelas ini." };
-  return { dosenId: dosen.id, tahunAjaranId: ta.id, kelasId: akses.kelasId, koordinator: akses.koordinator };
+  if (akses.ta.status !== "AKTIF") return { galat: "Tahun Ajaran arsip hanya dapat dilihat." };
+  return { dosenId: dosen.id, tahunAjaranId: akses.ta.id, kelasId: akses.kelasId, koordinator: akses.koordinator };
 }
 
 export interface InputBuatTugas {

@@ -38,6 +38,7 @@ export function TabelTugas({
   namaMK,
   onHapus,
   sedangHapus,
+  readOnly = false,
 }: {
   baris: TugasRow[];
   totalSemua: number;
@@ -51,6 +52,7 @@ export function TabelTugas({
   namaMK: string;
   onHapus: (t: TugasRow) => void;
   sedangHapus: boolean;
+  readOnly?: boolean;
 }) {
   const [menuId, setMenuId] = useState<string | null>(null);
   const jumlahHalaman = Math.max(1, Math.ceil(totalTersaring / UKURAN_HALAMAN));
@@ -196,16 +198,18 @@ export function TabelTugas({
                             {t.status === "berjalan" ? "Input Nilai" : "Kelola"}
                           </Link>
                         )}
-                        <button
-                          type="button"
-                          aria-label={`Menu aksi ${t.nama}`}
-                          aria-expanded={menuId === t.id}
-                          onClick={() => setMenuId(menuId === t.id ? null : t.id)}
-                          className={`grid h-8 w-8 place-items-center rounded-lg text-[#64748B] hover:bg-[#F1F5F9] ${FOKUS}`}
-                        >
-                          <Ikon nama="kebab" ukuran={16} />
-                        </button>
-                        {menuId === t.id && (
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            aria-label={`Menu aksi ${t.nama}`}
+                            aria-expanded={menuId === t.id}
+                            onClick={() => setMenuId(menuId === t.id ? null : t.id)}
+                            className={`grid h-8 w-8 place-items-center rounded-lg text-[#64748B] hover:bg-[#F1F5F9] ${FOKUS}`}
+                          >
+                            <Ikon nama="kebab" ukuran={16} />
+                          </button>
+                        )}
+                        {!readOnly && menuId === t.id && (
                           <>
                             <button
                               type="button"

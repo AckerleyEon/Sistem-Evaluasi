@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import {
   aktifkanTahunAjaran,
   createTahunAjaran,
@@ -24,7 +23,6 @@ export function AdminTopbar({
   onMenuClick: () => void;
 }) {
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [taOpen, setTaOpen] = useState(false);
   const [cari, setCari] = useState("");
   const [loadingAksi, setLoadingAksi] = useState(false);
@@ -41,7 +39,6 @@ export function AdminTopbar({
   const [errorHapus, setErrorHapus] = useState("");
   const [loadingHapus, setLoadingHapus] = useState(false);
 
-  const profilRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLDivElement>(null);
 
   const aktif = daftarTahunAjaran.find((ta) => ta.status === "AKTIF");
@@ -50,7 +47,6 @@ export function AdminTopbar({
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (profilRef.current && !profilRef.current.contains(e.target as Node)) setMenuOpen(false);
       if (taRef.current && !taRef.current.contains(e.target as Node)) setTaOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
@@ -121,8 +117,8 @@ export function AdminTopbar({
 
   return (
     <header
-      className="sticky top-0 z-20 flex items-center justify-between bg-white px-5 py-4 lg:px-6"
-      style={{ borderBottom: "1px solid #E8EAEE", paddingTop: "max(1rem, env(safe-area-inset-top, 0px))" }}
+      className="sticky top-0 z-20 flex min-h-16 items-center justify-between gap-2 border-b border-[#E5E9F0] bg-white/95 px-3 py-3 backdrop-blur sm:px-5 lg:px-6"
+      style={{ paddingTop: "max(.75rem, env(safe-area-inset-top, 0px))" }}
     >
       <div className="flex items-center gap-3">
         <button onClick={onMenuClick} className="rounded-lg p-2 text-[#111827] lg:hidden" aria-label="Buka menu">
@@ -130,23 +126,25 @@ export function AdminTopbar({
             <path d="M3 6h18M3 12h18M3 18h18" />
           </svg>
         </button>
-        <div>
+        <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className="text-[20px] font-bold leading-7 text-[#111827]">Sistem Evaluasi CPL</h1>
-            <span className="rounded-full bg-[#DCE7FB] px-2.5 py-0.5 text-xs font-semibold text-[#2F6BE8]">Prodi EE</span>
+            <h1 className="truncate text-base font-bold leading-6 text-[#111827] sm:text-[20px] sm:leading-7">Sistem Evaluasi CPL</h1>
+            <span className="hidden shrink-0 rounded-full bg-[#DCE7FB] px-2.5 py-0.5 text-xs font-semibold text-[#2F6BE8] sm:inline-flex">Prodi EE</span>
           </div>
-          <p className="hidden text-[13px] text-[#6B7280] sm:block">Pemantauan performa real-time ketercapaian CPL</p>
+          <p className="hidden text-[13px] text-[#6B7280] md:block">Pemantauan performa real-time ketercapaian CPL</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {/* Dropdown Tahun Ajaran */}
         <div ref={taRef} className="relative">
           <button
             type="button"
             onClick={() => setTaOpen((v) => !v)}
+            aria-expanded={taOpen}
+            aria-haspopup="menu"
             disabled={loadingAksi}
-            className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full bg-[#2F6BE8] px-3.5 text-[13px] font-semibold text-white disabled:opacity-60"
+            className="flex h-9 items-center gap-1 whitespace-nowrap rounded-full bg-[#2F6BE8] px-2.5 text-xs font-semibold text-white transition hover:bg-[#2459C7] disabled:opacity-60 sm:gap-1.5 sm:px-3.5 sm:text-[13px]"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 4h16l-6 8v6l-4 2v-8L4 4Z" />
@@ -219,11 +217,9 @@ export function AdminTopbar({
           )}
         </div>
 
-        {/* Profil */}
-        <div ref={profilRef} className="relative">
-          <button onClick={() => setMenuOpen((v) => !v)} className="flex items-center gap-2.5" aria-haspopup="menu" aria-expanded={menuOpen}>
+        <div className="flex items-center gap-2.5">
             <span className="hidden text-right sm:block">
-              <span className="block max-w-40cate text-sm font-semibold text-[#111827]">{username}</span>
+              <span className="block max-w-40 truncate text-sm font-semibold text-[#111827]" title={username}>{username}</span>
               <span className="block text-xs text-[#6B7280]">Administrator</span>
             </span>
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2F6BE8] text-white">
@@ -232,18 +228,6 @@ export function AdminTopbar({
                 <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" />
               </svg>
             </span>
-          </button>
-
-          {menuOpen && (
-            <div role="menu" className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-[#E8EAEE] bg-white py-1.5 shadow-[0_4px_16px_rgba(16,24,40,.08)]">
-              <button role="menuitem" className="block w-full px-4 py-2 text-left text-sm text-[#111827] hover:bg-[#EEF3FD]">
-                Profil
-              </button>
-              <button role="menuitem" onClick={() => signOut({ callbackUrl: "/login" })} className="block w-full px-4 py-2 text-left text-sm text-[#DC2626] hover:bg-[#FEE2E2]">
-                Keluar
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

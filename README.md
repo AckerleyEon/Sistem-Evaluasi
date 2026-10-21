@@ -16,6 +16,16 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Geist.
 
+## Data Dummy Mahasiswa
+
+Untuk membuat 20 mahasiswa dummy per angkatan (2022–2025) dan mendaftarkannya pada setiap mata kuliah di setiap tahun ajaran yang tersedia, jalankan:
+
+```bash
+npm run seed:mahasiswa-dummy
+```
+
+Perintah ini aman dijalankan ulang. Nilai dibuat untuk tugas yang sudah ada, lalu hasil capaian dihitung ulang. Data operasional yang sudah ada tidak dihapus.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

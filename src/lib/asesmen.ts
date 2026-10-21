@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getTahunAjaranDosen } from "@/lib/tahun-ajaran";
 import { angkaKode, bobotKePersen } from "@/lib/asesmen-util";
 import type { CpmkOpsi, DataAsesmen, TugasRow } from "@/components/dosen/asesmen/tipe";
 
@@ -12,10 +13,6 @@ export async function dosenSaatIni() {
   const user = session?.user;
   if (!user || user.role !== "DOSEN" || !user.dosenId) return null;
   return prisma.dosen.findUnique({ where: { id: user.dosenId } });
-}
-
-export function tahunAjaranAktif() {
-  return prisma.tahunAjaran.findFirst({ where: { status: "AKTIF" } });
 }
 
 export async function mataKuliahDiampu(dosenId: string, tahunAjaranId: string) {
@@ -39,7 +36,7 @@ export async function mataKuliahDiampu(dosenId: string, tahunAjaranId: string) {
 
 /** Data halaman Kelola Asesmen untuk satu mata kuliah. null = tidak ada/bukan MK yang diampu. */
 export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasId?: string): Promise<DataAsesmen | null> {
-  const ta = await tahunAjaranAktif();
+  const ta = await getTahunAjaranDosen(dosenId);
   if (!ta) return null;
 
   const diampu = await mataKuliahDiampu(dosenId, ta.id);
@@ -143,7 +140,7 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
 
   return {
     mataKuliah: { id: mk.id, kode: mk.kode, nama: mk.nama, sks: mk.sks },
-    tahunAjaran: { id: ta.id, label: ta.label },
+    tahunAjaran: { id: ta.id, label: ta.label, status: ta.status },
     daftarMK: diampu.map((m) => ({ id: m.id, nama: m.nama })),
     daftarKelas,
     kelas,

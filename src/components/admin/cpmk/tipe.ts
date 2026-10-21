@@ -37,3 +37,15 @@ export function kodeBerikutnya(awalan: string, daftarKode: string[]) {
   }
   return `${awalan}-${maks + 1}`;
 }
+
+export function labelKodeCpmk(kode: string) {
+  const angka = kode.match(/^CPMK-(?:.*-)?(\d+)$/i)?.[1];
+  return angka ? `CPMK-${angka}` : kode;
+}
+
+export function labelKodeSub(kode: string) {
+  const cocok = kode.match(/^SUB-.*-(\d+)-SUB-(\d+)$/i);
+  if (cocok) return `SUB-${cocok[1]}-${cocok[2]}`;
+  const angka = kode.match(/^SUB-CPMK-(\d+)$/i)?.[1];
+  return angka ? `SUB-${angka}` : kode;
+}

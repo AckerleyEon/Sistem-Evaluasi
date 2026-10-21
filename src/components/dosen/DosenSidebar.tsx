@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,12 +30,26 @@ function NavIcon({ name }: { name: (typeof MENU)[number]["icon"] }) {
 export function DosenSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
 
+  useEffect(() => {
+    if (!open) return;
+    const bodyOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = bodyOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open, onClose]);
+
   return (
     <>
-      {open && <div className="fixed inset-0 z-30 bg-black/30 lg:hidden" onClick={onClose} aria-hidden="true" />}
+      {open && <button type="button" aria-label="Tutup menu" className="fixed inset-0 z-30 bg-black/30 lg:hidden" onClick={onClose} />}
       <nav
         aria-label="Menu utama"
-        className={`fixed inset-y-0 left-0 z-40 flex w-65 flex-col bg-white transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-65 flex-col bg-white shadow-[0_12px_36px_rgba(15,23,42,.12)] transition-transform lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0 lg:shadow-none print:hidden ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{ borderRight: "1px solid #E8EAEE" }}
@@ -47,6 +62,9 @@ export function DosenSidebar({ open, onClose }: { open: boolean; onClose: () => 
             <p className="text-[15px] font-bold leading-4.75 text-[#2F6BE8]">Teknik Elektro</p>
             <p className="text-xs leading-4 text-[#6B7280]">Sistem Evaluasi CPL</p>
           </div>
+          <button type="button" onClick={onClose} aria-label="Tutup menu" className="ml-auto grid h-9 w-9 place-items-center rounded-lg text-[#64748B] hover:bg-[#F1F5F9] focus-visible:outline-2 focus-visible:outline-[#2F6BE8] lg:hidden">
+            <span aria-hidden="true" className="text-xl leading-none">×</span>
+          </button>
         </div>
 
         <ul className="flex-1 space-y-1 px-3">
@@ -85,16 +103,6 @@ export function DosenSidebar({ open, onClose }: { open: boolean; onClose: () => 
             Keluar
           </button>
 
-          <div className="flex items-start gap-2.5 rounded-xl border border-[#DCE7FB] bg-[#EEF3FD] p-3">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2F6BE8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            <span>
-              <span className="block text-[13px] font-semibold text-[#2F6BE8]">EE Platform</span>
-              <span className="block text-xs text-[#6B7280]">Kurikulum Berbasis Capaian Pembelajaran Lulusan (CPL).</span>
-            </span>
-          </div>
         </div>
       </nav>
     </>

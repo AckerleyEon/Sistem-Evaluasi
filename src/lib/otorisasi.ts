@@ -1,13 +1,15 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
+import { getTahunAjaranAktif, getTahunAjaranDosen } from "@/lib/tahun-ajaran";
 
 export async function cekAksesMK(mataKuliahId: string, kelasId?: string) {
   const session = await auth();
   const user = session?.user;
   if (!user) return null;
 
-  const ta = await getTahunAjaranAktif();
+  const ta = user.role === "DOSEN" && user.dosenId
+    ? await getTahunAjaranDosen(user.dosenId)
+    : await getTahunAjaranAktif();
   if (!ta) return null;
 
   if (user.role === "ADMIN") {
@@ -46,7 +48,8 @@ export async function cekAksesMK(mataKuliahId: string, kelasId?: string) {
 export async function pastikanPengelolaMK(mataKuliahId: string, kelasId?: string) {
   const akses = await cekAksesMK(mataKuliahId, kelasId);
   if (!akses || (!akses.koordinator && !kelasId)) {
-    throw new Error("Anda tidak berhak mengelola mata kuliah atau kelas ini di Tahun Ajaran aktif.");
+    throw new Error("Anda tidak berhak mengelola mata kuliah atau kelas ini pada Tahun Ajaran yang dipilih.");
   }
+  if (akses.ta.status !== "AKTIF") throw new Error("Tahun Ajaran arsip hanya dapat dilihat; perubahan data dinonaktifkan.");
   return akses;
 }

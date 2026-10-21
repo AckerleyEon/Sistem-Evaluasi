@@ -210,10 +210,7 @@ export function MkWorkspace({
           ) : (
             <div className="rounded-2xl bg-white px-6 py-14 text-center shadow-[0_1px_2px_rgba(16,24,40,.04)]">
               <p className="mb-1 text-base font-bold text-[#111827]">Belum ada mata kuliah</p>
-              <p className="mb-4 text-sm text-[#6B7280]">Tambahkan mata kuliah pertama untuk mulai mengelola kelas dan mahasiswa.</p>
-              <button onClick={() => setModalMk({ mk: null })} className="h-10 rounded-full bg-[#2F6BE8] px-5 text-sm font-semibold text-white">
-                Tambah Mata Kuliah Baru
-              </button>
+              <p className="text-sm text-[#6B7280]">Gunakan tombol “Tambah Mata Kuliah Baru” di bagian atas untuk mulai mengelola kelas dan mahasiswa.</p>
             </div>
           )}
         </div>

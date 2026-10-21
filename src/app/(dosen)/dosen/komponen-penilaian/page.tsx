@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { dosenSaatIni, mataKuliahDiampu, tahunAjaranAktif } from "@/lib/asesmen";
+import { dosenSaatIni, mataKuliahDiampu } from "@/lib/asesmen";
+import { getTahunAjaranDosen } from "@/lib/tahun-ajaran";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,7 @@ export default async function KomponenPenilaianIndex() {
   const dosen = await dosenSaatIni();
   if (!dosen) redirect("/login");
 
-  const ta = await tahunAjaranAktif();
+  const ta = await getTahunAjaranDosen(dosen.id);
   const daftar = ta ? await mataKuliahDiampu(dosen.id, ta.id) : [];
   if (daftar.length > 0) redirect(`/dosen/komponen-penilaian/${daftar[0].id}`);
 

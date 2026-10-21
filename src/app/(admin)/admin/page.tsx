@@ -50,9 +50,9 @@ export default async function DashboardAdminPage({
         />
         <KpiCard
           label="Total Dosen"
-          angka={kpi.totalDosenAktif}
+          angka={kpi.totalDosenAkun}
           satuan="Orang"
-          badge={`${kpi.totalDosenAkun} akun`}
+          badge={`${kpi.totalDosenAktif} mengampu T.A.`}
           href="/admin/dosen"
           sorot
         />
@@ -74,18 +74,18 @@ export default async function DashboardAdminPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <GrafikCapaianAngkatan data={data.angkatan} />
-        <DonutPredikat
-          segmen={data.predikat}
-          total={data.totalSampel}
-          persenLulus={data.persenLulus}
-          jumlahRemedial={data.jumlahRemedial}
-        />
+          <GrafikCapaianAngkatan data={data.angkatan} />
+          <DonutPredikat
+            segmen={data.predikat}
+            total={data.totalSampel}
+            persenLulus={data.persenLulus}
+            jumlahRemedial={data.jumlahRemedial}
+          />
 
-        <KesiapanDosen baris={data.kesiapan} tahunAjaranId={data.tahunAjaran.id} />
-        <BatasBawahCPL passingGrade={data.passingGrade} histogram={data.histogram} />
-        <InputAsesmen data={data.asesmen} labelBulan={data.labelBulanAktif} puncak={data.puncakInput} />
-        <LogAktivitas entri={data.log} />
+          <KesiapanDosen baris={data.kesiapan} tahunAjaranId={data.tahunAjaran.id} />
+          <BatasBawahCPL passingGrade={data.passingGrade} histogram={data.histogram} />
+          <InputAsesmen data={data.asesmen} labelBulan={data.labelBulanAktif} puncak={data.puncakInput} />
+          <LogAktivitas entri={data.log} />
       </div>
     </div>
   );
