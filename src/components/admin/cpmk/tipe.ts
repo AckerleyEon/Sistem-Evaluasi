@@ -1,7 +1,7 @@
 import type { cekDampakCPMK } from "@/lib/actions/cpmk";
 import type { DampakLepasSub } from "@/lib/actions/sub-cpmk";
 
-export type MkRingkas = { id: string; kode: string; nama: string; sks: number };
+export type MkRingkas = { id: string; kode: string; nama: string; sks: number; cpl: CplOpsi[] };
 export type CplOpsi = { id: string; kode: string };
 
 // Semua komponen di sini milik satu mata kuliah (yang sedang dipilih).

@@ -122,6 +122,16 @@ async function siapkanCapaianDummy(
   if (cplTersedia.length !== cplMaster.length) {
     throw new Error("Enam CPL standar tidak berhasil disiapkan.");
   }
+  for (const [indeks, mk] of mataKuliah.entries()) {
+    const cplAwal = (indeks * 2) % cplTersedia.length;
+    await prisma.mataKuliahCpl.createMany({
+      data: [
+        { mataKuliahId: mk.id, cplId: cplTersedia[cplAwal].id },
+        { mataKuliahId: mk.id, cplId: cplTersedia[(cplAwal + 1) % cplTersedia.length].id },
+      ],
+      skipDuplicates: true,
+    });
+  }
 
   let totalCpmkBaru = 0;
   let totalSubBaru = 0;
@@ -168,15 +178,6 @@ async function siapkanCapaianDummy(
     const bobotCpmk = bobotMerata(cpmk.length);
     for (const [indeks, item] of cpmk.entries()) {
       await prisma.cPMK.update({ where: { id: item.id }, data: { bobot: bobotCpmk[indeks] } });
-      const cplAwal = (indeks * 2) % cplTersedia.length;
-      await prisma.cpmkCpl.createMany({
-        data: [
-          { cpmkId: item.id, cplId: cplTersedia[cplAwal].id },
-          { cpmkId: item.id, cplId: cplTersedia[(cplAwal + 1) % cplTersedia.length].id },
-        ],
-        skipDuplicates: true,
-      });
-
       const relasiLama = await prisma.cpmkSub.findMany({
         where: { cpmkId: item.id },
         select: { id: true, subCpmkId: true, bobot: true },

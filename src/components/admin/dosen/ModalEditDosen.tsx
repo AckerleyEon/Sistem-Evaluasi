@@ -15,10 +15,14 @@ export function ModalEditDosen({
 }) {
   const [nama, setNama] = useState(dosen.nama);
   const [gelar, setGelar] = useState(dosen.gelar ?? "");
+  const [alias, setAlias] = useState(dosen.alias ?? "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const berubah = nama.trim() !== dosen.nama || gelar.trim() !== (dosen.gelar ?? "");
+  const berubah =
+    nama.trim() !== dosen.nama ||
+    gelar.trim() !== (dosen.gelar ?? "") ||
+    alias.trim() !== (dosen.alias ?? "");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,6 +31,7 @@ export function ModalEditDosen({
     const fd = new FormData();
     fd.set("nama", nama);
     fd.set("gelar", gelar);
+    fd.set("alias", alias);
     const hasil = await updateDosen(dosen.id, fd);
     setLoading(false);
 
@@ -73,6 +78,18 @@ export function ModalEditDosen({
               value={gelar}
               onChange={(e) => setGelar(e.target.value)}
               placeholder="Contoh: S.T., M.T., Dr., Prof."
+              className="h-11 w-full rounded-[10px] bg-[#EEF3FD] px-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="edit-alias" className="mb-2 block text-[13px] font-medium text-[#111827]">Alias pada data Excel (opsional)</label>
+            <input
+              id="edit-alias"
+              value={alias}
+              onChange={(e) => setAlias(e.target.value)}
+              maxLength={120}
+              placeholder="Nama singkat yang biasa digunakan"
               className="h-11 w-full rounded-[10px] bg-[#EEF3FD] px-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
             />
           </div>

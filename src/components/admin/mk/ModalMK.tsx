@@ -23,12 +23,14 @@ const kelasInput =
 export function ModalMK({
   mk,
   daftarDosen,
+  daftarCPL,
   taLabel,
   onTutup,
   onBerhasil,
 }: {
   mk: MkItem | null; // null = mode tambah
   daftarDosen: DosenOpsi[];
+  daftarCPL: { id: string; kode: string }[];
   taLabel: string;
   onTutup: () => void;
   onBerhasil: (pesan: string, idBaru?: string) => void;
@@ -37,6 +39,7 @@ export function ModalMK({
   const [nama, setNama] = useState(mk?.nama ?? "");
   const [sks, setSks] = useState(String(mk?.sks ?? 3));
   const [dosenId, setDosenId] = useState(mk?.pjmkId ?? "");
+  const [cplIds, setCplIds] = useState<string[]>(mk?.cpl.map((cpl) => cpl.id) ?? []);
   const [pilihDosen, setPilihDosen] = useState(false);
   const [cariDosen, setCariDosen] = useState("");
   const [error, setError] = useState("");
@@ -49,8 +52,9 @@ export function ModalMK({
     ? kode.trim().toUpperCase() !== mk.kode ||
       nama.trim() !== mk.nama ||
       Number(sks) !== mk.sks ||
-      dosenId !== (mk.pjmkId ?? "")
-    : kode.trim() !== "" || nama.trim() !== "" || dosenId !== "";
+      dosenId !== (mk.pjmkId ?? "") ||
+      [...cplIds].sort().join() !== mk.cpl.map((cpl) => cpl.id).sort().join()
+    : kode.trim() !== "" || nama.trim() !== "" || dosenId !== "" || cplIds.length > 0;
   const wajibTerisi = kode.trim() !== "" && nama.trim() !== "" && dosenId !== "";
   const bolehSimpan = wajibTerisi && (mk ? adaPerubahan : true) && !loading;
 
@@ -90,6 +94,7 @@ export function ModalMK({
     fd.set("nama", nama);
     fd.set("sks", sks);
     fd.set("dosenId", dosenId);
+    cplIds.forEach((id) => fd.append("cplIds", id));
     const hasil = mk ? await updateMataKuliah(mk.id, fd) : await createMataKuliah(fd);
     setLoading(false);
 
@@ -173,6 +178,36 @@ export function ModalMK({
             ))}
           </select>
         </div>
+
+        <fieldset>
+          <legend className="mb-2 text-[13px] font-medium text-[#111827]">Pemetaan CPL</legend>
+          {daftarCPL.length === 0 ? (
+            <p className="rounded-[10px] bg-[#EEF3FD] p-3 text-xs text-[#6B7280]">Belum ada CPL. Tambahkan dulu di Data Master CPL.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {daftarCPL.map((cpl) => {
+                const dipilih = cplIds.includes(cpl.id);
+                return (
+                  <label key={cpl.id} className="cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={dipilih}
+                      onChange={() => setCplIds((sebelumnya) => dipilih
+                        ? sebelumnya.filter((id) => id !== cpl.id)
+                        : [...sebelumnya, cpl.id])}
+                      className="peer sr-only"
+                    />
+                    <span className={`flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold ${
+                      dipilih ? "border-[#2F6BE8] bg-[#2F6BE8] text-white" : "border-[#D5DAE1] bg-white text-[#4B5563]"
+                    }`}>
+                      <span aria-hidden="true">{dipilih ? "✓" : "+"}</span>{cpl.kode}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </fieldset>
 
         <div>
           <div className="mb-2 flex items-center justify-between">

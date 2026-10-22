@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
     prismaSchemaVersion: string | undefined;
 };
 
-const prismaSchemaVersion = "20261017110000_pendaftaran_dan_tugas_per_kelas";
+const prismaSchemaVersion = "20261022140000_cpl_mata_kuliah_dosen_alias";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const cachedPrisma = globalForPrisma.prisma;
 

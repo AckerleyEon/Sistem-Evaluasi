@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { gantiSandiDosen } from "@/lib/actions/dosen";
 import { namaDenganGelar } from "@/lib/dosen";
+import { MIN_SANDI } from "@/lib/sandi";
 import type { DosenItem } from "./DosenWorkspace";
 
 const ALFABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
@@ -100,7 +101,7 @@ export function ModalGantiSandi({
               }}
               autoComplete="new-password"
               autoFocus
-              placeholder="Minimal 6 karakter"
+              placeholder={`Minimal ${MIN_SANDI} karakter`}
               className={`h-11 w-full rounded-[10px] bg-[#EEF3FD] px-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] ${
                 error ? "ring-2 ring-[#DC2626]" : "focus:ring-2 focus:ring-[#2F6BE8]/40"
               } ${tampil ? "font-mono tracking-wider" : ""}`}
@@ -135,7 +136,7 @@ export function ModalGantiSandi({
             </button>
             <button
               type="submit"
-              disabled={sandi.length < 6 || loading}
+              disabled={sandi.length < MIN_SANDI || loading}
               className="h-11 rounded-[10px] bg-[#2F6BE8] text-sm font-semibold text-white disabled:opacity-50"
             >
               {loading ? "Menyimpan…" : "Simpan Sandi"}

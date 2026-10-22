@@ -14,6 +14,7 @@ function kelasInput(adaError: boolean) {
 export function FormDosen({ onBerhasil }: { onBerhasil: (pesan: string) => void }) {
   const [nama, setNama] = useState("");
   const [gelar, setGelar] = useState("");
+  const [alias, setAlias] = useState("");
   const [nip, setNip] = useState("");
   const [errorNama, setErrorNama] = useState("");
   const [errorNip, setErrorNip] = useState("");
@@ -25,6 +26,7 @@ export function FormDosen({ onBerhasil }: { onBerhasil: (pesan: string) => void 
   function reset() {
     setNama("");
     setGelar("");
+    setAlias("");
     setNip("");
     setErrorNama("");
     setErrorNip("");
@@ -50,6 +52,7 @@ export function FormDosen({ onBerhasil }: { onBerhasil: (pesan: string) => void 
     const fd = new FormData();
     fd.set("nama", nama);
     fd.set("gelar", gelar);
+    fd.set("alias", alias);
     fd.set("nip", nip);
     const hasil = await createDosen(fd);
     setLoading(false);
@@ -83,7 +86,7 @@ export function FormDosen({ onBerhasil }: { onBerhasil: (pesan: string) => void 
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
+    <div className="h-full rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
       <h2 className="text-lg font-bold leading-6 text-[#111827]">Tambah Akun Dosen</h2>
       <p className="mb-5 text-[13px] text-[#6B7280]">
         Isi informasi dosen baru sesuai data kepegawaian dan akses sistem.
@@ -116,6 +119,19 @@ export function FormDosen({ onBerhasil }: { onBerhasil: (pesan: string) => void 
             value={gelar}
             onChange={(e) => setGelar(e.target.value)}
             placeholder="Contoh: S.T., M.T., Dr., Prof."
+            className={kelasInput(false)}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="alias-dosen" className="mb-2 block text-[13px] font-medium text-[#111827]">
+            Alias pada data Excel (opsional)
+          </label>
+          <input
+            id="alias-dosen"
+            value={alias}
+            onChange={(e) => setAlias(e.target.value)}
+            placeholder="Nama singkat yang biasa digunakan"
             className={kelasInput(false)}
           />
         </div>

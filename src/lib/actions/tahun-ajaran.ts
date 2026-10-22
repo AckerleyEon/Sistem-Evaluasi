@@ -59,10 +59,7 @@ export async function createTahunAjaran(formData: FormData) {
 
             // 2. CPMK (milik mata kuliahnya masing-masing, bobot ikut tersalin)
       const petaCpmk = new Map<string, string>();
-      const cpmkLama = await tx.cPMK.findMany({
-        where: { tahunAjaranId: sumberId },
-        include: { cpl: true },
-      });
+      const cpmkLama = await tx.cPMK.findMany({ where: { tahunAjaranId: sumberId } });
       for (const c of cpmkLama) {
         const cpmkBaru = await tx.cPMK.create({
           data: {
@@ -71,7 +68,6 @@ export async function createTahunAjaran(formData: FormData) {
             bobot: c.bobot,
             mataKuliahId: c.mataKuliahId,
             tahunAjaranId: baru.id,
-            cpl: { create: c.cpl.map((r) => ({ cplId: r.cplId })) },
           },
         });
         petaCpmk.set(c.id, cpmkBaru.id);
@@ -150,6 +146,7 @@ export async function aktifkanTahunAjaran(id: string) {
 }
 
 export async function hitungDataTerkaitTahunAjaran(id: string) {
+  await pastikanAdmin();
   const [cpmk, subCpmk, tugas, nilai, pendaftaran, penugasan] = await Promise.all([
     prisma.cPMK.count({ where: { tahunAjaranId: id } }),
     prisma.subCPMK.count({ where: { tahunAjaranId: id } }),

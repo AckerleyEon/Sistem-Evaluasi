@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createCPMK, updateCPMK } from "@/lib/actions/cpmk";
 import { ModalShell } from "@/components/admin/mk/ModalShell";
 import { BobotField, bobotValid } from "./BobotField";
-import { jumlahBobot, kodeBerikutnya, type CplOpsi, type KomponenCpmk } from "./tipe";
+import { jumlahBobot, kodeBerikutnya, type KomponenCpmk } from "./tipe";
 
 const POLA_KODE = /^CPMK-\d{1,3}$/;
 
@@ -15,7 +15,6 @@ export function ModalCPMK({
   mkId,
   mkKode,
   cpmkMk,
-  daftarCpl,
   cpmk,
   onTutup,
   onBerhasil,
@@ -23,7 +22,6 @@ export function ModalCPMK({
   mkId: string;
   mkKode: string;
   cpmkMk: KomponenCpmk[]; // CPMK milik mata kuliah ini
-  daftarCpl: CplOpsi[];
   cpmk: KomponenCpmk | null; // null = mode tambah
   onTutup: () => void;
   onBerhasil: (pesan: string) => void;
@@ -33,25 +31,19 @@ export function ModalCPMK({
 
   const [kode, setKode] = useState(cpmk?.kode ?? kodeBerikutnya("CPMK", cpmkMk.map((c) => c.kode)));
   const [deskripsi, setDeskripsi] = useState(cpmk?.deskripsi ?? "");
-  const [cplIds, setCplIds] = useState<string[]>(cpmk?.cpl.map((c) => c.id) ?? []);
   const [bobot, setBobot] = useState(cpmk ? String(cpmk.bobot) : sisaAwal > 0 ? String(sisaAwal) : "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const deskripsiOk = deskripsi.trim().length >= 10 && deskripsi.trim().length <= 500;
   const bobotOk = bobotValid(bobot, terisiLain, 100);
-  const valid = POLA_KODE.test(kode.trim()) && deskripsiOk && cplIds.length > 0 && bobotOk;
+  const valid = POLA_KODE.test(kode.trim()) && deskripsiOk && bobotOk;
 
   const berubah = cpmk
-    ? kode.trim() !== cpmk.kode ||
-      deskripsi.trim() !== cpmk.deskripsi ||
-      bobot !== String(cpmk.bobot) ||
-      [...cplIds].sort().join() !== cpmk.cpl.map((c) => c.id).sort().join()
-    : deskripsi.trim() !== "" || cplIds.length > 0;
-
-  function toggleCpl(id: string) {
-    setCplIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  }
+    ?     kode.trim() !== cpmk.kode ||
+    deskripsi.trim() !== cpmk.deskripsi ||
+    bobot !== String(cpmk.bobot)
+    : deskripsi.trim() !== "";
 
   function tutup() {
     if (berubah && !window.confirm("Buang perubahan yang belum disimpan?")) return;
@@ -66,7 +58,6 @@ export function ModalCPMK({
     fd.set("kode", kode.trim());
     fd.set("deskripsi", deskripsi);
     fd.set("bobot", bobot);
-    cplIds.forEach((id) => fd.append("cplIds", id));
     const hasil = cpmk ? await updateCPMK(cpmk.id, fd) : await createCPMK(mkId, fd);
     setLoading(false);
     if (hasil.error) {
@@ -123,39 +114,6 @@ export function ModalCPMK({
             className="w-full resize-y rounded-[10px] bg-[#EEF3FD] p-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
           />
         </div>
-
-        <fieldset>
-          <div className="mb-2 flex items-center justify-between">
-            <legend className="text-[13px] font-medium text-[#111827]">Pemetaan ke CPL (Capaian Pembelajaran Lulusan)</legend>
-            <span className="text-xs font-semibold text-[#2F6BE8]">{cplIds.length} Terpilih</span>
-          </div>
-          {daftarCpl.length === 0 ? (
-            <p className="rounded-[10px] bg-[#EEF3FD] p-3 text-xs text-[#6B7280]">
-              Belum ada CPL. Tambahkan dulu di Data Master CPL.
-            </p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {daftarCpl.map((c) => {
-                const on = cplIds.includes(c.id);
-                return (
-                  <label key={c.id} className="cursor-pointer">
-                    <input type="checkbox" checked={on} onChange={() => toggleCpl(c.id)} className="peer sr-only" />
-                    <span
-                      className={`flex h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold peer-focus-visible:outline peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F6BE8] ${
-                        on
-                          ? "border-[#2F6BE8] bg-[#2F6BE8] text-white"
-                          : "border-[#D5DAE1] bg-white text-[#4B5563] [@media(hover:hover)]:hover:border-[#2F6BE8]"
-                      }`}
-                    >
-                      <span aria-hidden="true">{on ? "✓" : "+"}</span>
-                      {c.kode}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          )}
-        </fieldset>
 
         <BobotField label="Alokasi Bobot CPMK" nilai={bobot} onChange={setBobot} terisiLain={terisiLain} batas={100} />
 

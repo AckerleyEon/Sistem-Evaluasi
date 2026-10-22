@@ -408,8 +408,8 @@ export const ModelName = {
   PenugasanDosenMK: 'PenugasanDosenMK',
   PendaftaranMK: 'PendaftaranMK',
   CPL: 'CPL',
+  MataKuliahCpl: 'MataKuliahCpl',
   CPMK: 'CPMK',
-  CpmkCpl: 'CpmkCpl',
   SubCPMK: 'SubCPMK',
   CpmkSub: 'CpmkSub',
   Tugas: 'Tugas',
@@ -433,7 +433,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "pengaturan" | "user" | "permintaanResetSandi" | "tahunAjaran" | "kelasMK" | "dosen" | "mahasiswa" | "mataKuliah" | "penugasanDosenMK" | "pendaftaranMK" | "cPL" | "cPMK" | "cpmkCpl" | "subCPMK" | "cpmkSub" | "tugas" | "distribusiSubCPMK" | "nilai" | "hasilSubCPMK" | "hasilCPMK" | "hasilCPL"
+    modelProps: "pengaturan" | "user" | "permintaanResetSandi" | "tahunAjaran" | "kelasMK" | "dosen" | "mahasiswa" | "mataKuliah" | "penugasanDosenMK" | "pendaftaranMK" | "cPL" | "mataKuliahCpl" | "cPMK" | "subCPMK" | "cpmkSub" | "tugas" | "distribusiSubCPMK" | "nilai" | "hasilSubCPMK" | "hasilCPMK" | "hasilCPL"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1251,6 +1251,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MataKuliahCpl: {
+      payload: Prisma.$MataKuliahCplPayload<ExtArgs>
+      fields: Prisma.MataKuliahCplFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MataKuliahCplFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MataKuliahCplFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>
+        }
+        findFirst: {
+          args: Prisma.MataKuliahCplFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MataKuliahCplFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>
+        }
+        findMany: {
+          args: Prisma.MataKuliahCplFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>[]
+        }
+        create: {
+          args: Prisma.MataKuliahCplCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>
+        }
+        createMany: {
+          args: Prisma.MataKuliahCplCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MataKuliahCplCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>[]
+        }
+        delete: {
+          args: Prisma.MataKuliahCplDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>
+        }
+        update: {
+          args: Prisma.MataKuliahCplUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>
+        }
+        deleteMany: {
+          args: Prisma.MataKuliahCplDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MataKuliahCplUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MataKuliahCplUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>[]
+        }
+        upsert: {
+          args: Prisma.MataKuliahCplUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MataKuliahCplPayload>
+        }
+        aggregate: {
+          args: Prisma.MataKuliahCplAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMataKuliahCpl>
+        }
+        groupBy: {
+          args: Prisma.MataKuliahCplGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MataKuliahCplGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MataKuliahCplCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MataKuliahCplCountAggregateOutputType> | number
+        }
+      }
+    }
     CPMK: {
       payload: Prisma.$CPMKPayload<ExtArgs>
       fields: Prisma.CPMKFieldRefs
@@ -1322,80 +1396,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.CPMKCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.CPMKCountAggregateOutputType> | number
-        }
-      }
-    }
-    CpmkCpl: {
-      payload: Prisma.$CpmkCplPayload<ExtArgs>
-      fields: Prisma.CpmkCplFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.CpmkCplFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.CpmkCplFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>
-        }
-        findFirst: {
-          args: Prisma.CpmkCplFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.CpmkCplFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>
-        }
-        findMany: {
-          args: Prisma.CpmkCplFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>[]
-        }
-        create: {
-          args: Prisma.CpmkCplCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>
-        }
-        createMany: {
-          args: Prisma.CpmkCplCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.CpmkCplCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>[]
-        }
-        delete: {
-          args: Prisma.CpmkCplDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>
-        }
-        update: {
-          args: Prisma.CpmkCplUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>
-        }
-        deleteMany: {
-          args: Prisma.CpmkCplDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.CpmkCplUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.CpmkCplUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>[]
-        }
-        upsert: {
-          args: Prisma.CpmkCplUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$CpmkCplPayload>
-        }
-        aggregate: {
-          args: Prisma.CpmkCplAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateCpmkCpl>
-        }
-        groupBy: {
-          args: Prisma.CpmkCplGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.CpmkCplGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.CpmkCplCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.CpmkCplCountAggregateOutputType> | number
         }
       }
     }
@@ -2091,6 +2091,7 @@ export const DosenScalarFieldEnum = {
   id: 'id',
   nama: 'nama',
   gelar: 'gelar',
+  alias: 'alias',
   nip: 'nip',
   userId: 'userId'
 } as const
@@ -2150,6 +2151,15 @@ export const CPLScalarFieldEnum = {
 export type CPLScalarFieldEnum = (typeof CPLScalarFieldEnum)[keyof typeof CPLScalarFieldEnum]
 
 
+export const MataKuliahCplScalarFieldEnum = {
+  id: 'id',
+  mataKuliahId: 'mataKuliahId',
+  cplId: 'cplId'
+} as const
+
+export type MataKuliahCplScalarFieldEnum = (typeof MataKuliahCplScalarFieldEnum)[keyof typeof MataKuliahCplScalarFieldEnum]
+
+
 export const CPMKScalarFieldEnum = {
   id: 'id',
   kode: 'kode',
@@ -2160,15 +2170,6 @@ export const CPMKScalarFieldEnum = {
 } as const
 
 export type CPMKScalarFieldEnum = (typeof CPMKScalarFieldEnum)[keyof typeof CPMKScalarFieldEnum]
-
-
-export const CpmkCplScalarFieldEnum = {
-  id: 'id',
-  cpmkId: 'cpmkId',
-  cplId: 'cplId'
-} as const
-
-export type CpmkCplScalarFieldEnum = (typeof CpmkCplScalarFieldEnum)[keyof typeof CpmkCplScalarFieldEnum]
 
 
 export const SubCPMKScalarFieldEnum = {
@@ -2579,8 +2580,8 @@ export type GlobalOmitConfig = {
   penugasanDosenMK?: Prisma.PenugasanDosenMKOmit
   pendaftaranMK?: Prisma.PendaftaranMKOmit
   cPL?: Prisma.CPLOmit
+  mataKuliahCpl?: Prisma.MataKuliahCplOmit
   cPMK?: Prisma.CPMKOmit
-  cpmkCpl?: Prisma.CpmkCplOmit
   subCPMK?: Prisma.SubCPMKOmit
   cpmkSub?: Prisma.CpmkSubOmit
   tugas?: Prisma.TugasOmit

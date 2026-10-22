@@ -2,62 +2,101 @@
 
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
+import { headers } from "next/headers";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { kirimEmailOtpResetSandi } from "@/lib/email";
+import { buatKodeOtp, hashRahasia, samaAman } from "@/lib/keamanan";
+import { ambilIp, catatPercobaan, hapusCatatan, menitTersisa, sisaBlokirMs } from "@/lib/rate-limit";
+import { validasiSandi } from "@/lib/sandi";
 
-export async function mintaResetSandi(formData: FormData) {
-  const username = (formData.get("username") as string)?.trim();
-  if (!username) return { error: "Username wajib diisi." };
+const SATU_JAM_MS = 60 * 60 * 1000;
+const LIMA_BELAS_MENIT_MS = 15 * 60 * 1000;
+const MASA_OTP_MS = 10 * 60 * 1000;
+const MASA_TAUTAN_MS = 60 * 60 * 1000;
+const POLA_TOKEN = /^[a-f0-9]{64}$/;
 
-  const user = await prisma.user.findUnique({ where: { username } });
+export type HasilAuth = { ok?: true; error?: string };
+export type HasilTautanReset = HasilAuth & { link?: string; namaDosen?: string; berlakuMenit?: number };
 
-  if (!user) return { ok: true, mode: "tidak-ditemukan" as const };
-
-  if (user.role === "DOSEN") {
-    await prisma.permintaanResetSandi.create({ data: { userId: user.id } });
-    return { ok: true, mode: "diteruskan-ke-admin" as const };
-  }
-
-  // role ADMIN — kirim kode OTP ke email terverifikasi
-  if (!user.email) {
-    return { error: "Akun Admin ini belum memiliki email terverifikasi. Hubungi pengembang sistem untuk menambahkannya." };
-  }
-
-  const kodeOtp = crypto.randomInt(100000, 999999).toString();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 menit
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { otpKode: kodeOtp, otpExpiresAt: expiresAt },
-  });
-
-  try {
-    await kirimEmailOtpResetSandi(user.email, kodeOtp);
-  } catch (err) {
-    console.error("Gagal mengirim email OTP:", err);
-    return { error: "Gagal mengirim email. Coba lagi beberapa saat, atau hubungi pengembang sistem." };
-  }
-
-  return { ok: true, mode: "otp-terkirim" as const, username: user.username };
+function terlaluBanyak(ms: number): { error: string } {
+  return { error: `Terlalu banyak percobaan. Coba lagi dalam ${menitTersisa(ms)} menit.` };
 }
 
-export async function resetSandiDenganOtp(formData: FormData) {
-  const username = (formData.get("username") as string)?.trim();
-  const kodeOtp = (formData.get("kodeOtp") as string)?.trim();
-  const sandiBaru = formData.get("sandiBaru") as string;
-  const konfirmasi = formData.get("konfirmasi") as string;
+/**
+ * Respons sengaja sama untuk semua username (terdaftar atau tidak, Dosen atau Admin),
+ * supaya halaman ini tidak bisa dipakai untuk menebak akun yang ada.
+ */
+export async function mintaResetSandi(formData: FormData): Promise<HasilAuth> {
+  const username = String(formData.get("username") ?? "").trim();
+  if (!username) return { error: "Username wajib diisi." };
+  if (username.length > 64) return { error: "Username terlalu panjang." };
 
-  if (!username || !kodeOtp) return { error: "Username dan kode OTP wajib diisi." };
-  if (!sandiBaru || sandiBaru.length < 6) return { error: "Kata sandi minimal 6 karakter." };
-  if (sandiBaru !== konfirmasi) return { error: "Konfirmasi kata sandi tidak cocok." };
+  const ip = ambilIp(await headers());
+  const kunciIp = `reset-minta:${ip}`;
+  const kunciUser = `reset-minta-user:${username.toLowerCase()}`;
+  const blokir = Math.max(sisaBlokirMs(kunciIp, 5), sisaBlokirMs(kunciUser, 3));
+  if (blokir > 0) return terlaluBanyak(blokir);
+  catatPercobaan(kunciIp, SATU_JAM_MS);
+  catatPercobaan(kunciUser, SATU_JAM_MS);
 
   const user = await prisma.user.findUnique({ where: { username } });
-  if (
-    !user ||
-    user.otpKode !== kodeOtp ||
-    !user.otpExpiresAt ||
-    user.otpExpiresAt < new Date()
-  ) {
+
+  if (user?.role === "DOSEN") {
+    // Satu permintaan menunggu sudah cukup; jangan menumpuk baris di daftar admin.
+    const sudahAda = await prisma.permintaanResetSandi.findFirst({
+      where: { userId: user.id, status: "MENUNGGU" },
+      select: { id: true },
+    });
+    if (!sudahAda) await prisma.permintaanResetSandi.create({ data: { userId: user.id } });
+  } else if (user?.role === "ADMIN") {
+    if (!user.email) {
+      console.error(`Reset sandi: akun Admin "${user.username}" belum memiliki email terverifikasi.`);
+    } else {
+      const kodeOtp = buatKodeOtp();
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { otpKode: hashRahasia(kodeOtp), otpExpiresAt: new Date(Date.now() + MASA_OTP_MS) },
+      });
+      try {
+        await kirimEmailOtpResetSandi(user.email, kodeOtp);
+      } catch (err) {
+        console.error("Gagal mengirim email OTP:", err);
+      }
+    }
+  }
+
+  return { ok: true };
+}
+
+export async function resetSandiDenganOtp(formData: FormData): Promise<HasilAuth> {
+  const username = String(formData.get("username") ?? "").trim();
+  const kodeOtp = String(formData.get("kodeOtp") ?? "").trim();
+  const sandiBaru = String(formData.get("sandiBaru") ?? "");
+  const konfirmasi = String(formData.get("konfirmasi") ?? "");
+
+  if (!username || !kodeOtp) return { error: "Username dan kode OTP wajib diisi." };
+  if (!/^\d{6}$/.test(kodeOtp)) return { error: "Kode OTP terdiri dari 6 digit angka." };
+  const galatSandi = validasiSandi(sandiBaru, konfirmasi);
+  if (galatSandi) return { error: galatSandi };
+
+  const ip = ambilIp(await headers());
+  const kunciIp = `reset-otp:${ip}|${username.toLowerCase()}`;
+  const kunciUser = `reset-otp:${username.toLowerCase()}`;
+  const blokir = Math.max(sisaBlokirMs(kunciIp, 5), sisaBlokirMs(kunciUser, 10));
+  if (blokir > 0) return terlaluBanyak(blokir);
+
+  const user = await prisma.user.findUnique({ where: { username } });
+  const valid =
+    !!user &&
+    !!user.otpKode &&
+    !!user.otpExpiresAt &&
+    user.otpExpiresAt >= new Date() &&
+    samaAman(user.otpKode, hashRahasia(kodeOtp));
+
+  if (!valid || !user) {
+    catatPercobaan(kunciIp, LIMA_BELAS_MENIT_MS);
+    catatPercobaan(kunciUser, LIMA_BELAS_MENIT_MS);
     return { error: "Kode OTP salah atau sudah kedaluwarsa." };
   }
 
@@ -66,21 +105,30 @@ export async function resetSandiDenganOtp(formData: FormData) {
     where: { id: user.id },
     data: { password: hash, otpKode: null, otpExpiresAt: null },
   });
+  hapusCatatan(kunciIp);
+  hapusCatatan(kunciUser);
 
   return { ok: true };
 }
 
-// Jalur Dosen — tidak berubah, tetap pakai link yang disalin manual oleh Admin
-export async function resetSandiDenganToken(token: string, formData: FormData) {
-  const sandiBaru = formData.get("sandiBaru") as string;
-  const konfirmasi = formData.get("konfirmasi") as string;
+// Jalur Dosen: tautan sekali pakai yang dibuat Admin lalu dikirim manual ke dosen.
+export async function resetSandiDenganToken(token: string, formData: FormData): Promise<HasilAuth> {
+  const sandiBaru = String(formData.get("sandiBaru") ?? "");
+  const konfirmasi = String(formData.get("konfirmasi") ?? "");
+  const galatSandi = validasiSandi(sandiBaru, konfirmasi);
+  if (galatSandi) return { error: galatSandi };
 
-  if (!sandiBaru || sandiBaru.length < 6) return { error: "Kata sandi minimal 6 karakter." };
-  if (sandiBaru !== konfirmasi) return { error: "Konfirmasi kata sandi tidak cocok." };
+  const tidakValid = { error: "Tautan reset tidak valid atau sudah kedaluwarsa." };
+  if (typeof token !== "string" || !POLA_TOKEN.test(token)) return tidakValid;
 
-  const user = await prisma.user.findUnique({ where: { resetToken: token } });
+  const kunciIp = `reset-token:${ambilIp(await headers())}`;
+  const blokir = sisaBlokirMs(kunciIp, 10);
+  if (blokir > 0) return terlaluBanyak(blokir);
+
+  const user = await prisma.user.findUnique({ where: { resetToken: hashRahasia(token) } });
   if (!user || !user.resetTokenExpiresAt || user.resetTokenExpiresAt < new Date()) {
-    return { error: "Tautan reset tidak valid atau sudah kedaluwarsa." };
+    catatPercobaan(kunciIp, LIMA_BELAS_MENIT_MS);
+    return tidakValid;
   }
 
   const hash = await bcrypt.hash(sandiBaru, 10);
@@ -92,9 +140,14 @@ export async function resetSandiDenganToken(token: string, formData: FormData) {
   return { ok: true };
 }
 
-export async function buatTautanResetUntukDosen(permintaanId: string) {
+export async function buatTautanResetUntukDosen(permintaanId: string): Promise<HasilTautanReset> {
+  const session = await auth();
+  if (session?.user?.role !== "ADMIN") {
+    return { error: "Hanya admin yang boleh membuat tautan reset." };
+  }
+
   const permintaan = await prisma.permintaanResetSandi.findUnique({
-    where: { id: permintaanId },
+    where: { id: String(permintaanId) },
     include: { user: true },
   });
   if (!permintaan || permintaan.status === "SELESAI") {
@@ -102,18 +155,23 @@ export async function buatTautanResetUntukDosen(permintaanId: string) {
   }
 
   const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + MASA_TAUTAN_MS);
 
   await prisma.$transaction([
     prisma.user.update({
       where: { id: permintaan.userId },
-      data: { resetToken: token, resetTokenExpiresAt: expiresAt },
+      data: { resetToken: hashRahasia(token), resetTokenExpiresAt: expiresAt },
     }),
     prisma.permintaanResetSandi.update({
-      where: { id: permintaanId },
+      where: { id: permintaan.id },
       data: { status: "SELESAI", selesaiAt: new Date() },
     }),
   ]);
 
-  return { ok: true, link: `/reset-sandi/${token}`, namaDosen: permintaan.user.username };
+  return {
+    ok: true,
+    link: `/reset-sandi/${token}`,
+    namaDosen: permintaan.user.username,
+    berlakuMenit: MASA_TAUTAN_MS / 60_000,
+  };
 }

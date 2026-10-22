@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 
@@ -18,6 +19,8 @@ async function updateCPL(id: string, formData: FormData) {
 
   redirect("/admin/data-master/cpl");
 }
+
+export const metadata: Metadata = { title: "Ubah CPL" };
 
 export default async function EditCPLPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

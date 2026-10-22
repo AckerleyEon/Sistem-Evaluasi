@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { AsesmenWorkspace } from "@/components/dosen/asesmen/AsesmenWorkspace";
 import { ambilAsesmen, dosenSaatIni } from "@/lib/asesmen";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { title: "Komponen Penilaian" };
 
 export default async function KelolaAsesmenPage({
   params,

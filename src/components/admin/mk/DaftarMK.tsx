@@ -22,7 +22,7 @@ export function DaftarMK({
     : daftarMK;
 
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
+    <div className="h-full flex flex-col rounded-2xl bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-bold text-[#111827]">Daftar Mata Kuliah</h2>
         <span className="rounded-full bg-[#DCE7FB] px-2.5 py-0.5 text-xs font-semibold text-[#2F6BE8]">

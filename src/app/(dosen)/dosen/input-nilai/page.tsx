@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getTahunAjaranDosen } from "@/lib/tahun-ajaran";
+
+export const metadata: Metadata = { title: "Input Nilai" };
 
 export default async function DaftarMataKuliahInputNilaiPage() {
   const session = await auth();

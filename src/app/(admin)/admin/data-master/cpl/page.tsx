@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { CplWorkspace } from "@/components/admin/cpl/CplWorkspace";
@@ -12,6 +13,8 @@ function kodeBerikutnya(daftarKode: string[]): string {
   }
   return `CPL-${(maks + 1).toString().padStart(2, "0")}`;
 }
+
+export const metadata: Metadata = { title: "Data CPL" };
 
 export default async function DataMasterCPLPage() {
   const daftarCPL = await prisma.cPL.findMany({ orderBy: { kode: "asc" } });

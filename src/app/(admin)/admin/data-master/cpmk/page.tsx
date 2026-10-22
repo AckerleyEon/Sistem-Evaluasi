@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
 import { CpmkWorkspace } from "@/components/admin/cpmk/CpmkWorkspace";
 
 const urut = (a: { kode: string }, b: { kode: string }) =>
   a.kode.localeCompare(b.kode, undefined, { numeric: true });
+
+export const metadata: Metadata = { title: "CPMK dan Sub-CPMK" };
 
 export default async function KonfigurasiCpmkPage({
   searchParams,
@@ -24,13 +27,16 @@ export default async function KonfigurasiCpmkPage({
     );
   }
 
-  const [daftarMK, cplMentah] = await Promise.all([
-    prisma.mataKuliah.findMany({
-      orderBy: { kode: "asc" },
-      select: { id: true, kode: true, nama: true, sks: true },
-    }),
-    prisma.cPL.findMany({ select: { id: true, kode: true } }),
-  ]);
+  const daftarMK = await prisma.mataKuliah.findMany({
+    orderBy: { kode: "asc" },
+    select: {
+      id: true,
+      kode: true,
+      nama: true,
+      sks: true,
+      cplTerkait: { select: { cpl: { select: { id: true, kode: true } } } },
+    },
+  });
 
   const selectedId = daftarMK.find((m) => m.id === sp.mk)?.id ?? daftarMK[0]?.id ?? null;
 
@@ -39,7 +45,6 @@ export default async function KonfigurasiCpmkPage({
   const [cpmkMentah, subMentah, tautanSub] = await Promise.all([
     prisma.cPMK.findMany({
       where: { mataKuliahId: mkId, tahunAjaranId: ta.id },
-      include: { cpl: { include: { cpl: { select: { id: true, kode: true } } } } },
     }),
     prisma.subCPMK.findMany({
       where: { mataKuliahId: mkId, tahunAjaranId: ta.id },
@@ -57,14 +62,18 @@ export default async function KonfigurasiCpmkPage({
       kode: c.kode,
       deskripsi: c.deskripsi,
       bobot: c.bobot,
-      cpl: c.cpl.map((r) => r.cpl).sort(urut),
+      cpl: daftarMK.find((mk) => mk.id === c.mataKuliahId)?.cplTerkait.map((r) => r.cpl).sort(urut) ?? [],
     }))
     .sort(urut);
+  const daftarMKRingkas = daftarMK.map(({ cplTerkait, ...mk }) => ({
+    ...mk,
+    cpl: cplTerkait.map(({ cpl }) => cpl).sort(urut),
+  }));
 
   return (
     <CpmkWorkspace
-      daftarMK={daftarMK}
-      daftarCpl={[...cplMentah].sort(urut)}
+      daftarMK={daftarMKRingkas}
+      taLabel={ta.label}
       selectedId={selectedId}
       cpmkMk={cpmkMk}
       subMk={[...subMentah].sort(urut)}

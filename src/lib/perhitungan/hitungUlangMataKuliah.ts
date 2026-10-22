@@ -118,7 +118,7 @@ export async function hitungUlangCPL(mahasiswaIds: string[], tahunAjaranId: stri
     idMk.length > 0
       ? await prisma.cPMK.findMany({
           where: { mataKuliahId: { in: idMk }, tahunAjaranId },
-          include: { cpl: true },
+          include: { mataKuliah: { select: { cplTerkait: { select: { cplId: true } } } } },
         })
       : [];
 
@@ -156,7 +156,7 @@ export async function hitungUlangCPL(mahasiswaIds: string[], tahunAjaranId: stri
     for (const mkId of mkPerMhs.get(mahasiswaId) ?? []) {
       for (const c of cpmkPerMk.get(mkId) ?? []) {
         const hasil = hasilPer.get(`${mahasiswaId}|${c.id}`);
-        for (const pemetaan of c.cpl) {
+        for (const pemetaan of c.mataKuliah.cplTerkait) {
           const entri = perCpl.get(pemetaan.cplId) ?? { item: [], adaKosong: false };
           if (hasil) entri.item.push({ nilai: hasil.nilai, bobot: c.bobot, statusLengkap: hasil.statusLengkap });
           else entri.adaKosong = true;

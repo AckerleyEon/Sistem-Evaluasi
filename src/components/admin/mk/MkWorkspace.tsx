@@ -26,6 +26,7 @@ export function MkWorkspace({
   ta,
   daftarMK,
   daftarDosen,
+  daftarCPL,
   selectedId,
   selectedKelasId,
   mahasiswa,
@@ -39,6 +40,7 @@ export function MkWorkspace({
   ta: { id: string; label: string };
   daftarMK: MkItem[];
   daftarDosen: DosenOpsi[];
+  daftarCPL: { id: string; kode: string }[];
   selectedId: string | null;
   selectedKelasId: string | null;
   mahasiswa: MhsItem[];
@@ -221,6 +223,7 @@ export function MkWorkspace({
           key={modalMk.mk?.id ?? "baru"}
           mk={modalMk.mk}
           daftarDosen={daftarDosen}
+          daftarCPL={daftarCPL}
           taLabel={ta.label}
           onTutup={() => setModalMk(null)}
           onBerhasil={(pesan, idBaru) => {

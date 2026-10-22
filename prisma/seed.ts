@@ -196,10 +196,10 @@ async function main() {
   await prisma.nilai.deleteMany();
   await prisma.distribusiSubCPMK.deleteMany();
   await prisma.tugas.deleteMany();
-  await prisma.cpmkCpl.deleteMany();
   await prisma.cpmkSub.deleteMany();
   await prisma.cPMK.deleteMany();
   await prisma.subCPMK.deleteMany();
+  await prisma.mataKuliahCpl.deleteMany();
   await prisma.pendaftaranMK.deleteMany();
   await prisma.kelasMK.deleteMany();
   await prisma.penugasanDosenMK.deleteMany();
@@ -243,6 +243,10 @@ async function main() {
     const mk = await prisma.mataKuliah.create({
       data: { kode: def.kode, nama: def.nama, sks: def.sks, semester: def.semester },
     });
+    const cplMK = [...new Set(def.cpmk.flatMap((cpmk) => cpmk.cpl))];
+    await prisma.mataKuliahCpl.createMany({
+      data: cplMK.map((kode) => ({ mataKuliahId: mk.id, cplId: cplId.get(kode)! })),
+    });
     await prisma.penugasanDosenMK.create({ data: { mataKuliahId: mk.id, dosenId: dosenId!, tahunAjaranId: ta.id } });
     for (const nama of def.kelas) {
       await prisma.kelasMK.create({ data: { nama, mataKuliahId: mk.id, dosenId: dosenId!, tahunAjaranId: ta.id } });
@@ -260,14 +264,11 @@ async function main() {
       subId.set(s.no, baru.id);
     }
 
-    // CPMK milik MK ini + kaitan CPL + kaitan Sub-CPMK (CpmkSub, ber-bobot)
+    // CPMK mewarisi CPL dari mata kuliah dan memiliki kaitan Sub-CPMK berbobot.
     for (const c of def.cpmk) {
       const cpmk = await prisma.cPMK.create({
         data: { kode: `CPMK-${c.no}`, deskripsi: c.deskripsi, bobot: c.bobot, mataKuliahId: mk.id, tahunAjaranId: ta.id },
       });
-      for (const kode of c.cpl) {
-        await prisma.cpmkCpl.create({ data: { cpmkId: cpmk.id, cplId: cplId.get(kode)! } });
-      }
       for (const s of c.sub) {
         await prisma.cpmkSub.create({ data: { cpmkId: cpmk.id, subCpmkId: subId.get(s.no)!, bobot: s.bobot } });
       }

@@ -14,6 +14,7 @@ export type DosenItem = {
   id: string;
   nama: string;
   gelar: string | null;
+  alias: string | null;
   nip: string;
 };
 

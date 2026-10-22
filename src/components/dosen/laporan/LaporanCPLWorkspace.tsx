@@ -43,18 +43,20 @@ function Card({
   className = "",
   children,
   dark = false,
+  featured = false,
 }: {
   title: string;
   subtitle: string;
   className?: string;
   children: React.ReactNode;
   dark?: boolean;
+  featured?: boolean;
 }) {
   return (
-    <section className={`min-w-0 rounded-2xl border p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] ${dark ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-[#E5E9F0] bg-white"} ${className}`}>
+    <section className={`min-w-0 rounded-2xl border p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] ${featured ? "rounded-3xl p-6" : ""} ${dark ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-[#E5E9F0] bg-white"} ${className}`}>
       <div className="mb-3">
-        <h2 className={`text-sm font-bold ${dark ? "text-white" : "text-[#0F172A]"}`}>{title}</h2>
-        <p className={`mt-0.5 text-[10px] ${dark ? "text-white/80" : "text-[#64748B]"}`}>{subtitle}</p>
+        <h2 className={`${featured ? "text-2xl" : "text-sm"} font-bold ${dark ? "text-white" : "text-[#0F172A]"}`}>{title}</h2>
+        <p className={`${featured ? "mt-1 text-base" : "mt-0.5 text-[10px]"} ${dark ? "text-white/80" : "text-[#64748B]"}`}>{subtitle}</p>
       </div>
       {children}
     </section>
@@ -173,7 +175,7 @@ function TabTingkat({
           role="tab"
           aria-selected={value === tingkat}
           onClick={() => onChange(tingkat)}
-          className={`rounded-full px-2.5 py-1 text-[9px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2563EB] ${
+          className={`rounded-full px-2.5 py-1 text-[9px] font-semibold transition focus-visible:outline focus-visible:outline-offset-1 focus-visible:outline-[#2563EB] ${
             value === tingkat
               ? dark ? "bg-white text-[#1D4ED8]" : "bg-white text-[#1D4ED8] shadow-sm"
               : dark ? "text-white/80 hover:bg-white/10" : "text-[#64748B] hover:bg-white"
@@ -247,27 +249,41 @@ function VisualNilai({
 
 function BarKebercakupan({ data }: { data: Komponen[] }) {
   const max = Math.max(1, ...data.map((item) => item.jumlahMK ?? 0));
+  const lebarSlot = data.length ? 600 / data.length : 100;
+  const tinggiGrafik = 320;
+  const garisDasar = 450;
   return (
-    <div className="relative flex h-48 items-end justify-around gap-2 px-1 pb-6 pt-7" role="img" aria-label={`Jumlah mata kuliah per CPL: ${data.map((item) => `${item.kode} ${item.jumlahMK ?? 0} mata kuliah`).join(", ")}`}>
-      <div className="pointer-events-none absolute right-1 top-0 grid h-7 w-7 place-items-center rounded-full bg-[#1D4ED8] text-white shadow-[0_0_30px_rgba(37,99,235,.2)]">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+    <div className="relative overflow-hidden" style={{ height: "min(70vh, 36rem)", minHeight: "25rem" }} role="img" aria-label={`Jumlah mata kuliah per CPL: ${data.map((item) => `${item.kode} ${item.jumlahMK ?? 0} mata kuliah`).join(", ")}`}>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse at top right, #eaf1ff 0%, transparent 52%)" }} />
+      <div className="pointer-events-none absolute right-0 top-0 z-10 grid h-14 w-14 place-items-center rounded-full bg-[#2F6BE8] text-white shadow-[0_0_30px_rgba(37,99,235,.2)]">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M4 19V9M10 19V5M16 19v-7M22 19V3" />
         </svg>
       </div>
-      {data.map((item) => {
-        const value = item.jumlahMK ?? 0;
-        return (
-          <div key={item.id} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-            <span className="text-[9px] font-semibold text-[#2563EB]">{value}</span>
-            <div
-              className="w-full max-w-7 rounded-t-md bg-[#2563EB] transition-[height] duration-300"
-              style={{ height: `${Math.max(value ? 5 : 0, (value / max) * 112)}px` }}
-              title={`${item.kode} · ${value} mata kuliah`}
-            />
-            <span className="text-[9px] font-medium text-[#1D4ED8]">{item.kode.replace("-", " ")}</span>
-          </div>
-        );
-      })}
+      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 600 520" preserveAspectRatio="none" aria-hidden="true">
+        {data.map((item, index) => {
+          const value = item.jumlahMK ?? 0;
+          const tinggi = (value / max) * tinggiGrafik;
+          const tengah = lebarSlot * (index + 0.5);
+          const lebarBatang = Math.min(64, lebarSlot * 0.68);
+          return (
+            <g key={item.id}>
+              <rect
+                x={tengah - lebarBatang / 2}
+                y={garisDasar - tinggi}
+                width={lebarBatang}
+                height={tinggi}
+                rx="14"
+                fill="#3268EE"
+              >
+                <title>{`${item.kode} · ${value} mata kuliah`}</title>
+              </rect>
+              <text x={tengah} y={garisDasar - tinggi - 14} textAnchor="middle" fontSize="20" fontWeight="600" fill="#2563EB">{value}</text>
+              <text x={tengah} y={garisDasar + 34} textAnchor="middle" fontSize="18" fontWeight="500" fill="#1D4ED8">{item.kode.replace("-", " ")}</text>
+            </g>
+          );
+        })}
+      </svg>
       {data.length === 0 && <p className="absolute inset-0 grid place-items-center text-xs text-[#64748B]">Belum ada data CPL.</p>}
     </div>
   );
@@ -486,7 +502,7 @@ export function LaporanCPLWorkspace({ data }: { data: DataLaporanCPL | null }) {
           )}
 
           <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-12">
-            <Card title="Kebercakupan" subtitle="Jumlah mata kuliah setiap CPL" className="xl:col-span-5">
+            <Card title="Kebercakupan" subtitle="Jumlah mata kuliah setiap CPL" className="xl:col-span-5" featured>
               <BarKebercakupan data={data.cpl} />
               <table className="sr-only">
                 <caption>Jumlah mata kuliah yang memetakan setiap CPL</caption>
@@ -526,7 +542,7 @@ export function LaporanCPLWorkspace({ data }: { data: DataLaporanCPL | null }) {
                             </div>
                           </td>
                           <td className="px-2 py-2 text-right">
-                            <button type="button" onClick={() => setMahasiswaTerpilihId(m.id)} aria-pressed={aktif} className={`rounded-full px-3 py-1 text-[9px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#2563EB] ${aktif ? "border border-[#C9D8F7] bg-[#EEF3FC] text-[#1D4ED8]" : "bg-[#2563EB] text-white hover:bg-[#1D4ED8]"}`}>
+                            <button type="button" onClick={() => setMahasiswaTerpilihId(m.id)} aria-pressed={aktif} className={`rounded-full px-3 py-1 text-[9px] font-semibold focus-visible:outline focus-visible:outline-offset-1 focus-visible:outline-[#2563EB] ${aktif ? "border border-[#C9D8F7] bg-[#EEF3FC] text-[#1D4ED8]" : "bg-[#2563EB] text-white hover:bg-[#1D4ED8]"}`}>
                               Tampilkan
                             </button>
                           </td>
@@ -564,9 +580,9 @@ export function LaporanCPLWorkspace({ data }: { data: DataLaporanCPL | null }) {
                 : <p className="grid min-h-48 place-items-center text-xs text-[#64748B]">Belum ada data capaian mahasiswa.</p>}
             </Card>
 
-            <Card title="Kebermanfaatan" subtitle={`Hasil capaian prodi pada T.A. ${data.tahunAjaran.label} · ${nilaiTersedia.length} mahasiswa dengan hasil CPL`} className="xl:col-span-7" dark>
+            <Card title="Kebermanfaatan" subtitle={``} className="xl:col-span-7" dark>
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex gap-3 text-[9px] text-white/90"><span>— Batas Bawah</span><span>━ Ketercapaian</span></div>
+                <div className="flex gap-3 text-[9px] text-white/90">Hasil capaian prodi pada T.A. ${data.tahunAjaran.label} · ${nilaiTersedia.length} mahasiswa dengan hasil CPL</div>
                 <TabTingkat value={tingkatProdi} onChange={setTingkatProdi} dark />
               </div>
               <VisualNilai items={komponenProdi} tingkat={tingkatProdi} threshold={data.passingGrade} dark />

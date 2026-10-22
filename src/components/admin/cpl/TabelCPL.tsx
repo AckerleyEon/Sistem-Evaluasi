@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useLayoutEffect } from "react";
-import { deleteCPL, hitungCpmkTerkait } from "@/lib/actions/cpl";
+import { deleteCPL, hitungMataKuliahTerkait } from "@/lib/actions/cpl";
 import { ModalEditCPL } from "./ModalEditCPL";
 import type { CplItem } from "./CplWorkspace";
 
@@ -66,7 +66,7 @@ export function TabelCPL({ daftar, totalSemua, kataKunci }: { daftar: CplItem[];
   async function bukaDialogHapus(cpl: CplItem) {
     setHapusTarget(cpl);
     setJumlahTerkait(null);
-    const jumlah = await hitungCpmkTerkait(cpl.id);
+    const jumlah = await hitungMataKuliahTerkait(cpl.id);
     setJumlahTerkait(jumlah);
     setTimeout(() => batalRef.current?.focus(), 0);
   }
@@ -132,8 +132,8 @@ export function TabelCPL({ daftar, totalSemua, kataKunci }: { daftar: CplItem[];
               {jumlahTerkait === null
                 ? "Memeriksa keterkaitan data…"
                 : jumlahTerkait > 0
-                ? `CPL ini terhubung ke ${jumlahTerkait} CPMK. Menghapusnya dapat memengaruhi perhitungan capaian terkait.`
-                : "CPL ini belum terhubung ke CPMK manapun."}
+                ? `CPL ini terhubung ke ${jumlahTerkait} mata kuliah. Menghapusnya dapat memengaruhi perhitungan capaian terkait.`
+                : "CPL ini belum terhubung ke mata kuliah manapun."}
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button ref={batalRef} onClick={() => setHapusTarget(null)} className="h-11 rounded-[10px] bg-[#EEF3FD] text-sm font-semibold text-[#111827]">

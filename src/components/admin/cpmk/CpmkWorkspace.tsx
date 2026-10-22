@@ -11,10 +11,10 @@ import { ModalCPMK } from "./ModalCPMK";
 import { ModalSub } from "./ModalSub";
 import { ModalKaitkan } from "./ModalKaitkan";
 import { ModalHapusItem } from "./ModalHapusItem";
+import { ModalImporCPMK } from "./ModalImporCPMK";
 import {
   jumlahBobot,
   type CpmkTerkait,
-  type CplOpsi,
   type DampakCpmk,
   type DampakLepas,
   type DampakSub,
@@ -42,14 +42,14 @@ type AksiState =
 
 export function CpmkWorkspace({
   daftarMK,
-  daftarCpl,
+  taLabel,
   selectedId,
   cpmkMk,
   subMk,
   tautanSub,
 }: {
   daftarMK: MkRingkas[];
-  daftarCpl: CplOpsi[];
+  taLabel: string;
   selectedId: string | null;
   cpmkMk: KomponenCpmk[];
   subMk: KomponenSub[];
@@ -58,6 +58,7 @@ export function CpmkWorkspace({
   const mk = daftarMK.find((m) => m.id === selectedId) ?? null;
 
   const [modal, setModal] = useState<ModalState>(null);
+  const [imporBuka, setImporBuka] = useState(false);
   const [aksi, setAksi] = useState<AksiState>(null);
   const [toast, setToast] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -153,8 +154,22 @@ export function CpmkWorkspace({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#111827]">Konfigurasi CPMK &amp; Sub-CPMK</h1>
-          <p className="text-[13px] text-[#6B7280]">Pilih mata kuliah dulu, lalu atur CPMK dan Sub-CPMK miliknya</p>
+          <p className="text-[13px] text-[#6B7280]">
+            Pilih mata kuliah dulu, lalu atur CPMK dan Sub-CPMK miliknya · T.A. {taLabel}
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={() => setImporBuka(true)}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[#E8EAEE] bg-white px-4 text-sm font-semibold text-[#111827] hover:bg-[#EEF3FD]"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <path d="M17 8l-5-5-5 5" />
+            <path d="M12 3v12" />
+          </svg>
+          Impor CPMK &amp; Sub-CPMK
+        </button>
       </div>
 
       {mk ? (
@@ -249,7 +264,6 @@ export function CpmkWorkspace({
           mkId={mk.id}
           mkKode={mk.kode}
           cpmkMk={cpmkMk}
-          daftarCpl={daftarCpl}
           cpmk={cpmkEdit}
           onTutup={() => setModal(null)}
           onBerhasil={(pesan) => {
@@ -413,6 +427,8 @@ export function CpmkWorkspace({
           )}
         </ModalHapusItem>
       )}
+
+      {imporBuka && <ModalImporCPMK onTutup={() => setImporBuka(false)} />}
     </div>
   );
 }

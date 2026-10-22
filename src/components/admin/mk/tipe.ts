@@ -8,6 +8,7 @@ export type MkItem = {
   jumlahMhs: number;
   pjmkId: string | null;
   pjmkNama: string | null;
+  cpl: { id: string; kode: string }[];
   kelas: KelasItem[];
   terpakai: boolean;
 };

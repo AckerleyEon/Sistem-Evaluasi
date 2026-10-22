@@ -34,6 +34,12 @@ export async function buatTugas(input: InputBuatTugas): Promise<HasilAksi & { ri
   const k = await pastikanPengampu(input.mataKuliahId, input.kelasId);
   if ("galat" in k) return { ok: false, pesan: k.galat };
 
+  // Argumen server action datang dari client, jadi bentuknya tidak boleh dipercaya begitu saja.
+  if (typeof input.nama !== "string" || !Array.isArray(input.subCpmkIds)) {
+    return { ok: false, pesan: "Data tugas tidak valid." };
+  }
+  if (!Number.isFinite(input.bobot)) return { ok: false, pesan: "Bobot tugas harus berupa angka." };
+
   const nama = input.nama.trim();
   if (!nama) return { ok: false, pesan: "Judul tugas wajib diisi." };
   if (nama.length > 120) return { ok: false, pesan: "Judul tugas maksimal 120 karakter." };

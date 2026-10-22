@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { resetSandiDenganToken } from "@/lib/actions/auth";
+import { FieldSandi } from "@/components/FieldSandi";
+import { MIN_SANDI } from "@/lib/sandi";
 
 export function ResetSandiForm({ token }: { token: string }) {
-    const router = useRouter();
-    const [error, setError] = useState("");
-    const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,36 +28,31 @@ export function ResetSandiForm({ token }: { token: string }) {
   }
 
   if (status === "done") {
-    return <p className="text-sm text-slate-600">Kata sandi berhasil diubah. Mengalihkan ke halaman login…</p>;
+    return (
+      <div role="status" className="space-y-3 text-sm text-slate-600">
+        <p>Kata sandi berhasil diubah. Mengalihkan ke halaman login…</p>
+        <Link href="/login" className="font-semibold text-blue-600 hover:underline">
+          Langsung ke halaman login
+        </Link>
+      </div>
+    );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[.04em] text-slate-700">
-          Kata Sandi Baru
-        </label>
-        <input
-          name="sandiBaru"
-          type="password"
-          required
-          minLength={6}
-          className="h-12 w-full rounded-xl border border-slate-200 px-3.5 text-base text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/15"
-        />
-      </div>
-      <div>
-        <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[.04em] text-slate-700">
-          Konfirmasi Kata Sandi
-        </label>
-        <input
-          name="konfirmasi"
-          type="password"
-          required
-          minLength={6}
-          className="h-12 w-full rounded-xl border border-slate-200 px-3.5 text-base text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-600/15"
-        />
-      </div>
-      {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+      <FieldSandi
+        id="sandiBaru"
+        name="sandiBaru"
+        label="Kata Sandi Baru"
+        petunjuk={`Minimal ${MIN_SANDI} karakter.`}
+        autoFocus
+      />
+      <FieldSandi id="konfirmasi" name="konfirmasi" label="Konfirmasi Kata Sandi" />
+      {error && (
+        <p role="alert" className="text-sm font-medium text-red-600">
+          {error}
+        </p>
+      )}
       <button
         type="submit"
         disabled={status === "loading"}

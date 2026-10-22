@@ -61,6 +61,7 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
           id: true,
           kode: true,
           deskripsi: true,
+          mataKuliahTerkait: { select: { mataKuliahId: true } },
         },
       }),
       prisma.cPMK.findMany({
@@ -70,8 +71,13 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
           id: true,
           kode: true,
           deskripsi: true,
-          mataKuliah: { select: { id: true, kode: true } },
-          cpl: { select: { cpl: { select: { id: true, kode: true } } } },
+          mataKuliah: {
+            select: {
+              id: true,
+              kode: true,
+              cplTerkait: { select: { cpl: { select: { id: true, kode: true } } } },
+            },
+          },
           sub: { select: { subCpmk: { select: { id: true } } } },
         },
       }),
@@ -141,11 +147,7 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
       cpl: [],
       jumlahData: nilai.length,
       persenTuntas: nilai.length ? (nilai.filter((hasil) => hasil.nilai >= passingGrade).length / nilai.length) * 100 : null,
-      jumlahMK: new Set(
-        cpmkMaster
-          .filter((cpmkItem) => cpmkItem.cpl.some((tautan) => tautan.cpl.id === item.id))
-          .map((cpmkItem) => cpmkItem.mataKuliah.id),
-      ).size,
+      jumlahMK: item.mataKuliahTerkait.length,
     };
   });
   const cpmk = cpmkMaster.map((item) => {
@@ -156,7 +158,7 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
       deskripsi: item.deskripsi,
       nilai: rata(nilai.map((hasil) => hasil.nilai)) ?? 0,
       lengkap: nilai.length > 0 && nilai.every((hasil) => hasil.statusLengkap),
-      cpl: item.cpl.map((tautan) => tautan.cpl.kode),
+      cpl: item.mataKuliah.cplTerkait.map((tautan) => tautan.cpl.kode),
       jumlahData: nilai.length,
       persenTuntas: nilai.length ? (nilai.filter((hasil) => hasil.nilai >= passingGrade).length / nilai.length) * 100 : null,
     };
@@ -166,7 +168,7 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
     const cplTerkait = new Set(
       cpmkMaster
         .filter((c) => c.sub.some((tautan) => tautan.subCpmk.id === item.id))
-        .flatMap((c) => c.cpl.map((tautan) => tautan.cpl.kode)),
+        .flatMap((c) => c.mataKuliah.cplTerkait.map((tautan) => tautan.cpl.kode)),
     );
     return {
       id: item.id,
@@ -181,7 +183,7 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
   });
   const relasi = cpmkMaster.flatMap((item) =>
     item.sub.flatMap((tautan) =>
-      item.cpl.map((cplTautan) => ({
+      item.mataKuliah.cplTerkait.map((cplTautan) => ({
         cplId: cplTautan.cpl.id,
         cpmkId: item.id,
         subCpmkId: tautan.subCpmk.id,

@@ -112,6 +112,7 @@ export function DaftarDosen({
                       {namaDenganGelar(d)}
                     </p>
                     <p className="text-xs text-[#6B7280]">NIP. {d.nip}</p>
+                    {d.alias && <p className="text-xs text-[#2F6BE8]">Alias Excel: {d.alias}</p>}
                   </td>
                   <td className="px-2 py-3 align-top">
                     <div className="flex items-center gap-2">

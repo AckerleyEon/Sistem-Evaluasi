@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { dosenSaatIni, mataKuliahDiampu } from "@/lib/asesmen";
 import { getTahunAjaranDosen } from "@/lib/tahun-ajaran";
@@ -5,6 +6,8 @@ import { getTahunAjaranDosen } from "@/lib/tahun-ajaran";
 export const dynamic = "force-dynamic";
 
 // Halaman Kelola Asesmen bekerja per mata kuliah: arahkan ke MK pertama yang diampu.
+export const metadata: Metadata = { title: "Komponen Penilaian" };
+
 export default async function KomponenPenilaianIndex() {
   const dosen = await dosenSaatIni();
   if (!dosen) redirect("/login");

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +13,8 @@ function Status({ lengkap }: { lengkap: boolean }) {
     <span className="text-orange-600">Belum Lengkap</span>
   );
 }
+
+export const metadata: Metadata = { title: "Hasil Capaian" };
 
 export default async function HasilPerhitunganPage({
   params,

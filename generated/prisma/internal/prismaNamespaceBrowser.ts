@@ -62,8 +62,8 @@ export const ModelName = {
   PenugasanDosenMK: 'PenugasanDosenMK',
   PendaftaranMK: 'PendaftaranMK',
   CPL: 'CPL',
+  MataKuliahCpl: 'MataKuliahCpl',
   CPMK: 'CPMK',
-  CpmkCpl: 'CpmkCpl',
   SubCPMK: 'SubCPMK',
   CpmkSub: 'CpmkSub',
   Tugas: 'Tugas',
@@ -151,6 +151,7 @@ export const DosenScalarFieldEnum = {
   id: 'id',
   nama: 'nama',
   gelar: 'gelar',
+  alias: 'alias',
   nip: 'nip',
   userId: 'userId'
 } as const
@@ -210,6 +211,15 @@ export const CPLScalarFieldEnum = {
 export type CPLScalarFieldEnum = (typeof CPLScalarFieldEnum)[keyof typeof CPLScalarFieldEnum]
 
 
+export const MataKuliahCplScalarFieldEnum = {
+  id: 'id',
+  mataKuliahId: 'mataKuliahId',
+  cplId: 'cplId'
+} as const
+
+export type MataKuliahCplScalarFieldEnum = (typeof MataKuliahCplScalarFieldEnum)[keyof typeof MataKuliahCplScalarFieldEnum]
+
+
 export const CPMKScalarFieldEnum = {
   id: 'id',
   kode: 'kode',
@@ -220,15 +230,6 @@ export const CPMKScalarFieldEnum = {
 } as const
 
 export type CPMKScalarFieldEnum = (typeof CPMKScalarFieldEnum)[keyof typeof CPMKScalarFieldEnum]
-
-
-export const CpmkCplScalarFieldEnum = {
-  id: 'id',
-  cpmkId: 'cpmkId',
-  cplId: 'cplId'
-} as const
-
-export type CpmkCplScalarFieldEnum = (typeof CpmkCplScalarFieldEnum)[keyof typeof CpmkCplScalarFieldEnum]
 
 
 export const SubCPMKScalarFieldEnum = {

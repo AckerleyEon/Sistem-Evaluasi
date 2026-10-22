@@ -19,12 +19,12 @@ export async function mataKuliahDiampu(dosenId: string, tahunAjaranId: string) {
   const [penugasan, kelas] = await Promise.all([
     prisma.penugasanDosenMK.findMany({
       where: { dosenId, tahunAjaranId },
-      include: { mataKuliah: true },
+      include: { mataKuliah: { include: { cplTerkait: { include: { cpl: true } } } } },
       orderBy: { mataKuliah: { nama: "asc" } },
     }),
     prisma.kelasMK.findMany({
       where: { dosenId, tahunAjaranId },
-      include: { mataKuliah: true },
+      include: { mataKuliah: { include: { cplTerkait: { include: { cpl: true } } } } },
       orderBy: { mataKuliah: { nama: "asc" } },
     }),
   ]);
@@ -87,7 +87,6 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
       orderBy: { kode: "asc" },
       include: {
         sub: { include: { subCpmk: true }, orderBy: { subCpmk: { kode: "asc" } } },
-        cpl: { include: { cpl: true } },
       },
     }),
     prisma.nilai.groupBy({
@@ -134,7 +133,7 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
     kode: c.kode,
     angka: angkaKode(c.kode),
     deskripsi: c.deskripsi,
-    cpl: c.cpl.map((x) => ({ kode: x.cpl.kode, deskripsi: x.cpl.deskripsi })),
+    cpl: mk.cplTerkait.map(({ cpl }) => ({ kode: cpl.kode, deskripsi: cpl.deskripsi })),
     sub: c.sub.map((x) => ({ id: x.subCpmk.id, kode: x.subCpmk.kode, angka: angkaKode(x.subCpmk.kode), deskripsi: x.subCpmk.deskripsi })),
   }));
 

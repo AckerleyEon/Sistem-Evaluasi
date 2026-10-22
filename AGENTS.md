@@ -22,26 +22,41 @@ untuk Sub-CPMK yang belum terhubung.
 
 ## Struktur Folder
 ```
+prisma/                    schema.prisma, migrasi, seed.ts, seed-mahasiswa-dummy.ts
 src/
 ├── app/
-│   ├── (auth)/login/
-│   ├── (admin)/{data-master,pengguna,laporan}/
-│   ├── (dosen)/{komponen-penilaian,input-nilai,laporan}/
-│   └── api/{auth,data-master,komponen-penilaian,distribusi,nilai,perhitungan}/
+│   ├── (auth)/            login, lupa-sandi, reset-sandi/{otp,[token]}
+│   ├── (admin)/admin/     data-master/{cpl,cpmk,mata-kuliah}, dosen, tahun-ajaran,
+│   │                      laporan, permintaan-reset
+│   ├── (dosen)/dosen/     komponen-penilaian, input-nilai, hasil
+│   └── api/               auth, status, public/ringkasan, dan unduhan template/ekspor
+│                          (admin/*, dosen/*)
+├── components/            UI per area (admin/, dosen/) + komponen bersama
 ├── lib/
-│   ├── prisma.ts          # Prisma client + adapter singleton
+│   ├── actions/           server action ("use server"), satu file per domain
+│   ├── perhitungan/       rumus, hitungSubCPMK/CPMK/CPL, hitungUlangMataKuliah
 │   ├── distribusi/roundRobin.ts
-│   └── perhitungan/{hitungSubCPMK,hitungCPMK,hitungCPL}.ts
-├── auth.config.ts          # config edge-safe (dipakai middleware)
-├── auth.ts                 # config lengkap (Credentials provider, server-only)
-└── middleware.ts
+│   ├── otorisasi.ts       akses dosen/koordinator per mata kuliah dan kelas
+│   ├── keamanan.ts, sandi.ts, rate-limit.ts
+│   └── prisma.ts          Prisma client + adapter singleton
+├── auth.config.ts         config edge-safe (dipakai middleware)
+├── auth.ts                config lengkap (Credentials provider, server-only)
+└── middleware.ts          hanya melindungi halaman /admin dan /dosen
+tests/                     tes unit (npm test)
 ```
 Prinsip: logika distribusi & perhitungan dipisah ke `lib/`, tidak ditulis langsung
 di route API — supaya bisa diuji terpisah dan tetap fokus satu fungsi per sesi coding.
 
 ## Skema Data (schema.prisma)
-Model: User, Dosen, Mahasiswa, MataKuliah, CPL, CPMK, SubCPMK, Tugas,
+Model: User, PermintaanResetSandi, Pengaturan, TahunAjaran, Dosen, Mahasiswa, MataKuliah,
+KelasMK, PenugasanDosenMK, PendaftaranMK, CPL, MataKuliahCpl, CPMK, SubCPMK, CpmkSub, Tugas,
 DistribusiSubCPMK, Nilai, HasilSubCPMK, HasilCPMK, HasilCPL.
+
+Pemetaan kurikulum CPL berada pada relasi global `MataKuliahCpl`; setiap CPMK operasional
+mewarisi semua CPL yang dipetakan ke mata kuliahnya.
+
+Data operasional (CPMK, Sub-CPMK, tugas, nilai, hasil) dipisah per `TahunAjaran`; CPL tetap
+global. Tahun ajaran berstatus ARSIP hanya bisa dilihat.
 
 `HasilSubCPMK`/`HasilCPMK`/`HasilCPL` adalah hasil TURUNAN (dihitung sistem), terpisah
 dari `Nilai` (input asli dosen). Ketiganya punya field `statusLengkap: Boolean`.
@@ -65,18 +80,50 @@ dari `Nilai` (input asli dosen). Ketiganya punya field `statusLengkap: Boolean`.
 
 ## Status Implementasi (update manual setiap progres)
 - [x] Setup Next.js + Prisma + PostgreSQL (Laragon, db `evaluasi-db`)
-- [x] schema.prisma lengkap + migrasi awal berhasil
+- [x] schema.prisma lengkap + migrasi
 - [x] Prisma Client singleton dengan adapter (`src/lib/prisma.ts`)
 - [x] NextAuth (Credentials + JWT), route handler, middleware, type augmentation
-- [x] seed.ts (data uji: admin, dosen, 2 MK kontras)
+- [x] seed.ts (data uji: admin, dosen, 2 MK kontras) dan seed mahasiswa dummy
 - [x] Halaman /login (UI)
-- [x] CRUD Data Master (MK, CPL, CPMK, Sub-CPMK)
+- [x] CRUD Data Master (MK, CPL, CPMK, Sub-CPMK) + impor Excel
+- [x] Tahun ajaran, kelas mata kuliah, penugasan dosen, pendaftaran mahasiswa
 - [x] Mesin distribusi round-robin
-- [ ] Input nilai
-- [ ] Perhitungan berjenjang
-- [ ] Laporan
+- [x] Input nilai (manual dan impor Excel)
+- [x] Perhitungan berjenjang (`hitungUlangMataKuliah`)
+- [x] Dasbor dan laporan (admin dan dosen)
+- [x] Reset kata sandi (OTP email untuk Admin, tautan dari Admin untuk Dosen)
+- [x] Tes unit rumus, distribusi, dan utilitas keamanan (`npm test`)
+- [ ] Pembatas percobaan login/OTP yang dibagi antar-instance (saat ini di memori satu proses)
+- [ ] Ganti `window.confirm` dengan dialog konfirmasi yang konsisten dengan UI
+
+## Catatan Terbuka (butuh keputusan sebelum diubah)
+- `hitungSubCPMK`: jika mahasiswa belum punya satu pun nilai untuk tugas-tugas sebuah Sub-CPMK,
+  hasilnya disimpan sebagai 0 dengan `statusLengkap: false` dan ikut menurunkan rata-rata CPMK.
+  Sub-CPMK yang tidak punya tugas sama sekali justru diabaikan. Konfirmasi apakah keduanya
+  seharusnya diperlakukan sama.
+- `finalisasiDistribusi` membagikan Sub-CPMK ke semua tugas mata kuliah, termasuk tugas yang khusus
+  milik satu kelas. Sub-CPMK yang hanya jatuh ke tugas satu kelas tidak punya hasil untuk
+  mahasiswa kelas lain. Konfirmasi apakah tujuan distribusi dibatasi ke tugas tingkat mata kuliah.
 
 ## Konvensi
 - Bahasa penamaan: Indonesia untuk domain/istilah akademik (SubCPMK, MataKuliah, dst),
   Inggris untuk hal teknis generik (helper, util, handler).
 - id pakai `cuid()`, bukan auto-increment integer.
+- Setiap fungsi yang di-export dari file `"use server"` adalah endpoint publik. Wajib memeriksa
+  hak akses di awal (`pastikanAdmin()`, `pastikanPengelolaMK()`, atau `auth()`). Satu-satunya
+  pengecualian adalah alur reset sandi di `lib/actions/auth.ts` yang memang diakses sebelum login.
+  Argumen dari client tidak boleh dipercaya bentuk dan isinya.
+- Route API di `src/app/api/**` tidak dilindungi middleware (matcher hanya `/admin` dan `/dosen`),
+  jadi tiap route memeriksa sesi sendiri.
+- Kode OTP dan token reset disimpan sebagai hash (`hashRahasia`), jangan disimpan sebagai teks asli.
+- Perubahan pada rumus atau distribusi harus disertai tes di `tests/`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

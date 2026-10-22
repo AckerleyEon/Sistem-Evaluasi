@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
@@ -11,6 +12,8 @@ function Status({ lengkap }: { lengkap: boolean }) {
     <span className="text-orange-600">Belum Lengkap</span>
   );
 }
+
+export const metadata: Metadata = { title: "Detail Capaian Mahasiswa" };
 
 export default async function LaporanDetailMahasiswaPage({
   params,
@@ -36,7 +39,13 @@ export default async function LaporanDetailMahasiswaPage({
     prisma.hasilCPL.findMany({ where, include: { cpl: true } }),
     prisma.hasilCPMK.findMany({
       where,
-      include: { cpmk: { include: { mataKuliah: true, cpl: { include: { cpl: true } } } } },
+      include: {
+        cpmk: {
+          include: {
+            mataKuliah: { include: { cplTerkait: { include: { cpl: true } } } },
+          },
+        },
+      },
     }),
     prisma.hasilSubCPMK.findMany({ where, include: { subCpmk: true, mataKuliah: true } }),
   ]);
@@ -108,7 +117,7 @@ export default async function LaporanDetailMahasiswaPage({
                 <td className="py-2">{h.cpmk.kode}</td>
                 <td className="py-2">{h.cpmk.mataKuliah?.kode ?? "-"}</td>
                 <td className="py-2">
-                  {h.cpmk.cpl.map((r) => r.cpl.kode).sort(urut).join(", ") || "-"}
+                  {h.cpmk.mataKuliah?.cplTerkait.map((r) => r.cpl.kode).sort(urut).join(", ") || "-"}
                 </td>
                 <td className="py-2">{h.nilai.toFixed(2)}</td>
                 <td className="py-2"><Status lengkap={h.statusLengkap} /></td>

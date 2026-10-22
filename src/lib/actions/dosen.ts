@@ -6,6 +6,7 @@ import ExcelJS from "exceljs";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { validasiSandi } from "@/lib/sandi";
 
 type HasilAksi = { error?: string; nip?: string; passwordSementara?: string };
 export type BarisImporDosen = { nama: string; gelar: string | null; nip: string };
@@ -90,17 +91,21 @@ export async function createDosen(formData: FormData): Promise<HasilAksi> {
 
   const nama = ((formData.get("nama") as string) ?? "").trim();
   const gelar = ((formData.get("gelar") as string) ?? "").trim() || null;
+  const alias = ((formData.get("alias") as string) ?? "").trim() || null;
   const nip = ((formData.get("nip") as string) ?? "").trim();
 
   if (!nama) return { error: "Nama lengkap wajib diisi." };
   if (nama.length > 120) return { error: "Nama lengkap maksimal 120 karakter." };
+  if ((alias?.length ?? 0) > 120) return { error: "Alias maksimal 120 karakter." };
   if (!POLA_NIP.test(nip)) return { error: "NIP harus berupa angka (8-20 digit)." };
 
-  const [dosenAda, usernameAda] = await Promise.all([
+  const [dosenAda, usernameAda, aliasAda] = await Promise.all([
     prisma.dosen.findUnique({ where: { nip } }),
     prisma.user.findUnique({ where: { username: nip } }),
+    alias ? prisma.dosen.findFirst({ where: { alias: { equals: alias, mode: "insensitive" } } }) : null,
   ]);
   if (dosenAda || usernameAda) return { error: `NIP ${nip} sudah terdaftar.` };
+  if (aliasAda) return { error: "Alias sudah digunakan dosen lain." };
 
   const passwordSementara = buatPasswordSementara();
   const hash = await bcrypt.hash(passwordSementara, 10);
@@ -111,7 +116,7 @@ export async function createDosen(formData: FormData): Promise<HasilAksi> {
         username: nip,
         password: hash,
         role: "DOSEN",
-        dosen: { create: { nama, gelar, nip } },
+        dosen: { create: { nama, gelar, alias, nip } },
       },
     });
   } catch {
@@ -127,11 +132,17 @@ export async function updateDosen(id: string, formData: FormData): Promise<Hasil
 
   const nama = ((formData.get("nama") as string) ?? "").trim();
   const gelar = ((formData.get("gelar") as string) ?? "").trim() || null;
+  const alias = ((formData.get("alias") as string) ?? "").trim() || null;
 
   if (!nama) return { error: "Nama lengkap wajib diisi." };
   if (nama.length > 120) return { error: "Nama lengkap maksimal 120 karakter." };
+  if ((alias?.length ?? 0) > 120) return { error: "Alias maksimal 120 karakter." };
+  const aliasAda = alias
+    ? await prisma.dosen.findFirst({ where: { id: { not: id }, alias: { equals: alias, mode: "insensitive" } } })
+    : null;
+  if (aliasAda) return { error: "Alias sudah digunakan dosen lain." };
 
-  await prisma.dosen.update({ where: { id }, data: { nama, gelar } });
+  await prisma.dosen.update({ where: { id }, data: { nama, gelar, alias } });
 
   revalidatePath("/admin/dosen");
   return {};
@@ -322,9 +333,9 @@ export async function terapkanImporDosen(
 export async function gantiSandiDosen(id: string, formData: FormData): Promise<HasilAksi> {
   await pastikanAdmin();
 
-  const sandi = (formData.get("sandi") as string) ?? "";
-  if (sandi.length < 6) return { error: "Kata sandi minimal 6 karakter." };
-  if (sandi.length > 64) return { error: "Kata sandi maksimal 64 karakter." };
+  const sandi = String(formData.get("sandi") ?? "");
+  const galatSandi = validasiSandi(sandi);
+  if (galatSandi) return { error: galatSandi };
 
   const dosen = await prisma.dosen.findUnique({ where: { id } });
   if (!dosen) return { error: "Akun dosen tidak ditemukan." };

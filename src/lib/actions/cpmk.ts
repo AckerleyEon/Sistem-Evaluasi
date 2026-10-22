@@ -24,7 +24,6 @@ function bacaForm(formData: FormData) {
   return {
     kode: ((formData.get("kode") as string) ?? "").trim(),
     deskripsi: ((formData.get("deskripsi") as string) ?? "").trim(),
-    cplIds: [...new Set(formData.getAll("cplIds") as string[])],
     bobot: Number(formData.get("bobot")),
   };
 }
@@ -32,14 +31,8 @@ function bacaForm(formData: FormData) {
 function validasi(d: ReturnType<typeof bacaForm>): string | null {
   if (!POLA_KODE.test(d.kode)) return "Kode harus berformat CPMK-1, CPMK-2, dst.";
   if (d.deskripsi.length < 10 || d.deskripsi.length > 500) return "Deskripsi harus 10-500 karakter.";
-  if (d.cplIds.length === 0) return "Pilih minimal 1 CPL.";
   if (!Number.isInteger(d.bobot) || d.bobot < 1 || d.bobot > 100) return "Bobot harus bilangan bulat 1-100.";
   return null;
-}
-
-async function cplValid(ids: string[]) {
-  const ada = await prisma.cPL.count({ where: { id: { in: ids } } });
-  return ada === ids.length;
 }
 
 async function totalBobotLain(mataKuliahId: string, tahunAjaranId: string, kecualiId?: string) {
@@ -68,7 +61,6 @@ export async function createCPMK(mkId: string, formData: FormData): Promise<Hasi
   if (!ta) return { error: SALAH_TA };
   const mk = await prisma.mataKuliah.findUnique({ where: { id: mkId } });
   if (!mk) return { error: "Mata kuliah tidak ditemukan." };
-  if (!(await cplValid(d.cplIds))) return { error: "Ada CPL terpilih yang tidak ditemukan." };
 
   const kembar = await prisma.cPMK.findUnique({
     where: { kode_mataKuliahId_tahunAjaranId: { kode: d.kode, mataKuliahId: mkId, tahunAjaranId: ta.id } },
@@ -85,7 +77,6 @@ export async function createCPMK(mkId: string, formData: FormData): Promise<Hasi
       bobot: d.bobot,
       mataKuliahId: mkId,
       tahunAjaranId: ta.id,
-      cpl: { create: d.cplIds.map((cplId) => ({ cplId })) },
     },
   });
   await hitungUlangMataKuliah(mkId, ta.id);
@@ -102,7 +93,6 @@ export async function updateCPMK(id: string, formData: FormData): Promise<Hasil>
 
   const cpmk = await prisma.cPMK.findUnique({ where: { id } });
   if (!cpmk) return { error: "CPMK tidak ditemukan." };
-  if (!(await cplValid(d.cplIds))) return { error: "Ada CPL terpilih yang tidak ditemukan." };
 
   const kembar = await prisma.cPMK.findFirst({
     where: {
@@ -123,7 +113,6 @@ export async function updateCPMK(id: string, formData: FormData): Promise<Hasil>
       kode: d.kode,
       deskripsi: d.deskripsi,
       bobot: d.bobot,
-      cpl: { deleteMany: {}, create: d.cplIds.map((cplId) => ({ cplId })) },
     },
   });
   if (d.bobot !== cpmk.bobot) await hitungUlangMataKuliah(cpmk.mataKuliahId, cpmk.tahunAjaranId);

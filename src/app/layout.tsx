@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sistem Pengukuran CPL",
-  description: "Sistem Pengukuran CPL Berbasis OBE",
+  title: { default: "Sistem Evaluasi CPL", template: "%s · Sistem Evaluasi CPL" },
+  description: "Sistem Pengukuran Capaian Pembelajaran Lulusan Berbasis OBE, Program Studi Teknik Elektro UTM",
 };
 
 export default function RootLayout({

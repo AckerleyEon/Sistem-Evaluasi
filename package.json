@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "tsx --test tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mk.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
+    "typecheck": "tsc --noEmit",
+    "import:ta-2022-2023": "tsx scripts/import-ta-2022-2023.ts",
     "seed:mahasiswa-dummy": "tsx prisma/seed-mahasiswa-dummy.ts",
     "seed:lengkap-dummy": "tsx prisma/seed-mahasiswa-dummy.ts"
   },
@@ -29,6 +32,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
     "tailwindcss": "^4",

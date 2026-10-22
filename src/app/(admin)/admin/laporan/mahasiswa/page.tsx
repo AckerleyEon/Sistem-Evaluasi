@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+
+export const metadata: Metadata = { title: "Laporan Mahasiswa" };
 
 export default async function LaporanMahasiswaListPage({
   searchParams,

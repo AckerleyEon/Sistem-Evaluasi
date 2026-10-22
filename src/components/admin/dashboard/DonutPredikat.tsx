@@ -17,13 +17,12 @@ export function DonutPredikat({
   persenLulus: number | null;
   jumlahRemedial: number;
 }) {
-  let offset = 0;
-  const busur = segmen.map((s) => {
+  const busur = segmen.reduce<(SegmenPredikat & { panjang: number; offset: number })[]>((hasil, s) => {
     const panjang = total ? (s.jumlah / total) * KELILING : 0;
-    const el = { ...s, panjang, offset };
-    offset += panjang;
-    return el;
-  });
+    const sebelumnya = hasil[hasil.length - 1];
+    const offset = sebelumnya ? sebelumnya.offset + sebelumnya.panjang : 0;
+    return [...hasil, { ...s, panjang, offset }];
+  }, []);
   const remedial = segmen.find((s) => s.kunci === "DE");
   const lainnya = segmen.filter((s) => s.kunci !== "DE");
 
@@ -34,7 +33,7 @@ export function DonutPredikat({
       aksi={<Ikon nama="pie" ukuran={20} className="text-[#2563EB]" />}
       className="lg:col-span-4"
     >
-      <div className="relative mx-auto my-1 h-[150px] w-[150px]">
+      <div className="relative mx-auto my-1 h-37.5 w-37.5">
         <svg
           viewBox="0 0 130 130"
           className="h-full w-full -rotate-90"

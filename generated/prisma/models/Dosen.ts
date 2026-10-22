@@ -28,6 +28,7 @@ export type DosenMinAggregateOutputType = {
   id: string | null
   nama: string | null
   gelar: string | null
+  alias: string | null
   nip: string | null
   userId: string | null
 }
@@ -36,6 +37,7 @@ export type DosenMaxAggregateOutputType = {
   id: string | null
   nama: string | null
   gelar: string | null
+  alias: string | null
   nip: string | null
   userId: string | null
 }
@@ -44,6 +46,7 @@ export type DosenCountAggregateOutputType = {
   id: number
   nama: number
   gelar: number
+  alias: number
   nip: number
   userId: number
   _all: number
@@ -54,6 +57,7 @@ export type DosenMinAggregateInputType = {
   id?: true
   nama?: true
   gelar?: true
+  alias?: true
   nip?: true
   userId?: true
 }
@@ -62,6 +66,7 @@ export type DosenMaxAggregateInputType = {
   id?: true
   nama?: true
   gelar?: true
+  alias?: true
   nip?: true
   userId?: true
 }
@@ -70,6 +75,7 @@ export type DosenCountAggregateInputType = {
   id?: true
   nama?: true
   gelar?: true
+  alias?: true
   nip?: true
   userId?: true
   _all?: true
@@ -151,6 +157,7 @@ export type DosenGroupByOutputType = {
   id: string
   nama: string
   gelar: string | null
+  alias: string | null
   nip: string
   userId: string
   _count: DosenCountAggregateOutputType | null
@@ -180,6 +187,7 @@ export type DosenWhereInput = {
   id?: Prisma.StringFilter<"Dosen"> | string
   nama?: Prisma.StringFilter<"Dosen"> | string
   gelar?: Prisma.StringNullableFilter<"Dosen"> | string | null
+  alias?: Prisma.StringNullableFilter<"Dosen"> | string | null
   nip?: Prisma.StringFilter<"Dosen"> | string
   userId?: Prisma.StringFilter<"Dosen"> | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -191,6 +199,7 @@ export type DosenOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   nama?: Prisma.SortOrder
   gelar?: Prisma.SortOrderInput | Prisma.SortOrder
+  alias?: Prisma.SortOrderInput | Prisma.SortOrder
   nip?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -200,6 +209,7 @@ export type DosenOrderByWithRelationInput = {
 
 export type DosenWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  alias?: string
   nip?: string
   userId?: string
   AND?: Prisma.DosenWhereInput | Prisma.DosenWhereInput[]
@@ -210,12 +220,13 @@ export type DosenWhereUniqueInput = Prisma.AtLeast<{
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   penugasan?: Prisma.PenugasanDosenMKListRelationFilter
   kelas?: Prisma.KelasMKListRelationFilter
-}, "id" | "nip" | "userId">
+}, "id" | "alias" | "nip" | "userId">
 
 export type DosenOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   nama?: Prisma.SortOrder
   gelar?: Prisma.SortOrderInput | Prisma.SortOrder
+  alias?: Prisma.SortOrderInput | Prisma.SortOrder
   nip?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   _count?: Prisma.DosenCountOrderByAggregateInput
@@ -230,6 +241,7 @@ export type DosenScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Dosen"> | string
   nama?: Prisma.StringWithAggregatesFilter<"Dosen"> | string
   gelar?: Prisma.StringNullableWithAggregatesFilter<"Dosen"> | string | null
+  alias?: Prisma.StringNullableWithAggregatesFilter<"Dosen"> | string | null
   nip?: Prisma.StringWithAggregatesFilter<"Dosen"> | string
   userId?: Prisma.StringWithAggregatesFilter<"Dosen"> | string
 }
@@ -238,6 +250,7 @@ export type DosenCreateInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   user: Prisma.UserCreateNestedOneWithoutDosenInput
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutDosenInput
@@ -248,6 +261,7 @@ export type DosenUncheckedCreateInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   userId: string
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutDosenInput
@@ -258,6 +272,7 @@ export type DosenUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   user?: Prisma.UserUpdateOneRequiredWithoutDosenNestedInput
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutDosenNestedInput
@@ -268,6 +283,7 @@ export type DosenUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutDosenNestedInput
@@ -278,6 +294,7 @@ export type DosenCreateManyInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   userId: string
 }
@@ -286,6 +303,7 @@ export type DosenUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -293,6 +311,7 @@ export type DosenUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -306,6 +325,7 @@ export type DosenCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nama?: Prisma.SortOrder
   gelar?: Prisma.SortOrder
+  alias?: Prisma.SortOrder
   nip?: Prisma.SortOrder
   userId?: Prisma.SortOrder
 }
@@ -314,6 +334,7 @@ export type DosenMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nama?: Prisma.SortOrder
   gelar?: Prisma.SortOrder
+  alias?: Prisma.SortOrder
   nip?: Prisma.SortOrder
   userId?: Prisma.SortOrder
 }
@@ -322,6 +343,7 @@ export type DosenMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nama?: Prisma.SortOrder
   gelar?: Prisma.SortOrder
+  alias?: Prisma.SortOrder
   nip?: Prisma.SortOrder
   userId?: Prisma.SortOrder
 }
@@ -397,6 +419,7 @@ export type DosenCreateWithoutUserInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutDosenInput
   kelas?: Prisma.KelasMKCreateNestedManyWithoutDosenInput
@@ -406,6 +429,7 @@ export type DosenUncheckedCreateWithoutUserInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutDosenInput
   kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutDosenInput
@@ -431,6 +455,7 @@ export type DosenUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutDosenNestedInput
   kelas?: Prisma.KelasMKUpdateManyWithoutDosenNestedInput
@@ -440,6 +465,7 @@ export type DosenUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutDosenNestedInput
   kelas?: Prisma.KelasMKUncheckedUpdateManyWithoutDosenNestedInput
@@ -449,6 +475,7 @@ export type DosenCreateWithoutKelasInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   user: Prisma.UserCreateNestedOneWithoutDosenInput
   penugasan?: Prisma.PenugasanDosenMKCreateNestedManyWithoutDosenInput
@@ -458,6 +485,7 @@ export type DosenUncheckedCreateWithoutKelasInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   userId: string
   penugasan?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutDosenInput
@@ -483,6 +511,7 @@ export type DosenUpdateWithoutKelasInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   user?: Prisma.UserUpdateOneRequiredWithoutDosenNestedInput
   penugasan?: Prisma.PenugasanDosenMKUpdateManyWithoutDosenNestedInput
@@ -492,6 +521,7 @@ export type DosenUncheckedUpdateWithoutKelasInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   penugasan?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutDosenNestedInput
@@ -501,6 +531,7 @@ export type DosenCreateWithoutPenugasanInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   user: Prisma.UserCreateNestedOneWithoutDosenInput
   kelas?: Prisma.KelasMKCreateNestedManyWithoutDosenInput
@@ -510,6 +541,7 @@ export type DosenUncheckedCreateWithoutPenugasanInput = {
   id?: string
   nama: string
   gelar?: string | null
+  alias?: string | null
   nip: string
   userId: string
   kelas?: Prisma.KelasMKUncheckedCreateNestedManyWithoutDosenInput
@@ -535,6 +567,7 @@ export type DosenUpdateWithoutPenugasanInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   user?: Prisma.UserUpdateOneRequiredWithoutDosenNestedInput
   kelas?: Prisma.KelasMKUpdateManyWithoutDosenNestedInput
@@ -544,6 +577,7 @@ export type DosenUncheckedUpdateWithoutPenugasanInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   nama?: Prisma.StringFieldUpdateOperationsInput | string
   gelar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  alias?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   nip?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   kelas?: Prisma.KelasMKUncheckedUpdateManyWithoutDosenNestedInput
@@ -593,6 +627,7 @@ export type DosenSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   id?: boolean
   nama?: boolean
   gelar?: boolean
+  alias?: boolean
   nip?: boolean
   userId?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -605,6 +640,7 @@ export type DosenSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   nama?: boolean
   gelar?: boolean
+  alias?: boolean
   nip?: boolean
   userId?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -614,6 +650,7 @@ export type DosenSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   nama?: boolean
   gelar?: boolean
+  alias?: boolean
   nip?: boolean
   userId?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -623,11 +660,12 @@ export type DosenSelectScalar = {
   id?: boolean
   nama?: boolean
   gelar?: boolean
+  alias?: boolean
   nip?: boolean
   userId?: boolean
 }
 
-export type DosenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nama" | "gelar" | "nip" | "userId", ExtArgs["result"]["dosen"]>
+export type DosenOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nama" | "gelar" | "alias" | "nip" | "userId", ExtArgs["result"]["dosen"]>
 export type DosenInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   penugasan?: boolean | Prisma.Dosen$penugasanArgs<ExtArgs>
@@ -652,6 +690,7 @@ export type $DosenPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     id: string
     nama: string
     gelar: string | null
+    alias: string | null
     nip: string
     userId: string
   }, ExtArgs["result"]["dosen"]>
@@ -1083,6 +1122,7 @@ export interface DosenFieldRefs {
   readonly id: Prisma.FieldRef<"Dosen", 'String'>
   readonly nama: Prisma.FieldRef<"Dosen", 'String'>
   readonly gelar: Prisma.FieldRef<"Dosen", 'String'>
+  readonly alias: Prisma.FieldRef<"Dosen", 'String'>
   readonly nip: Prisma.FieldRef<"Dosen", 'String'>
   readonly userId: Prisma.FieldRef<"Dosen", 'String'>
 }

@@ -4,11 +4,28 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
+import { hitungUlangCPL } from "@/lib/perhitungan/hitungUlangMataKuliah";
 
 type HasilAksi = { error?: string; id?: string };
 
 const POLA_KODE = /^[A-Z]{2,4}\d{2,4}$/;
 const HALAMAN = "/admin/data-master/mata-kuliah";
+
+async function hitungUlangCplTerkaitMataKuliah(mataKuliahId: string) {
+  const pendaftaran = await prisma.pendaftaranMK.findMany({
+    where: { mataKuliahId },
+    select: { mahasiswaId: true, tahunAjaranId: true },
+  });
+  const mahasiswaPerTahun = new Map<string, Set<string>>();
+  for (const row of pendaftaran) {
+    const mahasiswa = mahasiswaPerTahun.get(row.tahunAjaranId) ?? new Set<string>();
+    mahasiswa.add(row.mahasiswaId);
+    mahasiswaPerTahun.set(row.tahunAjaranId, mahasiswa);
+  }
+  for (const [tahunAjaranId, mahasiswa] of mahasiswaPerTahun) {
+    await hitungUlangCPL([...mahasiswa], tahunAjaranId);
+  }
+}
 
 async function pastikanAdmin() {
   const session = await auth();
@@ -23,6 +40,7 @@ function bacaForm(formData: FormData) {
     nama: ((formData.get("nama") as string) ?? "").trim(),
     sks: Number(formData.get("sks")),
     dosenId: ((formData.get("dosenId") as string) ?? "").trim(),
+    cplIds: [...new Set(formData.getAll("cplIds").filter((value): value is string => typeof value === "string"))],
   };
 }
 
@@ -43,23 +61,27 @@ export async function createMataKuliah(formData: FormData): Promise<HasilAksi> {
   const ta = await getTahunAjaranAktif();
   if (!ta) return { error: "Belum ada Tahun Ajaran aktif. Aktifkan dulu lewat dropdown T.A." };
 
-  const [kodeAda, dosen] = await Promise.all([
+  const [kodeAda, dosen, cplCount] = await Promise.all([
     prisma.mataKuliah.findUnique({ where: { kode: d.kode } }),
     prisma.dosen.findUnique({ where: { id: d.dosenId } }),
+    prisma.cPL.count({ where: { id: { in: d.cplIds } } }),
   ]);
   if (kodeAda) return { error: `Kode ${d.kode} sudah dipakai mata kuliah lain.` };
   if (!dosen) return { error: "Dosen yang dipilih tidak ditemukan." };
+  if (cplCount !== d.cplIds.length) return { error: "Ada CPL terpilih yang tidak ditemukan." };
 
   const mk = await prisma.mataKuliah.create({
     data: {
       kode: d.kode,
       nama: d.nama,
       sks: d.sks,
+      cplTerkait: { create: d.cplIds.map((cplId) => ({ cplId })) },
       penugasan: { create: { dosenId: d.dosenId, tahunAjaranId: ta.id } },
     },
   });
 
   revalidatePath(HALAMAN);
+  revalidatePath("/admin/data-master/cpmk");
   return { id: mk.id };
 }
 
@@ -72,15 +94,23 @@ export async function updateMataKuliah(id: string, formData: FormData): Promise<
   const ta = await getTahunAjaranAktif();
   if (!ta) return { error: "Belum ada Tahun Ajaran aktif. Aktifkan dulu lewat dropdown T.A." };
 
-  const [mk, dosen] = await Promise.all([
+  const [mk, dosen, cplCount] = await Promise.all([
     prisma.mataKuliah.findUnique({
       where: { id },
-      include: { _count: { select: { cpmk: true, tugas: true, pendaftaran: true } } },
+      include: {
+        cplTerkait: { select: { cplId: true } },
+        _count: { select: { cpmk: true, tugas: true, pendaftaran: true } },
+      },
     }),
     prisma.dosen.findUnique({ where: { id: d.dosenId } }),
+    prisma.cPL.count({ where: { id: { in: d.cplIds } } }),
   ]);
   if (!mk) return { error: "Mata kuliah tidak ditemukan." };
   if (!dosen) return { error: "Dosen yang dipilih tidak ditemukan." };
+  if (cplCount !== d.cplIds.length) return { error: "Ada CPL terpilih yang tidak ditemukan." };
+  const pemetaanSebelumnya = mk.cplTerkait.map((tautan) => tautan.cplId).sort().join();
+  const pemetaanBaru = [...d.cplIds].sort().join();
+  const pemetaanBerubah = pemetaanSebelumnya !== pemetaanBaru;
 
   if (d.kode !== mk.kode) {
     const terpakai = mk._count.cpmk + mk._count.tugas + mk._count.pendaftaran > 0;
@@ -93,14 +123,22 @@ export async function updateMataKuliah(id: string, formData: FormData): Promise<
 
   await prisma.$transaction([
     prisma.mataKuliah.update({ where: { id }, data: { kode: d.kode, nama: d.nama, sks: d.sks } }),
+    prisma.mataKuliahCpl.deleteMany({ where: { mataKuliahId: id } }),
+    ...(d.cplIds.length
+      ? [prisma.mataKuliahCpl.createMany({ data: d.cplIds.map((cplId) => ({ mataKuliahId: id, cplId })) })]
+      : []),
     prisma.penugasanDosenMK.upsert({
       where: { mataKuliahId_tahunAjaranId: { mataKuliahId: id, tahunAjaranId: ta.id } },
       create: { mataKuliahId: id, tahunAjaranId: ta.id, dosenId: d.dosenId },
       update: { dosenId: d.dosenId },
     }),
   ]);
+  if (pemetaanBerubah) await hitungUlangCplTerkaitMataKuliah(id);
 
   revalidatePath(HALAMAN);
+  revalidatePath("/admin/data-master/cpmk");
+  revalidatePath("/admin/data-master/cpl");
+  revalidatePath("/dosen", "layout");
   return {};
 }
 
@@ -132,5 +170,6 @@ export async function hapusMataKuliah(id: string, kodeKonfirmasi: string): Promi
   await prisma.mataKuliah.delete({ where: { id } });
 
   revalidatePath(HALAMAN);
+  revalidatePath("/admin/data-master/cpmk");
   return {};
 }

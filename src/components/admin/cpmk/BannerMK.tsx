@@ -40,6 +40,12 @@ export function BannerMK({
           <p className="mt-1 text-xs text-white/85">
             • {jumlahCpmk} CPMK, {jumlahSub} Sub-CPMK
           </p>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-white/85">
+            <span>CPL mata kuliah:</span>
+            {mk.cpl.length > 0
+              ? mk.cpl.map((cpl) => <span key={cpl.id} className="rounded-full bg-white/20 px-2 py-0.5 font-semibold text-white">{cpl.kode}</span>)
+              : <span>Belum dipetakan</span>}
+          </div>
           <span className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${status.kelas}`}>
             <span aria-hidden="true">{status.ikon}</span>
             {status.teks}

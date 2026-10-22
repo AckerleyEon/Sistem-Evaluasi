@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
 import { namaDenganGelar } from "@/lib/dosen";
 import { MkWorkspace } from "@/components/admin/mk/MkWorkspace";
 
 const PAGE_SIZE = 8;
+
+export const metadata: Metadata = { title: "Mata Kuliah dan Kelas" };
 
 export default async function MkMahasiswaPage({
   searchParams,
@@ -24,16 +27,18 @@ export default async function MkMahasiswaPage({
     );
   }
 
-  const [mkMentah, dosenMentah, grupMahasiswa, grupPerMk, grupPerKelas] = await Promise.all([
+  const [mkMentah, dosenMentah, cplMaster, grupMahasiswa, grupPerMk, grupPerKelas] = await Promise.all([
     prisma.mataKuliah.findMany({
       orderBy: { kode: "asc" },
       include: {
         penugasan: { where: { tahunAjaranId: ta.id }, include: { dosen: true } },
         kelas: { where: { tahunAjaranId: ta.id }, include: { dosen: true }, orderBy: { nama: "asc" } },
+        cplTerkait: { include: { cpl: { select: { id: true, kode: true } } } },
         _count: { select: { cpmk: true, tugas: true, pendaftaran: true } },
       },
     }),
     prisma.dosen.findMany({ orderBy: { nama: "asc" } }),
+    prisma.cPL.findMany({ select: { id: true, kode: true }, orderBy: { kode: "asc" } }),
     prisma.pendaftaranMK.groupBy({ by: ["mahasiswaId"], where: { tahunAjaranId: ta.id } }),
     prisma.pendaftaranMK.groupBy({
       by: ["mataKuliahId"],
@@ -60,6 +65,7 @@ export default async function MkMahasiswaPage({
       jumlahMhs: jumlahPerMk.get(m.id) ?? 0,
       pjmkId: p?.dosenId ?? null,
       pjmkNama: p ? namaDenganGelar(p.dosen) : null,
+      cpl: m.cplTerkait.map(({ cpl }) => cpl),
       kelas: m.kelas.map((kelas) => ({
         id: kelas.id,
         nama: kelas.nama,
@@ -130,6 +136,7 @@ export default async function MkMahasiswaPage({
       ta={{ id: ta.id, label: ta.label }}
       daftarMK={daftarMK}
       daftarDosen={daftarDosen}
+      daftarCPL={cplMaster}
       selectedId={selectedId}
       selectedKelasId={kelasId}
       mahasiswa={mahasiswa}

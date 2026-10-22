@@ -150,7 +150,11 @@ export default function LoginPage() {
 
     if (hasil?.error) {
       setStatus("idle");
-      setErrorBanner("NIP/Username atau kata sandi salah. Periksa kembali lalu coba lagi.");
+      setErrorBanner(
+        hasil.code === "terkunci"
+          ? "Terlalu banyak percobaan masuk yang gagal. Tunggu sekitar 15 menit lalu coba lagi, atau gunakan \"Lupa kata sandi?\"."
+          : "NIP/Username atau kata sandi salah. Periksa kembali lalu coba lagi."
+      );
       setKataSandi("");
       identitasRef.current?.focus();
       return;
@@ -439,7 +443,7 @@ export default function LoginPage() {
             </form>
           </main>
           <p className="mt-6 text-center text-xs text-[#64748B]">
-            &copy; 2024 Program Studi Teknik Elektro &bull; Universitas Trunojoyo Madura
+            &copy; {new Date().getFullYear()} Program Studi Teknik Elektro &bull; Universitas Trunojoyo Madura
           </p>
         </div>
       </div>

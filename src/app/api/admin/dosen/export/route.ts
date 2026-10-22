@@ -29,12 +29,13 @@ export async function GET() {
     },
   });
 
-  const header = ["No", "Nama", "Gelar", "NIP", "Mata Kuliah (T.A. Aktif)"].map(teks).join(",");
+  const header = ["No", "Nama", "Gelar", "Alias Excel", "NIP", "Mata Kuliah (T.A. Aktif)"].map(teks).join(",");
   const baris = daftar.map((d, i) =>
     [
       teks(String(i + 1)),
       teks(d.nama),
       teks(d.gelar),
+      teks(d.alias),
       teksNip(d.nip),
       teks(d.penugasan.map((p) => `${p.mataKuliah.kode} ${p.mataKuliah.nama}`).join("; ")),
     ].join(",")

@@ -97,15 +97,15 @@ export type PendaftaranMK = Prisma.PendaftaranMKModel
  */
 export type CPL = Prisma.CPLModel
 /**
+ * Model MataKuliahCpl
+ * 
+ */
+export type MataKuliahCpl = Prisma.MataKuliahCplModel
+/**
  * Model CPMK
  * 
  */
 export type CPMK = Prisma.CPMKModel
-/**
- * Model CpmkCpl
- * 
- */
-export type CpmkCpl = Prisma.CpmkCplModel
 /**
  * Model SubCPMK
  * 

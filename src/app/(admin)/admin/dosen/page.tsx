@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { DosenWorkspace } from "@/components/admin/dosen/DosenWorkspace";
 
 const PAGE_SIZE = 10;
+
+export const metadata: Metadata = { title: "Kelola Akun Dosen" };
 
 export default async function KelolaAkunDosenPage({
   searchParams,
@@ -18,7 +21,8 @@ export default async function KelolaAkunDosenPage({
         OR: [
           { nama: { contains: q, mode: "insensitive" as const } },
           { gelar: { contains: q, mode: "insensitive" as const } },
-          { nip: { contains: q } },
+          {alias: {contains: q, mode: "insensitive" as const}},
+          {nip: {contains: q}},
           {
             penugasan: {
               some: {
@@ -53,7 +57,7 @@ export default async function KelolaAkunDosenPage({
     take: PAGE_SIZE,
   });
 
-  const daftar = hasil.map((d) => ({ id: d.id, nama: d.nama, gelar: d.gelar, nip: d.nip }));
+  const daftar = hasil.map((d) => ({ id: d.id, nama: d.nama, gelar: d.gelar, alias: d.alias, nip: d.nip }));
 
   return (
     <div className="space-y-6">

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ambilDashboard } from "@/lib/dashboard";
 import { KpiCard } from "@/components/admin/dashboard/KpiCard";
 import { GrafikCapaianAngkatan } from "@/components/admin/dashboard/GrafikCapaianAngkatan";
@@ -8,6 +9,8 @@ import { InputAsesmen } from "@/components/admin/dashboard/InputAsesmen";
 import { LogAktivitas } from "@/components/admin/dashboard/LogAktivitas";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { title: "Dasbor Admin" };
 
 export default async function DashboardAdminPage({
   searchParams,

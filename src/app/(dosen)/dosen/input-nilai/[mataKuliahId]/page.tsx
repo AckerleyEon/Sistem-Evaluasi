@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -6,6 +7,8 @@ import { InputNilaiWorkspace } from "@/components/dosen/input-nilai/InputNilaiWo
 
 const KUNCI_PASSING_GRADE = "passingGrade";
 const PASSING_GRADE_DEFAULT = 75;
+
+export const metadata: Metadata = { title: "Input Nilai" };
 
 export default async function InputNilaiPage({
   params,
@@ -40,7 +43,15 @@ export default async function InputNilaiPage({
       where: { tahunAjaranId: ta.id },
       _count: { _all: true },
     }),
-    prisma.mataKuliah.findUnique({ where: { id: mataKuliahId }, select: { id: true, kode: true, nama: true } }),
+    prisma.mataKuliah.findUnique({
+      where: { id: mataKuliahId },
+      select: {
+        id: true,
+        kode: true,
+        nama: true,
+        cplTerkait: { select: { cpl: { select: { kode: true } } } },
+      },
+    }),
     prisma.kelasMK.findMany({
       where: {
         mataKuliahId,
@@ -76,7 +87,6 @@ export default async function InputNilaiPage({
                     cpmk: {
                       select: {
                         kode: true,
-                        cpl: { select: { cpl: { select: { kode: true } } } },
                       },
                     },
                   },
@@ -159,7 +169,7 @@ export default async function InputNilaiPage({
       cpmk: subCpmk.cpmkTerkait.map((tautan) => ({
         kode: tautan.cpmk.kode,
         bobot: tautan.bobot,
-        cpl: tautan.cpmk.cpl.map(({ cpl }) => cpl.kode),
+        cpl: mataKuliah.cplTerkait.map(({ cpl }) => cpl.kode),
       })),
       tugas: tugasPerSub.get(subCpmk.id) ?? [],
     })),

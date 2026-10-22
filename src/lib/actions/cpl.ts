@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { hitungUlangCPL } from "@/lib/perhitungan/hitungUlangMataKuliah";
 
 const MAKS_BARIS_IMPOR = 500;
 const MAKS_UKURAN_IMPOR = 2 * 1024 * 1024;
@@ -156,6 +157,8 @@ export async function createCPL(formData: FormData) {
   await prisma.cPL.create({ data: { kode, deskripsi } });
 
   revalidatePath("/admin/data-master/cpl");
+  revalidatePath("/admin/data-master/mata-kuliah");
+  revalidatePath("/admin/data-master/cpmk");
   redirect(`/admin/data-master/cpl?berhasil=${encodeURIComponent(kode)}`);
 }
 
@@ -169,16 +172,42 @@ export async function updateDeskripsiCPL(id: string, formData: FormData) {
   const cpl = await prisma.cPL.update({ where: { id }, data: { deskripsi } });
 
   revalidatePath("/admin/data-master/cpl");
+  revalidatePath("/admin/data-master/mata-kuliah");
+  revalidatePath("/admin/data-master/cpmk");
   return { ok: true, kode: cpl.kode };
 }
 
 export async function deleteCPL(formData: FormData) {
   await pastikanAdmin();
   const id = formData.get("id") as string;
+  const tautanMK = await prisma.mataKuliahCpl.findMany({
+    where: { cplId: id },
+    select: { mataKuliahId: true },
+  });
   await prisma.cPL.delete({ where: { id } });
+  const mataKuliahIds = [...new Set(tautanMK.map((tautan) => tautan.mataKuliahId))];
+  const pendaftaran = mataKuliahIds.length
+    ? await prisma.pendaftaranMK.findMany({
+        where: { mataKuliahId: { in: mataKuliahIds } },
+        select: { mahasiswaId: true, tahunAjaranId: true },
+      })
+    : [];
+  const mahasiswaPerTahun = new Map<string, Set<string>>();
+  for (const row of pendaftaran) {
+    const mahasiswa = mahasiswaPerTahun.get(row.tahunAjaranId) ?? new Set<string>();
+    mahasiswa.add(row.mahasiswaId);
+    mahasiswaPerTahun.set(row.tahunAjaranId, mahasiswa);
+  }
+  for (const [tahunAjaranId, mahasiswa] of mahasiswaPerTahun) {
+    await hitungUlangCPL([...mahasiswa], tahunAjaranId);
+  }
   revalidatePath("/admin/data-master/cpl");
+  revalidatePath("/admin/data-master/mata-kuliah");
+  revalidatePath("/admin/data-master/cpmk");
+  revalidatePath("/dosen", "layout");
 }
 
-export async function hitungCpmkTerkait(cplId: string) {
-  return prisma.cpmkCpl.count({ where: { cplId } });
+export async function hitungMataKuliahTerkait(cplId: string) {
+  await pastikanAdmin();
+  return prisma.mataKuliahCpl.count({ where: { cplId } });
 }

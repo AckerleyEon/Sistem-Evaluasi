@@ -4,14 +4,13 @@ import { useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { analisisImpor, bacaFileImpor, terapkanImpor } from "@/lib/actions/impor-mk";
-import type { AnalisisImpor, BarisMentah, PilihanSemester, StatusBaris } from "@/lib/impor-mk";
+import type { AnalisisImpor, BarisMentah, StatusBaris } from "@/lib/impor-mk";
 
 const BADGE: Record<StatusBaris, { label: string; cls: string }> = {
   baru: { label: "Baru", cls: "bg-[#DCFCE7] text-[#16A34A]" },
   diperbarui: { label: "Diperbarui", cls: "bg-[#FFEDD5] text-[#EA580C]" },
   sama: { label: "Sudah ada", cls: "bg-[#F1F3F5] text-[#6B7280]" },
   galat: { label: "Galat", cls: "bg-[#FEE2E2] text-[#DC2626]" },
-  dilewati: { label: "Dilewati", cls: "bg-[#F1F3F5] text-[#6B7280]" },
 };
 
 export function TombolImporMK() {
@@ -43,17 +42,13 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
   const [galat, setGalat] = useState("");
   const [selesai, setSelesai] = useState("");
   const [mentah, setMentah] = useState<BarisMentah[] | null>(null);
-  const [tersedia, setTersedia] = useState<("ganjil" | "genap")[]>([]);
-  const [semester, setSemester] = useState<PilihanSemester>("semua");
   const [analisis, setAnalisis] = useState<AnalisisImpor | null>(null);
-  const [hapusMKTidakAda, setHapusMKTidakAda] = useState(false);
 
   function pilihFile(file: File | undefined) {
     setGalat("");
     setSelesai("");
     setMentah(null);
     setAnalisis(null);
-    setHapusMKTidakAda(false);
     if (!file) return;
     const fd = new FormData();
     fd.set("file", file);
@@ -63,35 +58,16 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
         setGalat(baca.pesan);
         return;
       }
-      const awal: PilihanSemester = baca.semesterTersedia.length > 1 ? "ganjil" : "semua";
       setMentah(baca.baris);
-      setTersedia(baca.semesterTersedia);
-      setSemester(awal);
-      setAnalisis(await analisisImpor(baca.baris, awal));
+      setAnalisis(await analisisImpor(baca.baris));
     });
-  }
-
-  function gantiSemester(s: PilihanSemester) {
-    setSemester(s);
-    setHapusMKTidakAda(false);
-    if (!mentah) return;
-    mulaiMemuat(async () => setAnalisis(await analisisImpor(mentah, s)));
   }
 
   function terapkan() {
     if (!mentah) return;
     setGalat("");
     mulaiTerapkan(async () => {
-      if (
-        hapusMKTidakAda &&
-        analisis &&
-        !window.confirm(
-          `Hapus ${analisis.mkTidakAda.filter((mk) => mk.bisaDihapus).length} MK yang tidak ada di Excel dan belum memiliki data terkait? Kelas dan penugasan pada MK tersebut juga akan terhapus.`
-        )
-      ) {
-        return;
-      }
-      const hasil = await terapkanImpor(mentah, semester, hapusMKTidakAda);
+      const hasil = await terapkanImpor(mentah);
       if (!hasil.ok) {
         setGalat(hasil.pesan);
         return;
@@ -104,9 +80,6 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
   }
 
   const r = analisis?.ringkasan;
-  const jumlahBisaDihapus = analisis?.mkTidakAda.filter((mk) => mk.bisaDihapus).length ?? 0;
-  const jumlahDipertahankan = analisis?.mkTidakAda.filter((mk) => !mk.bisaDihapus).length ?? 0;
-  const hapusBolehDipilih = semester === "semua" && (r?.galat ?? 0) === 0 && jumlahBisaDihapus > 0;
 
   return createPortal(
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="judul-impor">
@@ -115,8 +88,9 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
           Impor Mata Kuliah, Kelas &amp; Pengampu dari Excel
         </h2>
         <p className="mt-1 text-xs text-[#6B7280]">
-          Kolom: Dosen, Semester, Kode MK, Nama MK, SKS, Kelas (pisahkan dengan /), Jumlah Kelas. Baris judul boleh ada
-          atau tidak. Data masuk ke T.A. aktif{analisis?.tahunAjaran ? ` (${analisis.tahunAjaran.label})` : ""}.{" "}
+          Kolom: Dosen, Kode MK, Nama MK, SKS, Kelas, Jumlah Kelas, dan CPL-1 sampai CPL-6 (isi 1 jika dipetakan, 0/kosong jika tidak).
+          Kolom Semester lama diabaikan; jika kolom CPL tidak ada, pemetaan yang tersimpan tidak diubah. Baris judul wajib untuk pemetaan CPL.
+          Data masuk ke T.A. aktif{analisis?.tahunAjaran ? ` (${analisis.tahunAjaran.label})` : ""}.{" "}
           <a href="/template-impor-mk.xlsx" download className="font-semibold text-[#2F6BE8] hover:underline">
             Unduh template
           </a>
@@ -131,59 +105,13 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
             aria-label="File Excel"
             className="block text-sm text-[#111827] file:mr-3 file:h-10 file:rounded-[10px] file:border-0 file:bg-[#EEF3FD] file:px-4 file:text-sm file:font-semibold file:text-[#111827]"
           />
-          {tersedia.length > 0 && (
-            <label className="flex items-center gap-2 text-sm text-[#111827]">
-              Impor semester
-              <select
-                value={semester}
-                onChange={(e) => gantiSemester(e.target.value as PilihanSemester)}
-                className="h-10 rounded-[10px] bg-[#EEF3FD] px-3 text-sm outline-none"
-              >
-                {tersedia.map((s) => (
-                  <option key={s} value={s}>
-                    {s === "ganjil" ? "Ganjil" : "Genap"}
-                  </option>
-                ))}
-                <option value="semua">Semua (hati-hati kelas ganda)</option>
-              </select>
-            </label>
-          )}
           {memuat && <span className="text-sm text-[#6B7280]">Memeriksa…</span>}
         </div>
 
         {analisis && (
-          <div className="mt-4">
-            <label className={`flex items-start gap-3 rounded-xl border p-3 text-sm ${
-              hapusBolehDipilih ? "border-[#FECACA] bg-[#FEF2F2] text-[#7F1D1D]" : "border-[#E8EAEE] bg-[#F8FAFC] text-[#6B7280]"
-            }`}>
-              <input
-                type="checkbox"
-                checked={hapusMKTidakAda}
-                onChange={(e) => setHapusMKTidakAda(e.target.checked)}
-                disabled={!hapusBolehDipilih}
-                className="mt-0.5"
-              />
-              <span>
-                <span className="block font-semibold">
-                  Hapus MK yang tidak ada di file ({jumlahBisaDihapus} dapat dihapus)
-                </span>
-                MK yang memiliki CPMK, Sub-CPMK, tugas, pendaftaran, atau hasil pengukuran akan tetap disimpan
-                {jumlahDipertahankan > 0 ? ` (${jumlahDipertahankan} MK terpakai)` : ""}.
-                {semester !== "semua" && " Pilih “Semua” agar semester lain tidak ikut dianggap hilang."}
-                {(r?.galat ?? 0) > 0 && " Perbaiki semua baris galat sebelum mengaktifkan opsi hapus."}
-              </span>
-            </label>
-            {analisis.mkTidakAda.length > 0 && (
-              <div className="mt-2 max-h-32 overflow-auto rounded-lg border border-[#E8EAEE] p-3 text-xs text-[#4B5563]">
-                {analisis.mkTidakAda.map((mk) => (
-                  <p key={mk.id} className="py-1">
-                    <span className="font-semibold">{mk.kode} — {mk.nama}</span>
-                    {mk.bisaDihapus ? " — belum memiliki data terkait" : " — dipertahankan karena masih memiliki data terkait"}
-                  </p>
-                ))}
-              </div>
-            )}
-          </div>
+          <p className="mt-4 rounded-xl border border-[#E8EAEE] bg-[#F8FAFC] p-3 text-sm text-[#4B5563]">
+            Impor hanya memperbarui MK dan kelas yang ada pada file. Master MK lain tidak dihapus.
+          </p>
         )}
 
         {galat && (
@@ -205,11 +133,10 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
               <li className="rounded-full bg-[#DCE7FB] px-3 py-1 text-[#2F6BE8]">{r.kelasBaru} kelas baru</li>
               <li className="rounded-full bg-[#FFEDD5] px-3 py-1 text-[#EA580C]">{r.kelasGantiPengampu} pengampu diganti</li>
               <li className="rounded-full bg-[#FEE2E2] px-3 py-1 text-[#DC2626]">{r.galat} baris galat</li>
-              <li className="rounded-full bg-[#F1F3F5] px-3 py-1 text-[#6B7280]">{r.dilewati} dilewati</li>
             </ul>
 
             <div className="mt-3 min-h-0 flex-1 overflow-auto rounded-xl border border-[#E8EAEE]">
-              <table className="w-full min-w-190 text-left text-xs">
+              <table className="w-full min-w-220 text-left text-xs">
                 <thead className="sticky top-0 bg-[#F8FAFC] text-[#6B7280]">
                   <tr>
                     <th className="px-3 py-2 font-semibold">Baris</th>
@@ -218,6 +145,7 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
                     <th className="px-3 py-2 font-semibold">Mata Kuliah</th>
                     <th className="px-3 py-2 font-semibold">SKS</th>
                     <th className="px-3 py-2 font-semibold">Kelas</th>
+                    <th className="px-3 py-2 font-semibold">Pemetaan CPL</th>
                     <th className="px-3 py-2 font-semibold">Status</th>
                   </tr>
                 </thead>
@@ -230,6 +158,7 @@ function ModalImporMK({ onTutup }: { onTutup: () => void }) {
                       <td className="px-3 py-2">{b.nama}</td>
                       <td className="px-3 py-2">{b.sks ?? "–"}</td>
                       <td className="px-3 py-2">{b.kelas.join(", ")}</td>
+                      <td className="px-3 py-2">{b.cpl.join(", ") || "–"}</td>
                       <td className="px-3 py-2">
                         <span className={`inline-block rounded-full px-2 py-0.5 font-semibold ${BADGE[b.status].cls}`}>
                           {BADGE[b.status].label}
