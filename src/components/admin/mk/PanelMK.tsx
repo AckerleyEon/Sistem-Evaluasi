@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import type { MkItem, MhsItem } from "./tipe";
 import { ManajemenKelas } from "./ManajemenKelas";
 import type { DosenOpsi } from "./tipe";
+import { KELAS_BELUM } from "@/lib/kelas-terpilih";
 
-function buatHref(mk: string, q: string, page: number, kelasId: string | null) {
+function buatHref(mk: string, q: string, page: number, kelasParam: string) {
   const params = new URLSearchParams();
   params.set("mk", mk);
-  if (kelasId) params.set("kelas", kelasId);
+  params.set("kelas", kelasParam); // id kelas, atau KELAS_BELUM untuk mahasiswa tanpa kelas
   if (q) params.set("q", q);
   if (page > 1) params.set("page", String(page));
   return `/admin/data-master/mata-kuliah?${params.toString()}`;
@@ -68,6 +69,7 @@ export function PanelMK({
   onUbahKelas: (m: MhsItem, kelasId: string) => void;
 }) {
   const router = useRouter();
+  const kelasParam = kelasId ?? KELAS_BELUM;
   const [cari, setCari] = useState(q);
   const [isPending, startTransition] = useTransition();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -76,7 +78,7 @@ export function PanelMK({
     setCari(nilai);
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
-      startTransition(() => router.replace(buatHref(mk.id, nilai.trim(), 1, kelasId), { scroll: false }));
+      startTransition(() => router.replace(buatHref(mk.id, nilai.trim(), 1, kelasParam), { scroll: false }));
     }, 300);
   }
 
@@ -115,12 +117,12 @@ export function PanelMK({
         </div>
         <div className="flex flex-wrap gap-2 sm:justify-end">
         <select
-          value={kelasId ?? ""}
-          onChange={(e) => router.replace(buatHref(mk.id, q, 1, e.target.value || null), { scroll: false })}
+          value={kelasParam}
+          onChange={(e) => router.replace(buatHref(mk.id, q, 1, e.target.value), { scroll: false })}
           aria-label="Pilih kelas mahasiswa"
           className="h-10 rounded-[10px] bg-[#EEF3FD] px-3 text-sm text-[#111827] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
         >
-          <option value="">Belum ditentukan ({mk.jumlahMhs - mk.kelas.reduce((total, k) => total + k.jumlahMhs, 0)})</option>
+          <option value={KELAS_BELUM}>Belum ditentukan ({mk.jumlahMhs - mk.kelas.reduce((total, k) => total + k.jumlahMhs, 0)})</option>
           {mk.kelas.map((kelas) => (
             <option key={kelas.id} value={kelas.id}>{kelas.nama} · {kelas.jumlahMhs} mhs · {kelas.dosenNama ?? "tanpa pengampu"}</option>
           ))}
@@ -145,7 +147,11 @@ export function PanelMK({
           {q ? (
             "Tidak ada mahasiswa yang cocok dengan kata kunci pencarian."
           ) : (
-            <p>Belum ada mahasiswa terdaftar di kelas ini. Gunakan tombol “Tambah Mahasiswa” di atas untuk mendaftarkan mahasiswa.</p>
+            kelasId === null ? (
+              <p>Tidak ada mahasiswa yang belum ditentukan kelasnya.</p>
+            ) : (
+              <p>Belum ada mahasiswa terdaftar di kelas ini. Gunakan tombol “Tambah Mahasiswa” di atas untuk mendaftarkan mahasiswa.</p>
+            )
           )}
         </div>
       ) : (
@@ -219,7 +225,7 @@ export function PanelMK({
         {totalHalaman > 1 && (
           <nav aria-label="Halaman" className="flex items-center gap-1.5">
             {page > 1 ? (
-              <Link href={buatHref(mk.id, q, page - 1, kelasId)} scroll={false} aria-label="Halaman sebelumnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">‹</Link>
+              <Link href={buatHref(mk.id, q, page - 1, kelasParam)} scroll={false} aria-label="Halaman sebelumnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">‹</Link>
             ) : (
               <span className="flex h-8 w-8 items-center justify-center text-[#C4C9D2]">‹</span>
             )}
@@ -229,7 +235,7 @@ export function PanelMK({
               ) : (
                 <Link
                   key={n}
-                  href={buatHref(mk.id, q, n, kelasId)}
+                  href={buatHref(mk.id, q, n, kelasParam)}
                   scroll={false}
                   aria-current={n === page ? "page" : undefined}
                   className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold ${
@@ -241,7 +247,7 @@ export function PanelMK({
               )
             )}
             {page < totalHalaman ? (
-              <Link href={buatHref(mk.id, q, page + 1, kelasId)} scroll={false} aria-label="Halaman berikutnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">›</Link>
+              <Link href={buatHref(mk.id, q, page + 1, kelasParam)} scroll={false} aria-label="Halaman berikutnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">›</Link>
             ) : (
               <span className="flex h-8 w-8 items-center justify-center text-[#C4C9D2]">›</span>
             )}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
+import { pilihKelas } from "@/lib/kelas-terpilih";
 import { namaDenganGelar } from "@/lib/dosen";
 import { MkWorkspace } from "@/components/admin/mk/MkWorkspace";
 
@@ -88,9 +89,7 @@ export default async function MkMahasiswaPage({
   let totalHalaman = 1;
   let page = 1;
   const mkTerpilih = daftarMK.find((mk) => mk.id === selectedId);
-  const kelasDipilih =
-    mkTerpilih?.kelas.find((kelas) => kelas.id === sp.kelas) ??
-    (!sp.kelas ? mkTerpilih?.kelas[0] : undefined);
+  const kelasDipilih = mkTerpilih ? pilihKelas(mkTerpilih.kelas, sp.kelas) : null;
   const kelasId = kelasDipilih?.id ?? null;
 
   if (selectedId) {

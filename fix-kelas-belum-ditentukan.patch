@@ -1,0 +1,181 @@
+diff --git a/package.json b/package.json
+index 9d26381..a9e4e96 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,7 @@
+     "build": "next build",
+     "start": "next start",
+     "lint": "eslint",
+-    "test": "tsx --test tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mk.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
++    "test": "tsx --test tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mk.test.ts tests/kelas-terpilih.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
+     "typecheck": "tsc --noEmit",
+     "import:ta-2022-2023": "tsx scripts/import-ta-2022-2023.ts",
+     "seed:mahasiswa-dummy": "tsx prisma/seed-mahasiswa-dummy.ts",
+diff --git a/src/app/(admin)/admin/data-master/mata-kuliah/page.tsx b/src/app/(admin)/admin/data-master/mata-kuliah/page.tsx
+index 5a959bd..052517a 100644
+--- a/src/app/(admin)/admin/data-master/mata-kuliah/page.tsx
++++ b/src/app/(admin)/admin/data-master/mata-kuliah/page.tsx
+@@ -1,6 +1,7 @@
+ import type { Metadata } from "next";
+ import { prisma } from "@/lib/prisma";
+ import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
++import { pilihKelas } from "@/lib/kelas-terpilih";
+ import { namaDenganGelar } from "@/lib/dosen";
+ import { MkWorkspace } from "@/components/admin/mk/MkWorkspace";
+ 
+@@ -88,9 +89,7 @@ export default async function MkMahasiswaPage({
+   let totalHalaman = 1;
+   let page = 1;
+   const mkTerpilih = daftarMK.find((mk) => mk.id === selectedId);
+-  const kelasDipilih =
+-    mkTerpilih?.kelas.find((kelas) => kelas.id === sp.kelas) ??
+-    (!sp.kelas ? mkTerpilih?.kelas[0] : undefined);
++  const kelasDipilih = mkTerpilih ? pilihKelas(mkTerpilih.kelas, sp.kelas) : null;
+   const kelasId = kelasDipilih?.id ?? null;
+ 
+   if (selectedId) {
+diff --git a/src/components/admin/mk/PanelMK.tsx b/src/components/admin/mk/PanelMK.tsx
+index 0affaca..d1ae5d4 100644
+--- a/src/components/admin/mk/PanelMK.tsx
++++ b/src/components/admin/mk/PanelMK.tsx
+@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
+ import type { MkItem, MhsItem } from "./tipe";
+ import { ManajemenKelas } from "./ManajemenKelas";
+ import type { DosenOpsi } from "./tipe";
++import { KELAS_BELUM } from "@/lib/kelas-terpilih";
+ 
+-function buatHref(mk: string, q: string, page: number, kelasId: string | null) {
++function buatHref(mk: string, q: string, page: number, kelasParam: string) {
+   const params = new URLSearchParams();
+   params.set("mk", mk);
+-  if (kelasId) params.set("kelas", kelasId);
++  params.set("kelas", kelasParam); // id kelas, atau KELAS_BELUM untuk mahasiswa tanpa kelas
+   if (q) params.set("q", q);
+   if (page > 1) params.set("page", String(page));
+   return `/admin/data-master/mata-kuliah?${params.toString()}`;
+@@ -68,6 +69,7 @@ export function PanelMK({
+   onUbahKelas: (m: MhsItem, kelasId: string) => void;
+ }) {
+   const router = useRouter();
++  const kelasParam = kelasId ?? KELAS_BELUM;
+   const [cari, setCari] = useState(q);
+   const [isPending, startTransition] = useTransition();
+   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+@@ -76,7 +78,7 @@ export function PanelMK({
+     setCari(nilai);
+     if (timerRef.current) clearTimeout(timerRef.current);
+     timerRef.current = setTimeout(() => {
+-      startTransition(() => router.replace(buatHref(mk.id, nilai.trim(), 1, kelasId), { scroll: false }));
++      startTransition(() => router.replace(buatHref(mk.id, nilai.trim(), 1, kelasParam), { scroll: false }));
+     }, 300);
+   }
+ 
+@@ -115,12 +117,12 @@ export function PanelMK({
+         </div>
+         <div className="flex flex-wrap gap-2 sm:justify-end">
+         <select
+-          value={kelasId ?? ""}
+-          onChange={(e) => router.replace(buatHref(mk.id, q, 1, e.target.value || null), { scroll: false })}
++          value={kelasParam}
++          onChange={(e) => router.replace(buatHref(mk.id, q, 1, e.target.value), { scroll: false })}
+           aria-label="Pilih kelas mahasiswa"
+           className="h-10 rounded-[10px] bg-[#EEF3FD] px-3 text-sm text-[#111827] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
+         >
+-          <option value="">Belum ditentukan ({mk.jumlahMhs - mk.kelas.reduce((total, k) => total + k.jumlahMhs, 0)})</option>
++          <option value={KELAS_BELUM}>Belum ditentukan ({mk.jumlahMhs - mk.kelas.reduce((total, k) => total + k.jumlahMhs, 0)})</option>
+           {mk.kelas.map((kelas) => (
+             <option key={kelas.id} value={kelas.id}>{kelas.nama} · {kelas.jumlahMhs} mhs · {kelas.dosenNama ?? "tanpa pengampu"}</option>
+           ))}
+@@ -145,7 +147,11 @@ export function PanelMK({
+           {q ? (
+             "Tidak ada mahasiswa yang cocok dengan kata kunci pencarian."
+           ) : (
+-            <p>Belum ada mahasiswa terdaftar di kelas ini. Gunakan tombol “Tambah Mahasiswa” di atas untuk mendaftarkan mahasiswa.</p>
++            kelasId === null ? (
++              <p>Tidak ada mahasiswa yang belum ditentukan kelasnya.</p>
++            ) : (
++              <p>Belum ada mahasiswa terdaftar di kelas ini. Gunakan tombol “Tambah Mahasiswa” di atas untuk mendaftarkan mahasiswa.</p>
++            )
+           )}
+         </div>
+       ) : (
+@@ -219,7 +225,7 @@ export function PanelMK({
+         {totalHalaman > 1 && (
+           <nav aria-label="Halaman" className="flex items-center gap-1.5">
+             {page > 1 ? (
+-              <Link href={buatHref(mk.id, q, page - 1, kelasId)} scroll={false} aria-label="Halaman sebelumnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">‹</Link>
++              <Link href={buatHref(mk.id, q, page - 1, kelasParam)} scroll={false} aria-label="Halaman sebelumnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">‹</Link>
+             ) : (
+               <span className="flex h-8 w-8 items-center justify-center text-[#C4C9D2]">‹</span>
+             )}
+@@ -229,7 +235,7 @@ export function PanelMK({
+               ) : (
+                 <Link
+                   key={n}
+-                  href={buatHref(mk.id, q, n, kelasId)}
++                  href={buatHref(mk.id, q, n, kelasParam)}
+                   scroll={false}
+                   aria-current={n === page ? "page" : undefined}
+                   className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-semibold ${
+@@ -241,7 +247,7 @@ export function PanelMK({
+               )
+             )}
+             {page < totalHalaman ? (
+-              <Link href={buatHref(mk.id, q, page + 1, kelasId)} scroll={false} aria-label="Halaman berikutnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">›</Link>
++              <Link href={buatHref(mk.id, q, page + 1, kelasParam)} scroll={false} aria-label="Halaman berikutnya" className="flex h-8 w-8 items-center justify-center rounded-lg text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]">›</Link>
+             ) : (
+               <span className="flex h-8 w-8 items-center justify-center text-[#C4C9D2]">›</span>
+             )}
+diff --git a/src/lib/kelas-terpilih.ts b/src/lib/kelas-terpilih.ts
+new file mode 100644
+index 0000000..d106bc3
+--- /dev/null
++++ b/src/lib/kelas-terpilih.ts
+@@ -0,0 +1,15 @@
++// Penanda eksplisit di URL (?kelas=belum) untuk mahasiswa yang belum punya kelas.
++// Parameter `kelas` yang TIDAK ada berarti "belum memilih", sehingga default ke kelas pertama.
++// Keduanya harus dibedakan, kalau tidak opsi "Belum ditentukan" selalu terlempar ke Kelas A.
++export const KELAS_BELUM = "belum";
++
++/**
++ * Menentukan kelas yang ditampilkan dari parameter URL.
++ * - "belum"              -> null (mahasiswa yang belum punya kelas)
++ * - id kelas yang valid  -> kelas itu
++ * - kosong / tidak dikenal -> kelas pertama (null bila MK belum punya kelas)
++ */
++export function pilihKelas<T extends { id: string }>(daftarKelas: T[], param: string | undefined): T | null {
++  if (param === KELAS_BELUM) return null;
++  return daftarKelas.find((kelas) => kelas.id === param) ?? daftarKelas[0] ?? null;
++}
+diff --git a/tests/kelas-terpilih.test.ts b/tests/kelas-terpilih.test.ts
+new file mode 100644
+index 0000000..dc031de
+--- /dev/null
++++ b/tests/kelas-terpilih.test.ts
+@@ -0,0 +1,26 @@
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import { KELAS_BELUM, pilihKelas } from "../src/lib/kelas-terpilih";
++
++const daftar = [{ id: "kelasA" }, { id: "kelasB" }];
++
++test("pilihKelas: tanpa parameter default ke kelas pertama", () => {
++  assert.equal(pilihKelas(daftar, undefined)?.id, "kelasA");
++});
++
++test("pilihKelas: 'belum' menampilkan mahasiswa tanpa kelas, bukan kelas pertama", () => {
++  assert.equal(pilihKelas(daftar, KELAS_BELUM), null);
++});
++
++test("pilihKelas: id kelas yang valid dipilih apa adanya", () => {
++  assert.equal(pilihKelas(daftar, "kelasB")?.id, "kelasB");
++});
++
++test("pilihKelas: id tidak dikenal jatuh ke kelas pertama", () => {
++  assert.equal(pilihKelas(daftar, "sudah-dihapus")?.id, "kelasA");
++});
++
++test("pilihKelas: MK tanpa kelas selalu menghasilkan null", () => {
++  assert.equal(pilihKelas([], undefined), null);
++  assert.equal(pilihKelas([], KELAS_BELUM), null);
++});

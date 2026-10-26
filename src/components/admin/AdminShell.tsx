@@ -18,7 +18,7 @@ export function AdminShell({
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="flex min-h-dvh bg-[#F4F6FB] font-[family-name:var(--font-pjs)]">
+    <div className="flex min-h-dvh bg-[#F4F6FB] font-(family-name:--font-pjs)">
       <a href="#konten-utama" className="sr-only z-50 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#1D4ED8] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
         Lewati ke konten utama
       </a>
