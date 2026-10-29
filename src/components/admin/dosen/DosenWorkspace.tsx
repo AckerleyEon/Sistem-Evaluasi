@@ -84,17 +84,6 @@ export function DosenWorkspace({
           >
             Impor dari Excel
           </button>
-          <a
-            href="/api/admin/dosen/export"
-            download
-            className="flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[#2F6BE8] px-6 text-[15px] font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
-              <path d="M5 19h14" />
-            </svg>
-            Ekspor Data
-          </a>
         </div>
       </div>
 

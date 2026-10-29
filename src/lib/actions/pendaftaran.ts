@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
 import { hitungAngkatanDariNim } from "@/lib/nim";
+import { cariHeaderMahasiswa } from "@/lib/impor-mahasiswa-massal";
 import { hitungUlangCPL, hitungUlangMataKuliah } from "@/lib/perhitungan/hitungUlangMataKuliah";
 
 type Hasil = { error?: string; pesan?: string; nilaiTerhapus?: number };
@@ -76,27 +77,41 @@ export async function analisisImporMahasiswa(
     return { ok: false, error: "File tidak bisa dibaca. Pastikan file .xlsx valid." };
   }
 
-  const worksheet = workbook.worksheets[0];
-  if (!worksheet) return { ok: false, error: "File tidak memiliki lembar kerja." };
+  if (workbook.worksheets.length === 0) return { ok: false, error: "File tidak memiliki lembar kerja." };
 
-  const header = worksheet.getRow(1);
-  const kolom = new Map<string, number>();
-  header.eachCell((cell, index) => {
-    const namaKolom = teksSelExcel(cell.value).trim().toLowerCase().replace(/\s+/g, " ");
-    if (namaKolom === "nim") kolom.set("nim", index);
-    if (namaKolom === "nama" || namaKolom === "nama mahasiswa") kolom.set("nama", index);
-    if (namaKolom === "kelas") kolom.set("kelas", index);
-  });
-  if (!kolom.has("nim") || !kolom.has("nama")) {
+  // Pakai lembar pertama yang punya judul NIM + Nama (judul boleh tidak di baris 1; lembar "Petunjuk" dilewati).
+  let worksheet: ExcelJS.Worksheet | null = null;
+  let header: ReturnType<typeof cariHeaderMahasiswa> = null;
+  for (const kandidat of workbook.worksheets) {
+    const matriks: string[][] = [];
+    for (let nomor = 1; nomor <= Math.min(kandidat.rowCount, 15); nomor++) {
+      const baris: string[] = [];
+      kandidat.getRow(nomor).eachCell({ includeEmpty: true }, (cell, kolom) => {
+        baris[kolom - 1] = teksSelExcel(cell.value);
+      });
+      matriks.push(Array.from(baris, (teks) => teks ?? ""));
+    }
+    const temu = cariHeaderMahasiswa(matriks);
+    if (temu) {
+      worksheet = kandidat;
+      header = temu;
+      break;
+    }
+  }
+  if (!worksheet || !header) {
     return { ok: false, error: "Header Excel harus memiliki kolom NIM dan Nama. Kolom Kelas boleh dikosongkan." };
   }
+  const nomorHeader = header.indeksBaris + 1;
+  const kolomNim = header.kolom.nim + 1;
+  const kolomNama = header.kolom.nama + 1;
+  const kolomKelas = header.kolom.kelas === null ? null : header.kolom.kelas + 1;
 
   const mentah: { baris: number; nim: string; nama: string; kelas: string }[] = [];
   worksheet.eachRow((row, nomor) => {
-    if (nomor === 1) return;
-    const nim = teksSelExcel(row.getCell(kolom.get("nim")!).value).trim();
-    const nama = teksSelExcel(row.getCell(kolom.get("nama")!).value).replace(/\s+/g, " ").trim();
-    const kelas = kolom.has("kelas") ? teksSelExcel(row.getCell(kolom.get("kelas")!).value).trim() : "";
+    if (nomor <= nomorHeader) return;
+    const nim = teksSelExcel(row.getCell(kolomNim).value).trim();
+    const nama = teksSelExcel(row.getCell(kolomNama).value).replace(/\s+/g, " ").trim();
+    const kelas = kolomKelas ? teksSelExcel(row.getCell(kolomKelas).value).trim() : "";
     if (!nim && !nama && !kelas) return;
     mentah.push({ baris: nomor, nim, nama, kelas });
   });

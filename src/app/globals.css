@@ -68,7 +68,23 @@
     -webkit-tap-highlight-color: transparent;
   }
 }
+/* Scrollbar khusus daftar mata kuliah */
+.scrollbar-mk::-webkit-scrollbar {
+  width: 6px;
+}
 
+.scrollbar-mk::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-mk::-webkit-scrollbar-thumb {
+  background: #c7cbd1;
+  border-radius: 9999px;
+}
+
+.scrollbar-mk::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

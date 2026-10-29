@@ -1,0 +1,661 @@
+diff --git a/package.json b/package.json
+index a9e4e96..6d6c19e 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,7 @@
+     "build": "next build",
+     "start": "next start",
+     "lint": "eslint",
+-    "test": "tsx --test tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mk.test.ts tests/kelas-terpilih.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
++    "test": "tsx --test tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mahasiswa-massal.test.ts tests/impor-mk.test.ts tests/kelas-terpilih.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
+     "typecheck": "tsc --noEmit",
+     "import:ta-2022-2023": "tsx scripts/import-ta-2022-2023.ts",
+     "seed:mahasiswa-dummy": "tsx prisma/seed-mahasiswa-dummy.ts",
+diff --git a/src/components/admin/mk/MkWorkspace.tsx b/src/components/admin/mk/MkWorkspace.tsx
+index 402492c..b7d7718 100644
+--- a/src/components/admin/mk/MkWorkspace.tsx
++++ b/src/components/admin/mk/MkWorkspace.tsx
+@@ -9,6 +9,7 @@ import { PanelMK } from "./PanelMK";
+ import { ModalMK, ModalHapusMK } from "./ModalMK";
+ import { TombolImporMK } from "@/components/admin/mk/ModalImporMK";
+ import { ModalImporMahasiswa } from "@/components/admin/mk/ModalImporMahasiswa";
++import { TombolImporMahasiswaMassal } from "@/components/admin/mk/ModalImporMahasiswaMassal";
+ 
+ import {
+   ModalTambahMahasiswa,
+@@ -142,6 +143,12 @@ export function MkWorkspace({
+             <span className="text-lg leading-none">+</span> Tambah Mata Kuliah Baru
+           </button>
+           <TombolImporMK />
++          <TombolImporMahasiswaMassal
++            onBerhasil={(pesan) => {
++              tampilToast(pesan);
++              router.refresh();
++            }}
++          />
+         </div>
+       </div>
+ 
+diff --git a/src/components/admin/mk/ModalImporMahasiswaMassal.tsx b/src/components/admin/mk/ModalImporMahasiswaMassal.tsx
+new file mode 100644
+index 0000000..0469a10
+--- /dev/null
++++ b/src/components/admin/mk/ModalImporMahasiswaMassal.tsx
+@@ -0,0 +1,321 @@
++"use client";
++
++import { useRef, useState } from "react";
++import { analisisFileImporMassal, type HasilAnalisisFileMassal } from "@/lib/actions/impor-mahasiswa-massal";
++import { terapkanImporMahasiswa } from "@/lib/actions/pendaftaran";
++import { bacaKodeDariNamaFile, cariFileGanda } from "@/lib/impor-mahasiswa-massal";
++
++type StatusFile = "menunggu" | "memeriksa" | "siap" | "tanpa-baru" | "galat" | "ganda" | "diimpor" | "gagal";
++
++type ItemFile = {
++  file: File;
++  status: StatusFile;
++  analisis: Extract<HasilAnalisisFileMassal, { ok: true }> | null;
++  catatan: string[];
++};
++
++const MAKS_FILE = 80;
++
++const LABEL: Record<StatusFile, string> = {
++  menunggu: "Menunggu",
++  memeriksa: "Memeriksa…",
++  siap: "Siap diimpor",
++  "tanpa-baru": "Tidak ada yang baru",
++  galat: "Ada galat — dilewati",
++  ganda: "Kode MK ganda — dilewati",
++  diimpor: "Terimpor",
++  gagal: "Gagal",
++};
++
++const WARNA: Record<StatusFile, string> = {
++  menunggu: "bg-[#F1F3F5] text-[#4B5563]",
++  memeriksa: "bg-[#DCE7FB] text-[#1D4ED8]",
++  siap: "bg-[#DCFCE7] text-[#166534]",
++  "tanpa-baru": "bg-[#F1F3F5] text-[#4B5563]",
++  galat: "bg-[#FEE2E2] text-[#DC2626]",
++  ganda: "bg-[#FEE2E2] text-[#DC2626]",
++  diimpor: "bg-[#DCFCE7] text-[#166534]",
++  gagal: "bg-[#FEE2E2] text-[#DC2626]",
++};
++
++export function TombolImporMahasiswaMassal({ onBerhasil }: { onBerhasil: (pesan: string) => void }) {
++  const [buka, setBuka] = useState(false);
++  return (
++    <>
++      <button
++        type="button"
++        onClick={() => setBuka(true)}
++        className="flex h-10 items-center justify-center gap-2 rounded-full border border-[#E8EAEE] bg-white px-4 text-sm font-semibold text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]"
++      >
++        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
++          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
++          <circle cx="9" cy="7" r="4" />
++          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
++          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
++        </svg>
++        Impor Mahasiswa Massal
++      </button>
++      {buka && <ModalMassal onTutup={() => setBuka(false)} onBerhasil={onBerhasil} />}
++    </>
++  );
++}
++
++function ModalMassal({ onTutup, onBerhasil }: { onTutup: () => void; onBerhasil: (pesan: string) => void }) {
++  const inputRef = useRef<HTMLInputElement>(null);
++  const [daftar, setDaftar] = useState<ItemFile[]>([]);
++  const [error, setError] = useState("");
++  const [ringkasan, setRingkasan] = useState("");
++  const [sibuk, setSibuk] = useState<"" | "memeriksa" | "menyimpan">("");
++  const [kemajuan, setKemajuan] = useState("");
++  const [sudahPeriksa, setSudahPeriksa] = useState(false);
++
++  function ubah(indeks: number, perubahan: Partial<ItemFile>) {
++    setDaftar((lama) => lama.map((item, i) => (i === indeks ? { ...item, ...perubahan } : item)));
++  }
++
++  function pilihFile() {
++    const files = Array.from(inputRef.current?.files ?? []).filter((file) => file.name.toLowerCase().endsWith(".xlsx"));
++    setError("");
++    setRingkasan("");
++    setSudahPeriksa(false);
++    if (files.length > MAKS_FILE) {
++      setError(`Maksimal ${MAKS_FILE} file per impor. Bagi menjadi beberapa kali impor.`);
++      setDaftar([]);
++      return;
++    }
++    files.sort((a, b) => a.name.localeCompare(b.name, "id"));
++    setDaftar(files.map((file) => ({ file, status: "menunggu", analisis: null, catatan: [] })));
++  }
++
++  async function periksaSemua() {
++    if (daftar.length === 0) {
++      setError("Pilih satu atau beberapa file Excel (.xlsx) terlebih dahulu.");
++      return;
++    }
++    setError("");
++    setRingkasan("");
++    setSibuk("memeriksa");
++
++    const ganda = cariFileGanda(daftar.map((item) => bacaKodeDariNamaFile(item.file.name)?.kunci ?? null));
++    for (let i = 0; i < daftar.length; i++) {
++      setKemajuan(`Memeriksa ${i + 1} dari ${daftar.length}…`);
++      const { file } = daftar[i];
++      if (ganda.has(i)) {
++        ubah(i, {
++          status: "ganda",
++          analisis: null,
++          catatan: [`Kode MK sama dengan file "${daftar[ganda.get(i)!].file.name}". Hanya file pertama yang diproses.`],
++        });
++        continue;
++      }
++      ubah(i, { status: "memeriksa", analisis: null, catatan: [] });
++      const formData = new FormData();
++      formData.set("file", file);
++      try {
++        const hasil = await analisisFileImporMassal(formData);
++        if (!hasil.ok) {
++          ubah(i, { status: "gagal", catatan: [hasil.error] });
++          continue;
++        }
++        const catatan: string[] = [];
++        if (hasil.peringatanJudul) catatan.push(hasil.peringatanJudul);
++        if (hasil.galat > 0) {
++          for (const baris of hasil.baris.filter((b) => b.status === "galat").slice(0, 3)) {
++            catatan.push(`Baris ${baris.baris}: ${baris.pesan.join(" ")}`);
++          }
++          if (hasil.galat > 3) catatan.push(`…dan ${hasil.galat - 3} baris galat lainnya.`);
++        }
++        ubah(i, {
++          status: hasil.galat > 0 ? "galat" : hasil.baru > 0 ? "siap" : "tanpa-baru",
++          analisis: hasil,
++          catatan,
++        });
++      } catch {
++        ubah(i, { status: "gagal", catatan: ["Pemeriksaan gagal. Coba lagi."] });
++      }
++    }
++    setKemajuan("");
++    setSibuk("");
++    setSudahPeriksa(true);
++  }
++
++  const siap = daftar.filter((item) => item.status === "siap");
++  const totalBaru = siap.reduce((total, item) => total + (item.analisis?.baru ?? 0), 0);
++  const dilewati = daftar.filter((item) => ["galat", "gagal", "ganda"].includes(item.status)).length;
++
++  async function terapkan() {
++    setError("");
++    setRingkasan("");
++    setSibuk("menyimpan");
++    let berhasil = 0;
++    let mahasiswa = 0;
++    const urutan = daftar.map((item, indeks) => ({ item, indeks })).filter(({ item }) => item.status === "siap");
++    for (let n = 0; n < urutan.length; n++) {
++      const { item, indeks } = urutan[n];
++      const analisis = item.analisis!;
++      setKemajuan(`Menyimpan ${n + 1} dari ${urutan.length} (${analisis.mk.kode})…`);
++      try {
++        const hasil = await terapkanImporMahasiswa(
++          analisis.mk.id,
++          analisis.baris.map(({ nim, nama, kelas }) => ({ nim, nama, kelas })),
++        );
++        if (hasil.error) {
++          ubah(indeks, { status: "gagal", catatan: [hasil.error] });
++        } else {
++          berhasil++;
++          mahasiswa += analisis.baru;
++          ubah(indeks, { status: "diimpor", catatan: [hasil.pesan ?? ""] });
++        }
++      } catch {
++        ubah(indeks, { status: "gagal", catatan: ["Penyimpanan gagal. Coba lagi."] });
++      }
++    }
++    setKemajuan("");
++    setSibuk("");
++    const pesan = `Impor massal selesai: ${berhasil} dari ${urutan.length} mata kuliah, ${mahasiswa} pendaftaran baru.`;
++    setRingkasan(pesan);
++    onBerhasil(pesan);
++  }
++
++  const loading = sibuk !== "";
++
++  return (
++    <div
++      className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
++      role="dialog"
++      aria-modal="true"
++      aria-labelledby="judul-impor-massal"
++      onMouseDown={(event) => {
++        if (event.target === event.currentTarget && !loading) onTutup();
++      }}
++      onKeyDown={(event) => {
++        if (event.key === "Escape" && !loading) onTutup();
++      }}
++    >
++      <div className="flex max-h-[90dvh] w-full max-w-4xl flex-col rounded-2xl bg-white p-6">
++        <div className="flex items-start justify-between gap-4">
++          <div>
++            <h2 id="judul-impor-massal" className="text-base font-bold text-[#111827]">
++              Impor Mahasiswa Massal
++            </h2>
++            <p className="mt-1 text-[13px] text-[#6B7280]">
++              Pilih banyak file sekaligus, satu file per mata kuliah. Mata kuliah dikenali dari kode di awal nama file
++              (mis. <span className="font-semibold">UTM_101_Bahasa_Indonesia.xlsx</span>). Isi tiap file memakai format
++              yang sama dengan template impor mahasiswa (NIM, Nama, Kelas opsional). Impor hanya menambah pendaftaran.
++            </p>
++            <a href="/api/admin/mahasiswa/template" download className="mt-1 inline-block text-[13px] font-semibold text-[#2F6BE8] hover:underline">
++              Unduh template Excel
++            </a>
++          </div>
++          <button
++            type="button"
++            onClick={onTutup}
++            disabled={loading}
++            aria-label="Tutup"
++            className="rounded-full bg-[#F1F3F5] px-3 py-1.5 text-sm text-[#4B5563] disabled:opacity-50"
++          >
++            ✕
++          </button>
++        </div>
++
++        <div className="mt-4 flex flex-wrap items-center gap-3">
++          <input
++            ref={inputRef}
++            type="file"
++            accept=".xlsx"
++            multiple
++            onChange={pilihFile}
++            disabled={loading}
++            aria-label="Pilih file Excel mahasiswa (boleh banyak)"
++            className="block min-w-0 flex-1 text-sm text-[#111827] file:mr-3 file:h-10 file:rounded-[10px] file:border-0 file:bg-[#EEF3FD] file:px-4 file:text-sm file:font-semibold file:text-[#111827]"
++          />
++          <button
++            type="button"
++            onClick={periksaSemua}
++            disabled={loading || daftar.length === 0}
++            className="h-10 rounded-[10px] bg-[#2F6BE8] px-4 text-sm font-semibold text-white disabled:opacity-50"
++          >
++            {sibuk === "memeriksa" ? "Memeriksa…" : `Periksa ${daftar.length || ""} file`}
++          </button>
++        </div>
++        <p className="mt-2 text-xs text-[#6B7280]">
++          Di jendela pilih file, tekan Ctrl+A untuk memilih semua file dalam folder. Maksimal {MAKS_FILE} file per impor.
++        </p>
++
++        {kemajuan && <p role="status" className="mt-3 text-sm font-semibold text-[#1D4ED8]">{kemajuan}</p>}
++        {error && (
++          <p role="alert" className="mt-3 rounded-lg bg-[#FEE2E2] px-3 py-2 text-sm text-[#DC2626]">{error}</p>
++        )}
++        {ringkasan && (
++          <p role="status" className="mt-3 rounded-lg bg-[#DCFCE7] px-3 py-2 text-sm text-[#166534]">{ringkasan}</p>
++        )}
++
++        {daftar.length > 0 && (
++          <div className="mt-3 min-h-0 flex-1 overflow-auto rounded-xl border border-[#E8EAEE]">
++            <table className="w-full min-w-160 text-left text-xs">
++              <thead className="sticky top-0 bg-[#F8FAFC] text-[#6B7280]">
++                <tr>
++                  <th className="px-3 py-2 font-semibold">File</th>
++                  <th className="px-3 py-2 font-semibold">Mata kuliah</th>
++                  <th className="px-3 py-2 text-right font-semibold">Baru</th>
++                  <th className="px-3 py-2 text-right font-semibold">Terdaftar</th>
++                  <th className="px-3 py-2 text-right font-semibold">Galat</th>
++                  <th className="px-3 py-2 font-semibold">Status</th>
++                </tr>
++              </thead>
++              <tbody>
++                {daftar.map((item) => (
++                  <tr key={item.file.name} className="border-t border-[#F1F3F5] align-top">
++                    <td className="max-w-56 break-all px-3 py-2">{item.file.name}</td>
++                    <td className="px-3 py-2">
++                      {item.analisis ? `${item.analisis.mk.kode} · ${item.analisis.mk.nama}` : "–"}
++                    </td>
++                    <td className="px-3 py-2 text-right">{item.analisis?.baru ?? "–"}</td>
++                    <td className="px-3 py-2 text-right">{item.analisis?.sudahTerdaftar ?? "–"}</td>
++                    <td className="px-3 py-2 text-right">{item.analisis?.galat ?? "–"}</td>
++                    <td className="px-3 py-2">
++                      <span className={`inline-block rounded-full px-2 py-0.5 font-semibold ${WARNA[item.status]}`}>
++                        {LABEL[item.status]}
++                      </span>
++                      {item.catatan.map((catatan, i) => (
++                        <span key={i} className="mt-1 block text-[#6B7280]">{catatan}</span>
++                      ))}
++                    </td>
++                  </tr>
++                ))}
++              </tbody>
++            </table>
++          </div>
++        )}
++
++        {sudahPeriksa && !ringkasan && (
++          <p className="mt-3 text-sm text-[#4B5563]">
++            {siap.length} file siap ({totalBaru} mahasiswa baru)
++            {dilewati > 0 ? `, ${dilewati} file dilewati karena galat. Perbaiki lalu periksa ulang, atau impor yang siap dulu.` : "."}
++          </p>
++        )}
++
++        <div className="mt-5 flex flex-wrap justify-end gap-3">
++          <button
++            type="button"
++            onClick={onTutup}
++            disabled={loading}
++            className="h-11 rounded-[10px] bg-[#EEF3FD] px-6 text-sm font-semibold text-[#111827] disabled:opacity-50"
++          >
++            {ringkasan ? "Selesai" : "Batal"}
++          </button>
++          {sudahPeriksa && !ringkasan && siap.length > 0 && (
++            <button
++              type="button"
++              onClick={terapkan}
++              disabled={loading}
++              className="h-11 rounded-[10px] bg-[#2F6BE8] px-6 text-sm font-semibold text-white disabled:opacity-50"
++            >
++              {sibuk === "menyimpan" ? "Menyimpan…" : `Impor ${siap.length} file (${totalBaru} mahasiswa)`}
++            </button>
++          )}
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/lib/actions/impor-mahasiswa-massal.ts b/src/lib/actions/impor-mahasiswa-massal.ts
+new file mode 100644
+index 0000000..e81acbd
+--- /dev/null
++++ b/src/lib/actions/impor-mahasiswa-massal.ts
+@@ -0,0 +1,65 @@
++"use server";
++
++import { auth } from "@/auth";
++import { prisma } from "@/lib/prisma";
++import { analisisImporMahasiswa } from "@/lib/actions/pendaftaran";
++import { bacaKodeDariNamaFile, judulCocokDenganNamaMK, kunciKodeMK } from "@/lib/impor-mahasiswa-massal";
++
++type BarisAnalisis = Extract<Awaited<ReturnType<typeof analisisImporMahasiswa>>, { ok: true }>["baris"];
++
++export type HasilAnalisisFileMassal =
++  | {
++      ok: true;
++      mk: { id: string; kode: string; nama: string };
++      baris: BarisAnalisis;
++      baru: number;
++      sudahTerdaftar: number;
++      galat: number;
++      /** Judul pada nama file tampak berbeda dari nama MK di sistem (hanya peringatan). */
++      peringatanJudul: string | null;
++    }
++  | { ok: false; error: string };
++
++async function pastikanAdmin() {
++  const session = await auth();
++  if (session?.user.role !== "ADMIN") {
++    throw new Error("Hanya admin yang boleh mengimpor mahasiswa.");
++  }
++}
++
++/**
++ * Memeriksa SATU file dari impor massal. Mata kuliah ditentukan dari kode di awal nama file, lalu isi file diperiksa
++ * dengan aturan yang sama seperti impor per mata kuliah. Klien memanggil ini satu file per panggilan supaya
++ * tiap permintaan tetap di bawah batas ukuran Server Action.
++ */
++export async function analisisFileImporMassal(formData: FormData): Promise<HasilAnalisisFileMassal> {
++  await pastikanAdmin();
++  const file = formData.get("file");
++  if (!(file instanceof File)) return { ok: false, error: "File tidak ditemukan." };
++
++  const kode = bacaKodeDariNamaFile(file.name);
++  if (!kode) {
++    return { ok: false, error: "Nama file harus diawali kode mata kuliah, contoh UTM_101_Bahasa_Indonesia.xlsx." };
++  }
++
++  const semuaMK = await prisma.mataKuliah.findMany({ select: { id: true, kode: true, nama: true } });
++  const cocok = semuaMK.filter((mk) => kunciKodeMK(mk.kode) === kode.kunci);
++  if (cocok.length === 0) return { ok: false, error: `Mata kuliah ${kode.kodeAsli} tidak ditemukan di Data Master.` };
++  if (cocok.length > 1) return { ok: false, error: `Kode ${kode.kodeAsli} cocok ke lebih dari satu mata kuliah.` };
++  const [mk] = cocok;
++
++  const hasil = await analisisImporMahasiswa(mk.id, formData);
++  if (!hasil.ok) return hasil;
++
++  return {
++    ok: true,
++    mk,
++    baris: hasil.baris,
++    baru: hasil.baru,
++    sudahTerdaftar: hasil.sudahTerdaftar,
++    galat: hasil.galat,
++    peringatanJudul: judulCocokDenganNamaMK(kode.judul, mk.nama)
++      ? null
++      : `Judul pada nama file ("${kode.judul}") berbeda dari nama MK di sistem ("${mk.nama}"). Kode MK dipakai sebagai acuan.`,
++  };
++}
+diff --git a/src/lib/actions/pendaftaran.ts b/src/lib/actions/pendaftaran.ts
+index ce5ed34..e17a7be 100644
+--- a/src/lib/actions/pendaftaran.ts
++++ b/src/lib/actions/pendaftaran.ts
+@@ -6,6 +6,7 @@ import { auth } from "@/auth";
+ import { prisma } from "@/lib/prisma";
+ import { getTahunAjaranAktif } from "@/lib/tahun-ajaran";
+ import { hitungAngkatanDariNim } from "@/lib/nim";
++import { cariHeaderMahasiswa } from "@/lib/impor-mahasiswa-massal";
+ import { hitungUlangCPL, hitungUlangMataKuliah } from "@/lib/perhitungan/hitungUlangMataKuliah";
+ 
+ type Hasil = { error?: string; pesan?: string; nilaiTerhapus?: number };
+@@ -76,27 +77,41 @@ export async function analisisImporMahasiswa(
+     return { ok: false, error: "File tidak bisa dibaca. Pastikan file .xlsx valid." };
+   }
+ 
+-  const worksheet = workbook.worksheets[0];
+-  if (!worksheet) return { ok: false, error: "File tidak memiliki lembar kerja." };
+-
+-  const header = worksheet.getRow(1);
+-  const kolom = new Map<string, number>();
+-  header.eachCell((cell, index) => {
+-    const namaKolom = teksSelExcel(cell.value).trim().toLowerCase().replace(/\s+/g, " ");
+-    if (namaKolom === "nim") kolom.set("nim", index);
+-    if (namaKolom === "nama" || namaKolom === "nama mahasiswa") kolom.set("nama", index);
+-    if (namaKolom === "kelas") kolom.set("kelas", index);
+-  });
+-  if (!kolom.has("nim") || !kolom.has("nama")) {
++  if (workbook.worksheets.length === 0) return { ok: false, error: "File tidak memiliki lembar kerja." };
++
++  // Pakai lembar pertama yang punya judul NIM + Nama (judul boleh tidak di baris 1; lembar "Petunjuk" dilewati).
++  let worksheet: ExcelJS.Worksheet | null = null;
++  let header: ReturnType<typeof cariHeaderMahasiswa> = null;
++  for (const kandidat of workbook.worksheets) {
++    const matriks: string[][] = [];
++    for (let nomor = 1; nomor <= Math.min(kandidat.rowCount, 15); nomor++) {
++      const baris: string[] = [];
++      kandidat.getRow(nomor).eachCell({ includeEmpty: true }, (cell, kolom) => {
++        baris[kolom - 1] = teksSelExcel(cell.value);
++      });
++      matriks.push(Array.from(baris, (teks) => teks ?? ""));
++    }
++    const temu = cariHeaderMahasiswa(matriks);
++    if (temu) {
++      worksheet = kandidat;
++      header = temu;
++      break;
++    }
++  }
++  if (!worksheet || !header) {
+     return { ok: false, error: "Header Excel harus memiliki kolom NIM dan Nama. Kolom Kelas boleh dikosongkan." };
+   }
++  const nomorHeader = header.indeksBaris + 1;
++  const kolomNim = header.kolom.nim + 1;
++  const kolomNama = header.kolom.nama + 1;
++  const kolomKelas = header.kolom.kelas === null ? null : header.kolom.kelas + 1;
+ 
+   const mentah: { baris: number; nim: string; nama: string; kelas: string }[] = [];
+   worksheet.eachRow((row, nomor) => {
+-    if (nomor === 1) return;
+-    const nim = teksSelExcel(row.getCell(kolom.get("nim")!).value).trim();
+-    const nama = teksSelExcel(row.getCell(kolom.get("nama")!).value).replace(/\s+/g, " ").trim();
+-    const kelas = kolom.has("kelas") ? teksSelExcel(row.getCell(kolom.get("kelas")!).value).trim() : "";
++    if (nomor <= nomorHeader) return;
++    const nim = teksSelExcel(row.getCell(kolomNim).value).trim();
++    const nama = teksSelExcel(row.getCell(kolomNama).value).replace(/\s+/g, " ").trim();
++    const kelas = kolomKelas ? teksSelExcel(row.getCell(kolomKelas).value).trim() : "";
+     if (!nim && !nama && !kelas) return;
+     mentah.push({ baris: nomor, nim, nama, kelas });
+   });
+diff --git a/src/lib/impor-mahasiswa-massal.ts b/src/lib/impor-mahasiswa-massal.ts
+new file mode 100644
+index 0000000..ff1a600
+--- /dev/null
++++ b/src/lib/impor-mahasiswa-massal.ts
+@@ -0,0 +1,80 @@
++// Utilitas murni untuk impor mahasiswa massal: satu file Excel per mata kuliah, kode MK dibaca dari nama file
++// (contoh: "UTM_101_Bahasa_Indonesia.xlsx" -> UTM 101).
++
++/** Kunci pembanding kode MK: huruf besar tanpa spasi/garis bawah/tanda hubung. "TEM 713", "tem_713", "TEM713" -> "TEM713". */
++export function kunciKodeMK(kode: string): string {
++  return kode.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
++}
++
++export type KodeDariNamaFile = {
++  /** Kunci pembanding, mis. "UTM101". */
++  kunci: string;
++  /** Kode sebagaimana tertulis di file, mis. "UTM_101". */
++  kodeAsli: string;
++  /** Sisa nama file (judul MK), mis. "Bahasa Indonesia". Bisa kosong. */
++  judul: string;
++};
++
++/**
++ * Membaca kode MK dari awal nama file: 2-4 huruf, pemisah opsional (_ spasi -), lalu 2-4 angka.
++ * Mengembalikan null kalau nama file tidak berawalan kode MK.
++ */
++export function bacaKodeDariNamaFile(namaFile: string): KodeDariNamaFile | null {
++  const tanpaFolder = namaFile.split(/[\\/]/).pop() ?? namaFile;
++  const tanpaEkstensi = tanpaFolder.replace(/\.xlsx$/i, "").trim();
++  const cocok = /^([A-Za-z]{2,4})([\s_-]?)(\d{2,4})(?![A-Za-z0-9])(.*)$/.exec(tanpaEkstensi);
++  if (!cocok) return null;
++  const [, huruf, pemisah, angka, sisa] = cocok;
++  const judul = sisa
++    .replace(/\(\d+\)\s*$/, "") // "(1)" dari salinan file di Windows
++    .replace(/[_]+/g, " ")
++    .replace(/^[\s-]+|[\s-]+$/g, "")
++    .replace(/\s+/g, " ");
++  return { kunci: `${huruf}${angka}`.toUpperCase(), kodeAsli: `${huruf}${pemisah}${angka}`, judul };
++}
++
++const rapatkan = (teks: string) => teks.toLowerCase().replace(/[^a-z0-9]/g, "");
++
++/** True bila judul di nama file (yang mungkin terpotong/disingkat) konsisten dengan nama MK di sistem. */
++export function judulCocokDenganNamaMK(judul: string, namaMK: string): boolean {
++  const a = rapatkan(judul);
++  const b = rapatkan(namaMK);
++  if (!a) return true; // tidak ada judul di nama file: tidak ada yang bisa dibandingkan
++  return b.startsWith(a) || a.startsWith(b);
++}
++
++/** Indeks (0-based) file yang kode MK-nya sudah muncul di file sebelumnya, supaya satu MK tidak diimpor dua kali. */
++export function cariFileGanda(kunciPerFile: (string | null)[]): Map<number, number> {
++  const pertama = new Map<string, number>();
++  const ganda = new Map<number, number>();
++  kunciPerFile.forEach((kunci, indeks) => {
++    if (!kunci) return;
++    const awal = pertama.get(kunci);
++    if (awal === undefined) pertama.set(kunci, indeks);
++    else ganda.set(indeks, awal);
++  });
++  return ganda;
++}
++
++export type PetaKolomMahasiswa = { nim: number; nama: number; kelas: number | null };
++
++const normalisasiJudul = (teks: string) => teks.toLowerCase().replace(/[^a-z0-9]/g, "");
++
++/**
++ * Mencari baris judul (NIM + Nama, Kelas opsional) pada beberapa baris pertama lembar, karena file ekspor sering
++ * punya judul/keterangan di atas tabel. `matriks[i][j]` = teks sel baris i (0-based), kolom j (0-based).
++ */
++export function cariHeaderMahasiswa(
++  matriks: string[][],
++  batasBaris = 15,
++): { indeksBaris: number; kolom: PetaKolomMahasiswa } | null {
++  for (let i = 0; i < Math.min(matriks.length, batasBaris); i++) {
++    const sel = matriks[i].map(normalisasiJudul);
++    const nim = sel.findIndex((teks) => teks === "nim" || teks === "npm");
++    const nama = sel.findIndex((teks) => teks === "nama" || teks === "namamahasiswa");
++    if (nim < 0 || nama < 0) continue;
++    const kelas = sel.findIndex((teks) => teks === "kelas");
++    return { indeksBaris: i, kolom: { nim, nama, kelas: kelas >= 0 ? kelas : null } };
++  }
++  return null;
++}
+diff --git a/tests/impor-mahasiswa-massal.test.ts b/tests/impor-mahasiswa-massal.test.ts
+new file mode 100644
+index 0000000..b5493ed
+--- /dev/null
++++ b/tests/impor-mahasiswa-massal.test.ts
+@@ -0,0 +1,63 @@
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import {
++  bacaKodeDariNamaFile,
++  cariFileGanda,
++  cariHeaderMahasiswa,
++  judulCocokDenganNamaMK,
++  kunciKodeMK,
++} from "../src/lib/impor-mahasiswa-massal";
++
++test("bacaKodeDariNamaFile membaca kode MK dari nama file contoh", () => {
++  assert.deepEqual(bacaKodeDariNamaFile("UTM_101_Bahasa_Indonesia.xlsx"), {
++    kunci: "UTM101",
++    kodeAsli: "UTM_101",
++    judul: "Bahasa Indonesia",
++  });
++  assert.equal(bacaKodeDariNamaFile("TEM_715_Penginderaan_Visual_Elektronika.xlsx")?.kunci, "TEM715");
++  assert.equal(bacaKodeDariNamaFile("TEO_101_Fisika_Mekanika.xlsx")?.judul, "Fisika Mekanika");
++});
++
++test("bacaKodeDariNamaFile menerima variasi pemisah, folder, dan salinan Windows", () => {
++  assert.equal(bacaKodeDariNamaFile("tem 713 Teknik Antarmuka.xlsx")?.kunci, "TEM713");
++  assert.equal(bacaKodeDariNamaFile("TE201.xlsx")?.kunci, "TE201");
++  assert.equal(bacaKodeDariNamaFile("data/TEM-713-Web.XLSX")?.kunci, "TEM713");
++  assert.equal(bacaKodeDariNamaFile("UTM_101_Bahasa_Indonesia (1).xlsx")?.judul, "Bahasa Indonesia");
++});
++
++test("bacaKodeDariNamaFile menolak nama file tanpa kode MK", () => {
++  assert.equal(bacaKodeDariNamaFile("Daftar_Mahasiswa.xlsx"), null);
++  assert.equal(bacaKodeDariNamaFile("101_UTM.xlsx"), null);
++  assert.equal(bacaKodeDariNamaFile("UTM_1_Satu.xlsx"), null);
++  assert.equal(bacaKodeDariNamaFile("UTM_101Bahasa.xlsx"), null);
++});
++
++test("kunciKodeMK menyamakan kode berspasi dan bergaris bawah", () => {
++  assert.equal(kunciKodeMK("TEM 713"), "TEM713");
++  assert.equal(kunciKodeMK("tem_713"), "TEM713");
++  assert.equal(kunciKodeMK("TE201"), "TE201");
++});
++
++test("judulCocokDenganNamaMK toleran pada judul terpotong tetapi menangkap judul yang salah", () => {
++  assert.ok(judulCocokDenganNamaMK("Bahasa Indonesia", "Bahasa Indonesia"));
++  assert.ok(judulCocokDenganNamaMK("Regulasi dan Kinerja", "Regulasi dan Kinerja Jaringan Telekomunikasi"));
++  assert.ok(judulCocokDenganNamaMK("", "Apa Saja"));
++  assert.ok(!judulCocokDenganNamaMK("Pancasila", "Kewarganegaraan"));
++});
++
++test("cariFileGanda menandai file kedua dan seterusnya untuk MK yang sama", () => {
++  const ganda = cariFileGanda(["UTM101", "UTM201", "UTM101", null, "UTM101"]);
++  assert.deepEqual([...ganda], [[2, 0], [4, 0]]);
++});
++
++test("cariHeaderMahasiswa menemukan judul di baris ke-3 dan kolom Kelas opsional", () => {
++  const hasil = cariHeaderMahasiswa([
++    ["DAFTAR PESERTA KULIAH"],
++    [],
++    ["No", "NIM", "Nama Mahasiswa", "Kelas"],
++    ["1", "210411100001", "Budi", "A"],
++  ]);
++  assert.deepEqual(hasil, { indeksBaris: 2, kolom: { nim: 1, nama: 2, kelas: 3 } });
++  assert.deepEqual(cariHeaderMahasiswa([["NIM", "Nama"]]), { indeksBaris: 0, kolom: { nim: 0, nama: 1, kelas: null } });
++  assert.equal(cariHeaderMahasiswa([["Kode", "Nilai"]]), null);
++});

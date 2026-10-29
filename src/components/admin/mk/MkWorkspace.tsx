@@ -9,6 +9,7 @@ import { PanelMK } from "./PanelMK";
 import { ModalMK, ModalHapusMK } from "./ModalMK";
 import { TombolImporMK } from "@/components/admin/mk/ModalImporMK";
 import { ModalImporMahasiswa } from "@/components/admin/mk/ModalImporMahasiswa";
+import { TombolImporMahasiswaMassal } from "@/components/admin/mk/ModalImporMahasiswaMassal";
 
 import {
   ModalTambahMahasiswa,
@@ -138,22 +139,30 @@ export function MkWorkspace({
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
-          <button onClick={() => setModalMk({ mk: null })} className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#2F6BE8] px-5 text-sm font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]">
+          <div className="flex flex-row gap-2 sm:flex-col lg:flex-row">
+          <button onClick={() => setModalMk({ mk: null })} className="flex h-10 items-center justify-center gap-2 rounded-full bg-[#2F6BE8] px-5 text-sm font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]">
             <span className="text-lg leading-none">+</span> Tambah Mata Kuliah Baru
           </button>
           <TombolImporMK />
+          </div>
+          <TombolImporMahasiswaMassal
+            onBerhasil={(pesan) => {
+              tampilToast(pesan);
+              router.refresh();
+            }}
+          />
         </div>
       </div>
+<div className="grid min-h-0 items-stretch gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+  <DaftarMK
+    daftarMK={daftarMK}
+    selectedId={selectedId}
+    onEdit={(m) => setModalMk({ mk: m })}
+    onHapus={bukaHapusMk}
+  />
 
-      <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start">
-        <DaftarMK
-          daftarMK={daftarMK}
-          selectedId={selectedId}
-          onEdit={(m) => setModalMk({ mk: m })}
-          onHapus={bukaHapusMk}
-        />
 
-        <div className="min-w-0 space-y-6">
+          <div className="min-w-0 space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
               <div>

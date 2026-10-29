@@ -17,19 +17,30 @@ export function TombolImporMK() {
   const [buka, setBuka] = useState(false);
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setBuka(true)}
-        className="flex h-10 items-center gap-2 rounded-full border border-[#E8EAEE] bg-white px-4 text-sm font-semibold text-[#111827] [@media(hover:hover)]:hover:bg-[#EEF3FD]"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <path d="M17 8l-5-5-5 5" />
-          <path d="M12 3v12" />
-        </svg>
-        Impor dari Excel
-      </button>
-      {buka && <ModalImporMK onTutup={() => setBuka(false)} />}
+<button
+  type="button"
+  onClick={() => setBuka(true)}
+  className="flex h-10 items-center justify-center gap-2 rounded-full border bg-[#2F6BE8] px-5 text-sm font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
+>
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <path d="M17 8l-5-5-5 5" />
+    <path d="M12 3v12" />
+  </svg>
+
+  Impor MK dengan Excel
+</button>
+
+{buka && <ModalImporMK onTutup={() => setBuka(false)} />}
     </>
   );
 }
