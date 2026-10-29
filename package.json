@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mahasiswa-massal.test.ts tests/impor-mk.test.ts tests/kelas-terpilih.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
+    "test": "tsx --test tests/asesmen-tampilan.test.ts tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mahasiswa-massal.test.ts tests/impor-mk.test.ts tests/kelas-terpilih.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
     "typecheck": "tsc --noEmit",
     "import:ta-2022-2023": "tsx scripts/import-ta-2022-2023.ts",
     "seed:mahasiswa-dummy": "tsx prisma/seed-mahasiswa-dummy.ts",

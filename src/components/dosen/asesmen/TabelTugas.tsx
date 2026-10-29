@@ -33,9 +33,12 @@ export function TabelTugas({
   onHalaman,
   urut,
   onUrut,
+  cari,
+  onCari,
   sorotId,
   mataKuliahId,
   namaMK,
+  namaKelas,
   onHapus,
   sedangHapus,
   readOnly = false,
@@ -47,9 +50,12 @@ export function TabelTugas({
   onHalaman: (h: number) => void;
   urut: UrutTabel;
   onUrut: (u: UrutTabel) => void;
+  cari: string;
+  onCari: (nilai: string) => void;
   sorotId: string | null;
   mataKuliahId: string;
   namaMK: string;
+  namaKelas: string | null;
   onHapus: (t: TugasRow) => void;
   sedangHapus: boolean;
   readOnly?: boolean;
@@ -65,21 +71,33 @@ export function TabelTugas({
         judul="Daftar Tugas & Instrumen Penilaian"
         subjudul="Tugas terbaru ditampilkan di urutan pertama"
         aksi={
-          <label className="flex items-center gap-1.5 text-[12px] font-medium text-[#334155]">
-            <span className="sr-only">Urutkan</span>
-            <select
-              value={urut}
-              onChange={(e) => onUrut(e.target.value as UrutTabel)}
-              className={`min-h-[32px] rounded-lg bg-transparent pr-1 text-[12px] font-semibold ${FOKUS}`}
-            >
-              {(Object.keys(LABEL_URUT) as UrutTabel[]).map((u) => (
-                <option key={u} value={u}>
-                  {LABEL_URUT[u]}
-                </option>
-              ))}
-            </select>
-            <Ikon nama="urut" ukuran={14} />
-          </label>
+          <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+            <label className="flex min-h-[36px] min-w-[200px] flex-1 items-center gap-2 rounded-[10px] bg-[#F3F5F9] px-3 focus-within:ring-2 focus-within:ring-[#60A5FA] sm:w-[320px] sm:flex-none">
+              <Ikon nama="cari" ukuran={15} className="shrink-0 text-[#64748B]" />
+              <span className="sr-only">Cari tugas</span>
+              <input
+                value={cari}
+                onChange={(e) => onCari(e.target.value)}
+                placeholder="Cari judul tugas, instrumen, atau CPMK..."
+                className="w-full bg-transparent text-[12px] outline-none placeholder:text-[#64748B]"
+              />
+            </label>
+            <label className="flex items-center gap-1.5 text-[12px] font-medium text-[#334155]">
+              <span className="sr-only">Urutkan</span>
+              <select
+                value={urut}
+                onChange={(e) => onUrut(e.target.value as UrutTabel)}
+                className={`min-h-[36px] rounded-lg bg-transparent pr-1 text-[12px] font-semibold ${FOKUS}`}
+              >
+                {(Object.keys(LABEL_URUT) as UrutTabel[]).map((u) => (
+                  <option key={u} value={u}>
+                    {LABEL_URUT[u]}
+                  </option>
+                ))}
+              </select>
+              <Ikon nama="urut" ukuran={14} />
+            </label>
+          </div>
         }
       />
 
@@ -104,7 +122,7 @@ export function TabelTugas({
                 <td colSpan={5} className="py-10 text-center text-[13px] text-[#64748B]">
                   {totalSemua === 0
                     ? "Belum ada tugas. Klik “Buat Tugas Baru” untuk memulai."
-                    : "Tidak ada tugas yang cocok. Hapus filter atau buat tugas baru."}
+                    : "Tidak ada tugas yang cocok. Hapus pencarian atau buat tugas baru."}
                 </td>
               </tr>
             )}
@@ -245,7 +263,7 @@ export function TabelTugas({
 
       <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#64748B]">
         <span>
-          Total {totalSemua} instrumen penilaian aktif untuk kelas {namaMK}
+          Total {totalSemua} instrumen penilaian aktif untuk {namaMK}{namaKelas ? ` · Kelas ${namaKelas}` : ""}
         </span>
         <span className="flex items-center gap-2">
           Menampilkan {awal}–{akhir} dari {totalTersaring}

@@ -16,7 +16,7 @@ export function KartuJudul({
   aksi?: ReactNode;
 }) {
   return (
-    <header className="mb-3 flex items-start justify-between gap-3">
+    <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
         <h2 className="text-[15px] font-bold leading-tight text-[#0F172A]">{judul}</h2>
         {subjudul && <p className="mt-0.5 text-[12px] text-[#64748B]">{subjudul}</p>}

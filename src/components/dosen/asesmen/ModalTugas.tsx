@@ -51,13 +51,10 @@ export function ModalTugas({
     [tugasLingkup, bobot],
   );
 
-  const cplTarget = useMemo(() => {
-    const kode = new Set<string>();
-    for (const c of data.cpmk) {
-      if (c.sub.some((s) => subDipilih.has(s.id))) c.cpl.forEach((l) => kode.add(l.kode));
-    }
-    return [...kode];
-  }, [data.cpmk, subDipilih]);
+  const cpmkTerpilih = useMemo(
+    () => data.cpmk.filter((c) => c.sub.some((s) => subDipilih.has(s.id))),
+    [data.cpmk, subDipilih],
+  );
 
   function tutup() {
     if (kotor && !window.confirm("Perubahan belum disimpan. Tutup formulir?")) return;
@@ -116,7 +113,7 @@ export function ModalTugas({
       onClick={(e) => {
         if (e.target === dialog.current) tutup();
       }}
-      className="m-auto max-h-[90vh] w-[490px] max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex"
+      className="m-auto max-h-[90vh] w-[490px] max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex max-sm:mb-0 max-sm:mt-auto max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none"
     >
       <header className="border-b border-[#E5E7EB] px-5 pb-3 pt-4">
         <div className="flex items-center gap-2.5">
@@ -243,7 +240,7 @@ export function ModalTugas({
           <div className="flex items-center justify-between">
             <h3 className="text-[13px] font-bold">Pemetaan CPMK &amp; Sub-CPMK</h3>
             <span className="text-[11px] font-semibold text-[#2563EB]">
-              {data.cpmk.filter((c) => c.sub.some((s) => subDipilih.has(s.id))).length} Terpilih
+              {subDipilih.size} Terpilih
             </span>
           </div>
           <p className="mb-2 text-[11px] text-[#64748B]">
@@ -280,15 +277,18 @@ export function ModalTugas({
                       {terpilih && <Ikon nama="centang" ukuran={11} />}
                     </button>
                     <div className="min-w-0 flex-1">
-                      <p className="flex flex-wrap items-center gap-1.5">
-                        <span className="rounded-md bg-[#2563EB] px-1.5 py-0.5 text-[11px] font-bold text-white">
+                      <p className="flex min-w-0 items-center gap-2">
+                        <span className="shrink-0 rounded-md bg-[#2563EB] px-1.5 py-0.5 text-[11px] font-bold text-white">
                           CPMK {c.angka}
                         </span>
+                        <span
+                          className={`min-w-0 truncate text-[12px] font-bold ${terpilih ? "text-[#0F172A]" : "text-[#64748B]"}`}
+                          title={c.deskripsi}
+                        >
+                          {c.deskripsi}
+                        </span>
                       </p>
-                      <p className={`mt-1 text-[12px] leading-snug ${terpilih ? "text-[#334155]" : "text-[#64748B]"}`}>
-                        {c.deskripsi}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label={`Sub-CPMK ${c.kode}`}>
                         {c.sub.map((s) => {
                           const on = subDipilih.has(s.id);
                           return (
@@ -308,12 +308,6 @@ export function ModalTugas({
                             </button>
                           );
                         })}
-                        {c.cpl.length > 0 && (
-                          <span className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-[#2563EB]">
-                            <Ikon nama="target" ukuran={12} />
-                            {c.cpl.map((l) => l.kode).join(", ")}
-                          </span>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -330,17 +324,17 @@ export function ModalTugas({
         )}
       </div>
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E5E7EB] px-5 py-3">
-        <p className="flex items-center gap-1.5 text-[11px] text-[#334155]" aria-live="polite">
-          <Ikon nama="centang" ukuran={14} className="text-[#2563EB]" />
+      <footer className="space-y-2.5 border-t border-[#E5E7EB] px-5 py-3">
+        <p className="flex flex-wrap items-center justify-end gap-1.5 text-[11px] text-[#334155]" aria-live="polite">
           <b>{subDipilih.size} Sub-CPMK terpilih</b> • Bobot {bobot}%
-          {cplTarget.length > 0 && <> • Target {cplTarget.join(" & ")}</>}
+          {cpmkTerpilih.length > 0 && <> • Target {cpmkTerpilih.map((c) => `CPMK ${c.angka}`).join(" & ")}</>}
+          <Ikon nama="centang" ukuran={14} className="text-[#2563EB]" />
         </p>
-        <div className="flex gap-2">
+        <div className="flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={tutup}
-            className={`min-h-[34px] rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] ${FOKUS}`}
+            className={`min-h-[34px] min-w-[100px] rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] ${FOKUS}`}
           >
             Batal
           </button>

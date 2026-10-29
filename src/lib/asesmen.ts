@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getTahunAjaranDosen } from "@/lib/tahun-ajaran";
 import { angkaKode, bobotKePersen } from "@/lib/asesmen-util";
+import { namaDenganGelar } from "@/lib/dosen";
 import type { CpmkOpsi, DataAsesmen, TugasRow } from "@/components/dosen/asesmen/tipe";
 
 /**
@@ -64,7 +65,7 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
     where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelas ? { kelasId: kelas.id } : {}) },
     select: { mahasiswaId: true },
   });
-  const [tugas, cpmk, jumlahNilai] = await Promise.all([
+  const [tugas, cpmk, jumlahNilai, dosen, totalSub, subTerpetakan] = await Promise.all([
     prisma.tugas.findMany({
       where: { mataKuliahId, tahunAjaranId: ta.id, ...whereKelas },
       orderBy: { id: "asc" }, // cuid ~ berurutan waktu pembuatan
@@ -98,6 +99,12 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
       },
       _count: { _all: true },
     }),
+    prisma.dosen.findUnique({ where: { id: dosenId }, select: { nama: true, gelar: true } }),
+    // Sama dengan kriteria finalisasiDistribusi: hanya Sub-CPMK yang sudah masuk hierarki CPMK.
+    prisma.subCPMK.count({ where: { mataKuliahId, tahunAjaranId: ta.id, cpmkTerkait: { some: {} } } }),
+    prisma.subCPMK.count({
+      where: { mataKuliahId, tahunAjaranId: ta.id, cpmkTerkait: { some: {} }, distribusi: { some: {} } },
+    }),
   ]);
 
   const masukPerTugas = new Map<string, number>(jumlahNilai.map((n): [string, number] => [n.tugasId, n._count._all]));
@@ -122,6 +129,7 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
       cpmkIds: [...cpmkUnik.keys()],
       cpmkAngka: [...cpmkUnik.values()].map(angkaKode).sort((a, b) => Number(a) - Number(b)),
       subAngka: sub.map((s) => angkaKode(s.kode)).sort((a, b) => Number(a) - Number(b)),
+      subIds: sub.map((s) => s.id),
       masuk,
       total: mahasiswa,
       status: mahasiswa > 0 && masuk >= mahasiswa ? "dinilai" : masuk > 0 ? "berjalan" : "belum",
@@ -145,6 +153,8 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
     kelas,
     koordinator,
     mahasiswa,
+    dosenNama: dosen ? namaDenganGelar(dosen) : "",
+    distribusiSub: { terpetakan: subTerpetakan, total: totalSub },
     tugas: rows,
     cpmk: cpmkOpsi,
     pertemuanDefault: Math.min(16, Math.max(0, ...rows.map((r) => r.pertemuanKe)) + 1),

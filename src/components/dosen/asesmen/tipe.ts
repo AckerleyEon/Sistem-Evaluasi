@@ -26,6 +26,7 @@ export interface TugasRow {
   cpmkIds: string[];
   cpmkAngka: string[];
   subAngka: string[];
+  subIds: string[];
   masuk: number; // jumlah mahasiswa yang sudah punya nilai
   total: number; // mahasiswa terdaftar
   status: StatusTugas; // "baru" hanya ditentukan di client
@@ -39,6 +40,9 @@ export interface DataAsesmen {
   kelas: { id: string; nama: string } | null;
   koordinator: boolean;
   mahasiswa: number;
+  dosenNama: string;
+  /** Sub-CPMK pada hierarki CPMK: berapa yang sudah terhubung ke minimal satu tugas (seluruh MK pada T.A. ini). */
+  distribusiSub: { terpetakan: number; total: number };
   tugas: TugasRow[]; // urut pembuatan (kode T1 -> Tn)
   cpmk: CpmkOpsi[];
   pertemuanDefault: number;
