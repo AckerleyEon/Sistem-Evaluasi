@@ -40,6 +40,7 @@ export interface DataAsesmen {
   kelas: { id: string; nama: string } | null;
   koordinator: boolean;
   mahasiswa: number;
+  mahasiswaTotal: number;
   dosenNama: string;
   /** Sub-CPMK pada hierarki CPMK: berapa yang sudah terhubung ke minimal satu tugas (seluruh MK pada T.A. ini). */
   distribusiSub: { terpetakan: number; total: number };

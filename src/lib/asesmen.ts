@@ -61,10 +61,13 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
 
   const whereKelas = kelas ? { OR: [{ kelasId: kelas.id }, ...(koordinator ? [{ kelasId: null }] : [])] } : { kelasId: null };
 
-  const pendaftaran = await prisma.pendaftaranMK.findMany({
-    where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelas ? { kelasId: kelas.id } : {}) },
-    select: { mahasiswaId: true },
-  });
+  const [pendaftaran, mahasiswaTotal] = await Promise.all([
+    prisma.pendaftaranMK.findMany({
+      where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelas ? { kelasId: kelas.id } : {}) },
+      select: { mahasiswaId: true },
+    }),
+    prisma.pendaftaranMK.count({ where: { mataKuliahId, tahunAjaranId: ta.id } }),
+  ]);
   const [tugas, cpmk, jumlahNilai, dosen, totalSub, subTerpetakan] = await Promise.all([
     prisma.tugas.findMany({
       where: { mataKuliahId, tahunAjaranId: ta.id, ...whereKelas },
@@ -153,6 +156,7 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
     kelas,
     koordinator,
     mahasiswa,
+    mahasiswaTotal,
     dosenNama: dosen ? namaDenganGelar(dosen) : "",
     distribusiSub: { terpetakan: subTerpetakan, total: totalSub },
     tugas: rows,

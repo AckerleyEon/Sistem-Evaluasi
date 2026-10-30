@@ -14,6 +14,11 @@ const headerKeamanan = [
 const nextConfig: NextConfig = {
   reactCompiler: true,
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "21mb",
+    },
+  },
   async headers() {
     return [{ source: "/:path*", headers: headerKeamanan }];
   },

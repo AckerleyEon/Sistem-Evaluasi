@@ -31,7 +31,6 @@ export type DataLaporanCPL = {
   cpmk: NilaiKomponenLaporan[];
   subCpmk: NilaiKomponenLaporan[];
   mahasiswa: MahasiswaLaporan[];
-  relasi: { cplId: string; cpmkId: string; subCpmkId: string }[];
 };
 
 function rata(nilai: number[]) {
@@ -135,9 +134,38 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
     mahasiswa.rataCPL = rata(Object.values(mahasiswa.cpl).map((hasil) => hasil.nilai));
   }
 
+  const hasilCPLById = new Map<string, typeof hasilCPL>();
+  const hasilCPMKById = new Map<string, typeof hasilCPMK>();
+  const hasilSubById = new Map<string, typeof hasilSub>();
+  for (const hasil of hasilCPL) {
+    const daftar = hasilCPLById.get(hasil.cplId) ?? [];
+    daftar.push(hasil);
+    hasilCPLById.set(hasil.cplId, daftar);
+  }
+  for (const hasil of hasilCPMK) {
+    const daftar = hasilCPMKById.get(hasil.cpmkId) ?? [];
+    daftar.push(hasil);
+    hasilCPMKById.set(hasil.cpmkId, daftar);
+  }
+  for (const hasil of hasilSub) {
+    const daftar = hasilSubById.get(hasil.subCpmkId) ?? [];
+    daftar.push(hasil);
+    hasilSubById.set(hasil.subCpmkId, daftar);
+  }
+
+  const cplTerkaitSub = new Map<string, Set<string>>();
+  for (const item of cpmkMaster) {
+    const kodeCpl = item.mataKuliah.cplTerkait.map((tautan) => tautan.cpl.kode);
+    for (const tautan of item.sub) {
+      const kodeTerkait = cplTerkaitSub.get(tautan.subCpmk.id) ?? new Set<string>();
+      for (const kode of kodeCpl) kodeTerkait.add(kode);
+      cplTerkaitSub.set(tautan.subCpmk.id, kodeTerkait);
+    }
+  }
+
   const mahasiswa = [...mahasiswaMap.values()];
   const cpl = cplMaster.map((item) => {
-    const nilai = hasilCPL.filter((hasil) => hasil.cplId === item.id);
+    const nilai = hasilCPLById.get(item.id) ?? [];
     return {
       id: item.id,
       kode: item.kode,
@@ -151,7 +179,7 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
     };
   });
   const cpmk = cpmkMaster.map((item) => {
-    const nilai = hasilCPMK.filter((hasil) => hasil.cpmkId === item.id);
+    const nilai = hasilCPMKById.get(item.id) ?? [];
     return {
       id: item.id,
       kode: `${item.mataKuliah.kode} · ${item.kode}`,
@@ -164,33 +192,18 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
     };
   });
   const subCpmk = subCpmkMaster.map((item) => {
-    const nilai = hasilSub.filter((hasil) => hasil.subCpmkId === item.id);
-    const cplTerkait = new Set(
-      cpmkMaster
-        .filter((c) => c.sub.some((tautan) => tautan.subCpmk.id === item.id))
-        .flatMap((c) => c.mataKuliah.cplTerkait.map((tautan) => tautan.cpl.kode)),
-    );
+    const nilai = hasilSubById.get(item.id) ?? [];
     return {
       id: item.id,
       kode: `${item.mataKuliah.kode} · ${item.kode}`,
       deskripsi: item.deskripsi,
       nilai: rata(nilai.map((hasil) => hasil.nilai)) ?? 0,
       lengkap: nilai.length > 0 && nilai.every((hasil) => hasil.statusLengkap),
-      cpl: [...cplTerkait],
+      cpl: [...(cplTerkaitSub.get(item.id) ?? [])],
       jumlahData: nilai.length,
       persenTuntas: nilai.length ? (nilai.filter((hasil) => hasil.nilai >= passingGrade).length / nilai.length) * 100 : null,
     };
   });
-  const relasi = cpmkMaster.flatMap((item) =>
-    item.sub.flatMap((tautan) =>
-      item.mataKuliah.cplTerkait.map((cplTautan) => ({
-        cplId: cplTautan.cpl.id,
-        cpmkId: item.id,
-        subCpmkId: tautan.subCpmk.id,
-      })),
-    ),
-  );
-
   return {
     tahunAjaran: { id: tahunAjaran.id, label: tahunAjaran.label },
     passingGrade,
@@ -199,6 +212,5 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
     cpmk,
     subCpmk,
     mahasiswa,
-    relasi,
   };
 }

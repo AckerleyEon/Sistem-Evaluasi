@@ -102,7 +102,7 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Header halaman */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
@@ -115,7 +115,7 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
           <button
             type="button"
             onClick={() => setModalImpor(true)}
-            className={`flex min-h-[40px] items-center gap-2 rounded-[10px] bg-[#2563EB] px-4 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] transition hover:bg-[#1D4ED8] ${FOKUS}`}
+            className={`flex min-h-10 items-center gap-2 rounded-[10px] bg-[#2563EB] px-4 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] transition hover:bg-[#1D4ED8] ${FOKUS}`}
           >
             <Ikon nama="tabel" ukuran={14} />
             Import Asesmen MK (.xlsx)
@@ -123,10 +123,18 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
         )}
       </div>
 
-      <BarisKonteks data={data} onBuatTugas={() => setModal(true)} tombolBuatRef={tombolBuat} />
+      <BarisKonteks data={data} />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <DistribusiBobot tugas={semua} sorotId={baruId} kodeAktif={kodeAktif} onPilih={pilihKode} />
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
+        <DistribusiBobot
+          tugas={semua}
+          sorotId={baruId}
+          kodeAktif={kodeAktif}
+          onPilih={pilihKode}
+          onBuatTugas={() => setModal(true)}
+          tombolBuatRef={tombolBuat}
+          aktif={aktif}
+        />
         <MatriksSub cpmk={data.cpmk} tugas={semua} sorotId={baruId} kodeAktif={kodeAktif} onPilih={pilihKode} />
       </div>
 
@@ -159,7 +167,6 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
       {modalImpor && (
         <ModalImporAsesmen
           mataKuliahId={data.mataKuliah.id}
-          kelasId={data.kelas?.id ?? null}
           namaMK={data.mataKuliah.nama}
           onTutup={() => setModalImpor(false)}
           onSelesai={(pesan) => {

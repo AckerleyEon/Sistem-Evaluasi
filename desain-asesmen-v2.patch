@@ -1,0 +1,1577 @@
+diff --git a/package.json b/package.json
+index 6d6c19e..1e208d6 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,7 @@
+     "build": "next build",
+     "start": "next start",
+     "lint": "eslint",
+-    "test": "tsx --test tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mahasiswa-massal.test.ts tests/impor-mk.test.ts tests/kelas-terpilih.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
++    "test": "tsx --test tests/asesmen-tampilan.test.ts tests/distribusi.test.ts tests/impor-cpmk.test.ts tests/impor-mahasiswa-massal.test.ts tests/impor-mk.test.ts tests/kelas-terpilih.test.ts tests/keamanan.test.ts tests/perhitungan.test.ts tests/util.test.ts",
+     "typecheck": "tsc --noEmit",
+     "import:ta-2022-2023": "tsx scripts/import-ta-2022-2023.ts",
+     "seed:mahasiswa-dummy": "tsx prisma/seed-mahasiswa-dummy.ts",
+diff --git a/src/components/dosen/Ikon.tsx b/src/components/dosen/Ikon.tsx
+index 23719f6..aedbcda 100644
+--- a/src/components/dosen/Ikon.tsx
++++ b/src/components/dosen/Ikon.tsx
+@@ -168,6 +168,13 @@ const PATH: Record<string, ReactNode> = {
+       <path d="M12 15V3" />
+     </>
+   ),
++  unggah: (
++    <>
++      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
++      <path d="m17 8-5-5-5 5" />
++      <path d="M12 3v12" />
++    </>
++  ),
+   jamPasir: (
+     <>
+       <path d="M5 22h14" />
+diff --git a/src/components/dosen/asesmen/AsesmenWorkspace.tsx b/src/components/dosen/asesmen/AsesmenWorkspace.tsx
+index 009c151..a534817 100644
+--- a/src/components/dosen/asesmen/AsesmenWorkspace.tsx
++++ b/src/components/dosen/asesmen/AsesmenWorkspace.tsx
+@@ -1,52 +1,33 @@
+ "use client";
+ 
+-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
++import { useCallback, useMemo, useRef, useState, useTransition } from "react";
+ import { useRouter } from "next/navigation";
+ import { Ikon } from "../Ikon";
+ import { hapusTugas } from "@/lib/actions/asesmen";
+-import { BannerAksi, type IsiBanner } from "./BannerAksi";
++import { BarisKonteks } from "./BarisKonteks";
+ import { DistribusiBobot } from "./DistribusiBobot";
+-import { FOKUS, KARTU } from "./KartuUI";
+-import { KartuPanduan, KartuUnduh } from "./KartuBawah";
+-import { KpiAsesmen } from "./KpiAsesmen";
+-import { MatriksCPMK } from "./MatriksCPMK";
++import { FOKUS } from "./KartuUI";
++import { MatriksSub } from "./MatriksSub";
++import { ModalImporAsesmen } from "./ModalImporAsesmen";
+ import { ModalTugas } from "./ModalTugas";
+ import { TabelTugas, UKURAN_HALAMAN, type UrutTabel } from "./TabelTugas";
+-import type { DataAsesmen, RingkasanBuat, StatusTugas, TugasRow } from "./tipe";
+-
+-type FilterStatus = "semua" | StatusTugas;
+-const OPSI_FILTER: { nilai: FilterStatus; label: string }[] = [
+-  { nilai: "semua", label: "Semua Tugas" },
+-  { nilai: "baru", label: "Baru dibuat" },
+-  { nilai: "berjalan", label: "Berjalan" },
+-  { nilai: "dinilai", label: "Dinilai" },
+-  { nilai: "belum", label: "Belum" },
+-];
+-
+-function inisial(nama: string) {
+-  const k = nama.split(/\s+/).filter(Boolean);
+-  return ((k[0]?.[0] ?? "") + (k[1]?.[0] ?? "")).toUpperCase();
+-}
++import { ToastAksi, type IsiToast } from "./ToastAksi";
++import type { DataAsesmen, RingkasanBuat, TugasRow } from "./tipe";
+ 
+ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
+   const router = useRouter();
+   const tombolBuat = useRef<HTMLButtonElement>(null);
+   const [modal, setModal] = useState(false);
+-  const [banner, setBanner] = useState<IsiBanner | null>(null);
++  const [modalImpor, setModalImpor] = useState(false);
++  const [toast, setToast] = useState<IsiToast | null>(null);
+   const [baruId, setBaruId] = useState<string | null>(null);
+   const [cari, setCari] = useState("");
+-  const [filter, setFilter] = useState<FilterStatus>("semua");
+   const [kodeAktif, setKodeAktif] = useState<string | null>(null);
+   const [urut, setUrut] = useState<UrutTabel>("terbaru");
+   const [halaman, setHalaman] = useState(1);
+   const [hapusPending, mulaiHapus] = useTransition();
+-
+-  // Banner hilang otomatis setelah 8 detik.
+-  useEffect(() => {
+-    if (!banner) return;
+-    const id = window.setTimeout(() => setBanner(null), 8000);
+-    return () => window.clearTimeout(id);
+-  }, [banner]);
++  const tutupToast = useCallback(() => setToast(null), []);
++  const aktif = data.tahunAjaran.status === "AKTIF";
+ 
+   // Status "Baru dibuat" hanya untuk tugas yang baru ditambahkan dan belum punya nilai.
+   const semua: TugasRow[] = useMemo(
+@@ -57,7 +38,6 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
+   const tersaring = useMemo(() => {
+     const q = cari.trim().toLowerCase();
+     const hasil = semua.filter((t) => {
+-      if (filter !== "semua" && t.status !== filter) return false;
+       if (kodeAktif && t.kode !== kodeAktif) return false;
+       if (!q) return true;
+       return (
+@@ -77,7 +57,7 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
+       if (b.id === baruId) return 1;
+       return (indeks.get(b.id) ?? 0) - (indeks.get(a.id) ?? 0);
+     });
+-  }, [semua, cari, filter, kodeAktif, urut, baruId]);
++  }, [semua, cari, kodeAktif, urut, baruId]);
+ 
+   const jumlahHalaman = Math.max(1, Math.ceil(tersaring.length / UKURAN_HALAMAN));
+   const halamanAman = Math.min(halaman, jumlahHalaman);
+@@ -92,16 +72,14 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
+     setModal(false);
+     setBaruId(r.id);
+     setCari("");
+-    setFilter("semua");
+     setKodeAktif(null);
+     setUrut("terbaru");
+     setHalaman(1);
+-    const kode = `T${data.tugas.length + 1}`;
+-    setBanner({
++    setToast({
+       nada: "ok",
+       judul: "Tugas berhasil disimpan dan dipetakan",
+       deskripsi: `"${r.nama}" ditambahkan dengan bobot ${r.bobot}% • ${r.cpmkAngka.map((a) => `CPMK ${a}`).join(" • ")}`,
+-      kode,
++      kode: `T${data.tugas.length + 1}`,
+     });
+     router.refresh();
+     tombolBuat.current?.focus();
+@@ -115,7 +93,7 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
+     if (!window.confirm(peringatan)) return;
+     mulaiHapus(async () => {
+       const hasil = await hapusTugas(data.mataKuliah.id, t.id, data.kelas?.id);
+-      setBanner({ nada: hasil.ok ? "ok" : "galat", judul: hasil.ok ? "Tugas dihapus" : "Gagal menghapus", deskripsi: hasil.pesan });
++      setToast({ nada: hasil.ok ? "ok" : "galat", judul: hasil.ok ? "Tugas dihapus" : "Gagal menghapus", deskripsi: hasil.pesan });
+       if (hasil.ok) {
+         if (baruId === t.id) setBaruId(null);
+         router.refresh();
+@@ -133,124 +111,23 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
+             Tahun Ajaran {data.tahunAjaran.label}
+           </span>
+         </div>
+-        <div className="flex gap-2">
++        {aktif && (
+           <button
+             type="button"
+-            disabled
+-            title="Fitur salin tugas dari semester lalu belum tersedia"
+-            className="flex min-h-[34px] items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-3.5 text-[12px] font-semibold text-[#334155] opacity-60"
++            onClick={() => setModalImpor(true)}
++            className={`flex min-h-[40px] items-center gap-2 rounded-[10px] bg-[#2563EB] px-4 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] transition hover:bg-[#1D4ED8] ${FOKUS}`}
+           >
+-            <Ikon nama="riwayat" ukuran={14} />
+-            Salin dari Semester Lalu
+-          </button>
+-          {data.tahunAjaran.status === "AKTIF" && (
+-            <button
+-              ref={tombolBuat}
+-              type="button"
+-              onClick={() => setModal(true)}
+-              className={`flex min-h-[34px] items-center gap-1.5 rounded-full bg-[#2563EB] px-3.5 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] transition hover:bg-[#1D4ED8] ${FOKUS}`}
+-            >
+-              <Ikon nama="plus" ukuran={14} />
+-              Buat Tugas Baru
+-            </button>
+-          )}
+-        </div>
+-      </div>
+-
+-      {banner && <BannerAksi isi={banner} onTutup={() => setBanner(null)} />}
+-
+-      {/* Toolbar */}
+-      <div className={`${KARTU} flex flex-wrap items-center gap-3 p-3`}>
+-        <label className="flex min-h-[40px] items-center gap-2.5 rounded-xl bg-[#EFF6FF] px-2.5">
+-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#2563EB] text-[11px] font-bold text-white">
+-            {inisial(data.mataKuliah.nama)}
+-          </span>
+-          <span className="sr-only">Mata kuliah</span>
+-          <span className="leading-tight">
+-            <select
+-              value={data.mataKuliah.id}
+-              onChange={(e) => router.push(`/dosen/komponen-penilaian/${e.target.value}`)}
+-              className={`max-w-[200px] cursor-pointer bg-transparent text-[12px] font-bold ${FOKUS}`}
+-            >
+-              {data.daftarMK.map((m) => (
+-                <option key={m.id} value={m.id}>
+-                  {m.nama}
+-                </option>
+-              ))}
+-            </select>
+-            <span className="block text-[11px] text-[#64748B]">
+-              {data.mataKuliah.sks} SKS • ({data.mahasiswa} Mhs)
+-            </span>
+-          </span>
+-          <Ikon nama="atasBawah" ukuran={14} className="text-[#64748B]" />
+-        </label>
+-
+-        {data.daftarKelas.length > 0 && (
+-          <label className="flex min-h-[40px] items-center gap-2 rounded-xl bg-[#F3F5F9] px-3 text-[12px] font-semibold">
+-            <span>Kelas</span>
+-            <select
+-              value={data.kelas?.id ?? ""}
+-              onChange={(e) => {
+-                const suffix = e.target.value ? `?kelas=${encodeURIComponent(e.target.value)}` : "";
+-                router.push(`/dosen/komponen-penilaian/${data.mataKuliah.id}${suffix}`);
+-              }}
+-              className={`max-w-[180px] cursor-pointer bg-transparent ${FOKUS}`}
+-            >
+-              {data.daftarKelas.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>)}
+-            </select>
+-          </label>
+-        )}
+-
+-        <label className="flex min-h-[40px] min-w-[220px] flex-1 items-center gap-2 rounded-xl bg-[#F3F5F9] px-3 focus-within:ring-2 focus-within:ring-[#60A5FA]">
+-          <Ikon nama="cari" ukuran={15} className="text-[#64748B]" />
+-          <span className="sr-only">Cari tugas</span>
+-          <input
+-            value={cari}
+-            onChange={(e) => {
+-              setCari(e.target.value);
+-              setHalaman(1);
+-            }}
+-            placeholder="Cari judul tugas, instrumen, atau CPMK..."
+-            className="w-full bg-transparent text-[12px] outline-none placeholder:text-[#64748B]"
+-          />
+-        </label>
+-
+-        <label className="flex min-h-[40px] items-center rounded-xl bg-[#F3F5F9] px-3">
+-          <span className="sr-only">Filter status</span>
+-          <select
+-            value={filter}
+-            onChange={(e) => {
+-              setFilter(e.target.value as FilterStatus);
+-              setHalaman(1);
+-            }}
+-            className={`cursor-pointer bg-transparent text-[12px] font-semibold ${FOKUS}`}
+-          >
+-            {OPSI_FILTER.map((o) => (
+-              <option key={o.nilai} value={o.nilai}>
+-                {o.label}
+-              </option>
+-            ))}
+-          </select>
+-        </label>
+-
+-        {kodeAktif && (
+-          <button
+-            type="button"
+-            onClick={() => setKodeAktif(null)}
+-            className={`flex min-h-[32px] items-center gap-1.5 rounded-full bg-[#DBEAFE] px-3 text-[12px] font-semibold text-[#1D4ED8] ${FOKUS}`}
+-          >
+-            Tugas {kodeAktif}
+-            <Ikon nama="tutup" ukuran={12} />
+-            <span className="sr-only">Hapus filter</span>
++            <Ikon nama="tabel" ukuran={14} />
++            Import Asesmen MK (.xlsx)
+           </button>
+         )}
+       </div>
+ 
+-      <KpiAsesmen tugas={semua} cpmk={data.cpmk} mahasiswa={data.mahasiswa} labelTA={data.tahunAjaran.label} />
++      <BarisKonteks data={data} onBuatTugas={() => setModal(true)} tombolBuatRef={tombolBuat} />
+ 
+       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+         <DistribusiBobot tugas={semua} sorotId={baruId} kodeAktif={kodeAktif} onPilih={pilihKode} />
+-        <MatriksCPMK cpmk={data.cpmk} tugas={semua} sorotId={baruId} kodeAktif={kodeAktif} onPilih={pilihKode} />
++        <MatriksSub cpmk={data.cpmk} tugas={semua} sorotId={baruId} kodeAktif={kodeAktif} onPilih={pilihKode} />
+       </div>
+ 
+       <TabelTugas
+@@ -264,20 +141,34 @@ export function AsesmenWorkspace({ data }: { data: DataAsesmen }) {
+           setUrut(u);
+           setHalaman(1);
+         }}
++        cari={cari}
++        onCari={(nilai) => {
++          setCari(nilai);
++          setHalaman(1);
++        }}
+         sorotId={baruId}
+         mataKuliahId={data.mataKuliah.id}
+         namaMK={data.mataKuliah.nama}
++        namaKelas={data.kelas?.nama ?? null}
+         onHapus={hapus}
+         sedangHapus={hapusPending}
+-        readOnly={data.tahunAjaran.status === "ARSIP"}
++        readOnly={!aktif}
+       />
+ 
+-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+-        <KartuPanduan />
+-        <KartuUnduh mataKuliahId={data.mataKuliah.id} kelasId={data.kelas?.id ?? null} readOnly={data.tahunAjaran.status === "ARSIP"} />
+-      </div>
+-
+       {modal && <ModalTugas data={data} onTutup={() => setModal(false)} onSukses={sukses} />}
++      {modalImpor && (
++        <ModalImporAsesmen
++          mataKuliahId={data.mataKuliah.id}
++          kelasId={data.kelas?.id ?? null}
++          namaMK={data.mataKuliah.nama}
++          onTutup={() => setModalImpor(false)}
++          onSelesai={(pesan) => {
++            setModalImpor(false);
++            setToast({ nada: "ok", judul: "Impor asesmen selesai", deskripsi: pesan });
++          }}
++        />
++      )}
++      {toast && <ToastAksi isi={toast} onTutup={tutupToast} />}
+     </div>
+   );
+ }
+diff --git a/src/components/dosen/asesmen/BannerAksi.tsx b/src/components/dosen/asesmen/BannerAksi.tsx
+deleted file mode 100644
+index b88215b..0000000
+--- a/src/components/dosen/asesmen/BannerAksi.tsx
++++ /dev/null
+@@ -1,37 +0,0 @@
+-import { Ikon } from "../Ikon";
+-
+-export interface IsiBanner {
+-  nada: "ok" | "galat";
+-  judul: string;
+-  deskripsi?: string;
+-  kode?: string;
+-}
+-
+-export function BannerAksi({ isi, onTutup }: { isi: IsiBanner; onTutup: () => void }) {
+-  const ok = isi.nada === "ok";
+-  return (
+-    <div
+-      role={ok ? "status" : "alert"}
+-      className={`flex items-center gap-3 rounded-xl border px-3.5 py-2.5 ${
+-        ok ? "border-[#A7F3D0] bg-[#ECFDF5]" : "border-[#FECACA] bg-[#FEF2F2]"
+-      }`}
+-    >
+-      <Ikon nama={ok ? "centang" : "info"} ukuran={18} className={ok ? "text-[#16A34A]" : "text-[#DC2626]"} />
+-      <div className="min-w-0 flex-1">
+-        <p className="text-[12px] font-bold text-[#0F172A]">{isi.judul}</p>
+-        {isi.deskripsi && <p className="truncate text-[11px] text-[#334155]">{isi.deskripsi}</p>}
+-      </div>
+-      {isi.kode && (
+-        <span className="rounded-md bg-white px-2 py-0.5 text-[11px] font-bold text-[#16A34A]">{isi.kode}</span>
+-      )}
+-      <button
+-        type="button"
+-        onClick={onTutup}
+-        aria-label="Tutup pemberitahuan"
+-        className="grid h-8 w-8 place-items-center rounded-lg text-[#64748B] hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-[#60A5FA]"
+-      >
+-        <Ikon nama="tutup" ukuran={14} />
+-      </button>
+-    </div>
+-  );
+-}
+diff --git a/src/components/dosen/asesmen/BarisKonteks.tsx b/src/components/dosen/asesmen/BarisKonteks.tsx
+new file mode 100644
+index 0000000..264aaa4
+--- /dev/null
++++ b/src/components/dosen/asesmen/BarisKonteks.tsx
+@@ -0,0 +1,165 @@
++"use client";
++
++import { useRouter } from "next/navigation";
++import { useFormStatus } from "react-dom";
++import { Ikon } from "../Ikon";
++import { finalisasiDistribusi } from "@/lib/actions/distribusi";
++import { statusDistribusi } from "@/lib/asesmen-tampilan";
++import { FOKUS, KARTU } from "./KartuUI";
++import type { DataAsesmen } from "./tipe";
++
++function Tile({ ikon }: { ikon: "users" | "hierarki" }) {
++  return (
++    <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
++      <Ikon nama={ikon} ukuran={15} />
++    </span>
++  );
++}
++
++function TombolDistribusikan({ aktif, alasan }: { aktif: boolean; alasan: string | null }) {
++  const { pending } = useFormStatus();
++  const mati = !aktif || pending;
++  return (
++    <button
++      type="submit"
++      aria-disabled={mati}
++      title={alasan ?? undefined}
++      onClick={(e) => {
++        if (mati) e.preventDefault();
++      }}
++      className={`flex min-h-[32px] items-center gap-1.5 rounded-full px-3 text-[11px] font-bold text-white ${FOKUS} ${
++        mati ? "cursor-not-allowed bg-[#BFDBFE]" : "bg-[#2563EB] shadow-[0_6px_14px_rgba(37,99,235,.30)] hover:bg-[#1D4ED8]"
++      }`}
++    >
++      <Ikon nama="hierarki" ukuran={13} />
++      {pending ? "Mendistribusikan..." : "Distribusikan"}
++    </button>
++  );
++}
++
++export function BarisKonteks({
++  data,
++  onBuatTugas,
++  tombolBuatRef,
++}: {
++  data: DataAsesmen;
++  onBuatTugas: () => void;
++  tombolBuatRef: React.RefObject<HTMLButtonElement | null>;
++}) {
++  const router = useRouter();
++  const aktif = data.tahunAjaran.status === "AKTIF";
++  const { terpetakan, total } = data.distribusiSub;
++  const dist = statusDistribusi(terpetakan, total, {
++    adaTugas: data.tugas.length > 0,
++    bolehKelola: data.koordinator,
++    arsip: !aktif,
++  });
++  const warnaAngka = total === 0 ? "text-[#64748B]" : dist.lengkap ? "text-[#16A34A]" : "text-[#EA580C]";
++
++  return (
++    <div className="grid grid-cols-1 gap-4 sm:grid-cols-6 lg:grid-cols-12">
++      {/* Kartu mata kuliah */}
++      <div className="relative min-h-[112px] rounded-2xl bg-[#2563EB] p-4 text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#60A5FA] sm:col-span-6 lg:col-span-4">
++        <div className="flex items-center gap-2 text-[11px]">
++          <span className="rounded-md bg-white/20 px-2 py-0.5 font-bold">{data.mataKuliah.kode}</span>
++          <span>{data.mataKuliah.sks} SKS</span>
++          <span className="ml-auto rounded-full bg-white/20 px-2 py-0.5 font-bold">{data.mahasiswa} Mhs</span>
++        </div>
++        <p className="mt-2 line-clamp-2 text-[14px] font-bold leading-snug">{data.mataKuliah.nama}</p>
++        {data.dosenNama && <p className="mt-1 truncate text-[11px] text-white/85">{data.dosenNama}</p>}
++        <Ikon nama="chevronBawah" ukuran={16} className="mx-auto mt-1 block text-white/90" />
++        <select
++          aria-label="Pilih mata kuliah"
++          value={data.mataKuliah.id}
++          onChange={(e) => router.push(`/dosen/komponen-penilaian/${e.target.value}`)}
++          className="absolute inset-0 h-full w-full cursor-pointer rounded-2xl opacity-0 [&>option]:text-[#0F172A]"
++        >
++          {data.daftarMK.map((m) => (
++            <option key={m.id} value={m.id}>
++              {m.nama}
++            </option>
++          ))}
++        </select>
++      </div>
++
++      {/* Kelas + Buat Tugas */}
++      <div className="flex flex-col justify-center gap-2 sm:col-span-3 lg:col-span-2">
++        {data.daftarKelas.length > 0 && (
++          <label className="relative block">
++            <span className="sr-only">Pilih kelas</span>
++            <select
++              value={data.kelas?.id ?? ""}
++              onChange={(e) => {
++                const suffix = e.target.value ? `?kelas=${encodeURIComponent(e.target.value)}` : "";
++                router.push(`/dosen/komponen-penilaian/${data.mataKuliah.id}${suffix}`);
++              }}
++              className={`min-h-[40px] w-full cursor-pointer appearance-none rounded-[10px] bg-[#2563EB] pl-3 pr-8 text-[12px] font-bold text-white [&>option]:text-[#0F172A] ${FOKUS}`}
++            >
++              {data.daftarKelas.map((kelas) => (
++                <option key={kelas.id} value={kelas.id}>
++                  Kelas {kelas.nama}
++                </option>
++              ))}
++            </select>
++            <Ikon nama="chevronBawah" ukuran={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-white" />
++          </label>
++        )}
++        {aktif && (
++          <button
++            ref={tombolBuatRef}
++            type="button"
++            onClick={onBuatTugas}
++            className={`flex min-h-[40px] items-center justify-center gap-1.5 rounded-[10px] bg-[#2563EB] px-3 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] transition hover:bg-[#1D4ED8] ${FOKUS}`}
++          >
++            <Ikon nama="plus" ukuran={14} />
++            Buat Tugas Baru
++          </button>
++        )}
++      </div>
++
++      {/* Mahasiswa terdaftar */}
++      <div className={`${KARTU} flex min-h-[96px] flex-col justify-between p-4 sm:col-span-3 lg:col-span-3`}>
++        <div className="flex items-start justify-between">
++          <span className="text-[12px] font-medium text-[#64748B]">Mahasiswa Terdaftar</span>
++          <Tile ikon="users" />
++        </div>
++        <div className="flex items-end justify-between">
++          <p className="flex items-baseline gap-1.5">
++            <span className="text-[28px] font-bold leading-none">{data.mahasiswa}</span>
++            <span className="text-[12px] text-[#64748B]">Mahasiswa</span>
++          </p>
++          <span className="rounded-md bg-[#F1F5F9] px-2 py-0.5 text-[11px] font-semibold text-[#64748B]">Total</span>
++        </div>
++      </div>
++
++      {/* Distribusi Sub-CPMK */}
++      <form
++        action={finalisasiDistribusi}
++        onSubmit={(e) => {
++          if (!dist.tombolAktif) return;
++          const sisa = total - terpetakan;
++          const ok = window.confirm(
++            `Bagikan ${sisa} Sub-CPMK yang belum terhubung ke tugas secara merata (round-robin)? Pemetaan manual tidak diubah.`,
++          );
++          if (!ok) e.preventDefault();
++        }}
++        className={`${KARTU} flex min-h-[96px] flex-col justify-between p-4 sm:col-span-6 lg:col-span-3`}
++      >
++        <input type="hidden" name="mataKuliahId" value={data.mataKuliah.id} />
++        <div className="flex items-start justify-between">
++          <span className="text-[12px] font-medium text-[#64748B]">Distribusi Sub-CPMK</span>
++          <Tile ikon="hierarki" />
++        </div>
++        <div className="flex items-end justify-between gap-2">
++          <p className="flex items-baseline gap-1.5">
++            <span className={`text-[28px] font-bold leading-none ${warnaAngka}`}>
++              {terpetakan}/{total}
++            </span>
++            <span className="text-[12px] text-[#64748B]">Sub</span>
++          </p>
++          <TombolDistribusikan aktif={dist.tombolAktif} alasan={dist.alasanNonaktif} />
++        </div>
++      </form>
++    </div>
++  );
++}
+diff --git a/src/components/dosen/asesmen/DistribusiBobot.tsx b/src/components/dosen/asesmen/DistribusiBobot.tsx
+index f255340..4eaafc4 100644
+--- a/src/components/dosen/asesmen/DistribusiBobot.tsx
++++ b/src/components/dosen/asesmen/DistribusiBobot.tsx
+@@ -1,7 +1,18 @@
++import { lencanaBobot, posisiCallout } from "@/lib/asesmen-tampilan";
+ import { KARTU, KartuJudul, FOKUS } from "./KartuUI";
+ import type { TugasRow } from "./tipe";
+ 
+ export const WARNA_BOBOT = ["#1E3A8A", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#3B82F6"];
++// Warna segmen yang terang memakai teks gelap supaya callout tetap terbaca.
++const TERANG = new Set(["#93C5FD", "#BFDBFE", "#60A5FA"]);
++const MAKS_CALLOUT = 8;
++
++const LENCANA: Record<"biru" | "oranye" | "merah" | "abu", string> = {
++  biru: "bg-[#DBEAFE] text-[#1D4ED8]",
++  oranye: "bg-[#FFEDD5] text-[#EA580C]",
++  merah: "bg-[#FEE2E2] text-[#DC2626]",
++  abu: "bg-[#F1F5F9] text-[#64748B]",
++};
+ 
+ export function DistribusiBobot({
+   tugas,
+@@ -15,20 +26,23 @@ export function DistribusiBobot({
+   onPilih: (kode: string) => void;
+ }) {
+   const total = Math.round(tugas.reduce((s, t) => s + t.bobot, 0) * 10) / 10;
+-  const pas = total === 100;
++  const lencana = lencanaBobot(total, tugas.length);
++  const pakaiCallout = tugas.length <= MAKS_CALLOUT;
++  const posisi = posisiCallout(tugas.map((t) => t.bobot));
++  const terakhir = tugas.at(-1);
+ 
+   return (
+     <section className={`${KARTU} p-5 lg:col-span-7`}>
+       <KartuJudul
+         judul="Distribusi Bobot Tugas"
+-        subjudul="Alokasi bobot per instrumen; berubah proporsional saat tugas ditambah atau dihapus"
++        subjudul={
++          terakhir
++            ? `Alokasi diperbarui proporsional setelah ${terakhir.kode} ditambahkan`
++            : "Alokasi bobot per instrumen; berubah proporsional saat tugas ditambah atau dihapus"
++        }
+         aksi={
+-          <span
+-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+-              pas ? "bg-[#DBEAFE] text-[#1D4ED8]" : "bg-[#FFEDD5] text-[#EA580C]"
+-            }`}
+-          >
+-            {tugas.length === 0 ? "Belum ada tugas" : pas ? "100% Terpakai" : `${total}% Terpakai`}
++          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${LENCANA[lencana.nada]}`}>
++            {lencana.teks}
+           </span>
+         }
+       />
+@@ -39,21 +53,53 @@ export function DistribusiBobot({
+         </p>
+       ) : (
+         <>
+-          <div
+-            className="flex h-2.5 gap-0.5 overflow-hidden rounded-full"
+-            role="img"
+-            aria-label={`Distribusi bobot: ${tugas.map((t) => `${t.kode} ${t.bobot}%`).join(", ")}`}
+-          >
+-            {tugas.map((t, i) => (
+-              <span
+-                key={t.id}
+-                title={`${t.kode} – ${t.nama}: ${t.bobot}%`}
+-                style={{ width: `${(t.bobot / Math.max(total, 100)) * 100}%`, background: WARNA_BOBOT[i % 8] }}
+-              />
+-            ))}
++          <div className={`relative ${pakaiCallout ? "sm:py-10" : ""}`}>
++            <div
++              className="flex h-2.5 gap-0.5 overflow-hidden rounded-full"
++              role="img"
++              aria-label={`Distribusi bobot: ${tugas.map((t) => `${t.kode} ${t.bobot}%`).join(", ")}`}
++            >
++              {tugas.map((t, i) => (
++                <span
++                  key={t.id}
++                  title={`${t.kode} – ${t.nama}: ${t.bobot}%`}
++                  style={{ width: `${(t.bobot / Math.max(total, 100)) * 100}%`, background: WARNA_BOBOT[i % 8] }}
++                />
++              ))}
++            </div>
++
++            {/* Callout bergantian atas/bawah (layar ≥ sm, maksimal 8 tugas) */}
++            {pakaiCallout &&
++              tugas.map((t, i) => {
++                const warna = WARNA_BOBOT[i % 8];
++                const { kiri, atas } = posisi[i];
++                const sorot = t.id === sorotId || t.kode === kodeAktif;
++                return (
++                  <button
++                    key={t.id}
++                    type="button"
++                    onClick={() => onPilih(t.kode)}
++                    title={`${t.kode} – ${t.nama}`}
++                    aria-pressed={t.kode === kodeAktif}
++                    style={{ left: `${kiri}%`, background: warna }}
++                    className={`absolute hidden -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 text-[11px] font-bold sm:flex ${atas ? "top-0" : "bottom-0"} ${
++                      TERANG.has(warna) ? "text-[#0F172A]" : "text-white"
++                    } ${sorot ? "ring-2 ring-[#0F172A]/30" : ""} ${FOKUS}`}
++                  >
++                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
++                    {t.kode} {t.bobot}%
++                    <span
++                      aria-hidden="true"
++                      style={{ background: warna }}
++                      className={`absolute left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 ${atas ? "-bottom-1" : "-top-1"}`}
++                    />
++                  </button>
++                );
++              })}
+           </div>
+ 
+-          <ul className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-8">
++          {/* Cadangan: layar sempit, atau lebih dari 8 tugas */}
++          <ul className={`mt-4 grid grid-cols-4 gap-2 sm:grid-cols-8 ${pakaiCallout ? "sm:hidden" : ""}`}>
+             {tugas.map((t, i) => {
+               const sorot = t.id === sorotId || t.kode === kodeAktif;
+               return (
+diff --git a/src/components/dosen/asesmen/KartuBawah.tsx b/src/components/dosen/asesmen/KartuBawah.tsx
+deleted file mode 100644
+index c58704d..0000000
+--- a/src/components/dosen/asesmen/KartuBawah.tsx
++++ /dev/null
+@@ -1,111 +0,0 @@
+-"use client";
+-
+-import { useRef, useState } from "react";
+-import { useRouter } from "next/navigation";
+-import { imporAsesmenExcel } from "@/lib/actions/impor-asesmen";
+-import { Ikon } from "../Ikon";
+-import { KARTU } from "./KartuUI";
+-
+-// Panduan dan template belum punya berkas sumber di project, jadi tautan/tombolnya sengaja nonaktif.
+-export function KartuPanduan() {
+-  return (
+-    <section className={`${KARTU} flex gap-4 p-5 lg:col-span-8`}>
+-      <span className="hidden h-14 w-14 shrink-0 place-items-center rounded-[14px] bg-[#EFF6FF] text-[#2563EB] sm:grid">
+-        <Ikon nama="lencana" ukuran={28} />
+-      </span>
+-      <div className="min-w-0 flex-1">
+-        <div className="flex items-start justify-between gap-3">
+-          <h2 className="text-[14px] font-bold">Panduan Standar Penilaian Berbasis OBE</h2>
+-          <span className="shrink-0 rounded-md bg-[#DCFCE7] px-2 py-0.5 text-[11px] font-semibold text-[#16A34A]">
+-            Tervalidasi
+-          </span>
+-        </div>
+-        <p className="mt-1 text-[12px] leading-relaxed text-[#334155]">
+-          Unduh panduan untuk memahami tata cara pembuatan format matriks asesmen dengan pemetaan CPMK yang konsisten.
+-        </p>
+-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px]">
+-          <span className="font-bold text-[#2563EB] opacity-60" title="Berkas panduan belum tersedia">
+-            Unduh Panduan ↓
+-          </span>
+-          <span className="font-semibold text-[#334155] opacity-60" title="Halaman belum tersedia">
+-            Lihat Pemetaan CPL Prodi ↗
+-          </span>
+-        </div>
+-      </div>
+-    </section>
+-  );
+-}
+-
+-export function KartuUnduh({ mataKuliahId, kelasId, readOnly = false }: { mataKuliahId: string; kelasId: string | null; readOnly?: boolean }) {
+-  const router = useRouter();
+-  const inputRef = useRef<HTMLInputElement>(null);
+-  const [sedangImpor, setSedangImpor] = useState(false);
+-  const [pesan, setPesan] = useState<string | null>(null);
+-  const [berhasil, setBerhasil] = useState(false);
+-
+-  async function prosesFile(file: File | undefined) {
+-    if (!file) return;
+-    if (!window.confirm("Impor akan menambahkan tugas baru dan menyesuaikan bobot tugas yang sudah ada. Lanjutkan?")) {
+-      if (inputRef.current) inputRef.current.value = "";
+-      return;
+-    }
+-    setSedangImpor(true);
+-    setPesan(null);
+-    setBerhasil(false);
+-    const formData = new FormData();
+-    formData.set("file", file);
+-    try {
+-      const hasil = await imporAsesmenExcel(mataKuliahId, kelasId, formData);
+-      setPesan(hasil.pesan);
+-      setBerhasil(hasil.ok);
+-      if (hasil.ok) router.refresh();
+-    } catch (error) {
+-      setPesan(error instanceof Error ? error.message : "Impor asesmen gagal.");
+-    } finally {
+-      setSedangImpor(false);
+-      if (inputRef.current) inputRef.current.value = "";
+-    }
+-  }
+-
+-  const query = new URLSearchParams({ mataKuliahId });
+-  if (kelasId) query.set("kelasId", kelasId);
+-
+-  return (
+-    <section className="flex flex-col justify-between gap-3 rounded-2xl bg-[#2563EB] p-5 text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] lg:col-span-4">
+-      <div>
+-        <h2 className="text-[14px] font-bold">Unduh Matriks Asesmen</h2>
+-        <p className="mt-1 text-[12px] text-white/85">
+-          Isi tugas, bobot, dan pemetaan Sub-CPMK di Excel, lalu impor kembali.
+-        </p>
+-      </div>
+-      <div className="space-y-2">
+-        <a
+-          href={`/api/dosen/asesmen/template?${query.toString()}`}
+-          className="flex min-h-[36px] w-full items-center justify-center gap-2 rounded-full bg-white px-3 py-1.5 text-[12px] font-bold text-[#1D4ED8] hover:bg-blue-50"
+-        >
+-          <Ikon nama="tabel" ukuran={14} />
+-          Unduh Template Excel
+-        </a>
+-        {!readOnly && (
+-          <label className={`flex min-h-[36px] w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-white/50 px-3 py-1.5 text-[12px] font-bold text-white hover:bg-white/10 ${sedangImpor ? "pointer-events-none opacity-60" : ""}`}>
+-            <Ikon nama="unggah" ukuran={14} />
+-            {sedangImpor ? "Mengimpor..." : "Impor Excel yang Diisi"}
+-            <input
+-              ref={inputRef}
+-              type="file"
+-              accept=".xlsx"
+-              disabled={sedangImpor}
+-              className="sr-only"
+-              onChange={(event) => void prosesFile(event.currentTarget.files?.[0])}
+-            />
+-          </label>
+-        )}
+-        {pesan && (
+-          <p role={berhasil ? "status" : "alert"} className={`text-[11px] leading-relaxed ${berhasil ? "text-blue-100" : "text-red-100"}`}>
+-            {pesan}
+-          </p>
+-        )}
+-      </div>
+-    </section>
+-  );
+-}
+diff --git a/src/components/dosen/asesmen/KartuUI.tsx b/src/components/dosen/asesmen/KartuUI.tsx
+index 04f938c..246d9e3 100644
+--- a/src/components/dosen/asesmen/KartuUI.tsx
++++ b/src/components/dosen/asesmen/KartuUI.tsx
+@@ -16,7 +16,7 @@ export function KartuJudul({
+   aksi?: ReactNode;
+ }) {
+   return (
+-    <header className="mb-3 flex items-start justify-between gap-3">
++    <header className="mb-3 flex flex-wrap items-start justify-between gap-3">
+       <div className="min-w-0">
+         <h2 className="text-[15px] font-bold leading-tight text-[#0F172A]">{judul}</h2>
+         {subjudul && <p className="mt-0.5 text-[12px] text-[#64748B]">{subjudul}</p>}
+diff --git a/src/components/dosen/asesmen/KpiAsesmen.tsx b/src/components/dosen/asesmen/KpiAsesmen.tsx
+deleted file mode 100644
+index f57481a..0000000
+--- a/src/components/dosen/asesmen/KpiAsesmen.tsx
++++ /dev/null
+@@ -1,111 +0,0 @@
+-import { Ikon, type NamaIkon } from "../Ikon";
+-import { KARTU } from "./KartuUI";
+-import type { CpmkOpsi, TugasRow } from "./tipe";
+-
+-function Tile({ ikon, sorot }: { ikon: NamaIkon; sorot?: boolean }) {
+-  return (
+-    <span
+-      className={`grid h-7 w-7 place-items-center rounded-lg ${
+-        sorot ? "bg-white text-[#2563EB]" : "bg-[#EFF6FF] text-[#2563EB]"
+-      }`}
+-    >
+-      <Ikon nama={ikon} ukuran={15} />
+-    </span>
+-  );
+-}
+-
+-export function KpiAsesmen({
+-  tugas,
+-  cpmk,
+-  mahasiswa,
+-  labelTA,
+-}: {
+-  tugas: TugasRow[];
+-  cpmk: CpmkOpsi[];
+-  mahasiswa: number;
+-  labelTA: string;
+-}) {
+-  const totalBobot = Math.round(tugas.reduce((s, t) => s + t.bobot, 0) * 10) / 10;
+-  const selisih = Math.round((100 - totalBobot) * 10) / 10;
+-  const bobotNada =
+-    tugas.length === 0
+-      ? { warna: "text-[#64748B]", badge: "Belum ada tugas", badgeCls: "text-[#64748B]" }
+-      : selisih === 0
+-        ? { warna: "text-[#16A34A]", badge: "✓ Lengkap", badgeCls: "text-[#16A34A]" }
+-        : selisih > 0
+-          ? { warna: "text-[#EA580C]", badge: `Kurang ${selisih}%`, badgeCls: "text-[#EA580C]" }
+-          : { warna: "text-[#DC2626]", badge: `Lebih ${Math.abs(selisih)}%`, badgeCls: "text-[#DC2626]" };
+-
+-  const terpetakan = new Set(tugas.flatMap((t) => t.cpmkIds));
+-  const tercover = cpmk.filter((c) => terpetakan.has(c.id));
+-  const belum = cpmk.filter((c) => !terpetakan.has(c.id));
+-  const persenCover = cpmk.length ? Math.round((tercover.length / cpmk.length) * 100) : 0;
+-
+-  return (
+-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+-      <div className={`${KARTU} flex min-h-[96px] flex-col justify-between p-4`}>
+-        <div className="flex items-start justify-between">
+-          <span className="text-[12px] font-medium text-[#64748B]">Total Tugas</span>
+-          <Tile ikon="clipboard" />
+-        </div>
+-        <div className="flex items-end justify-between">
+-          <p className="flex items-baseline gap-1.5">
+-            <span className="text-[28px] font-bold leading-none">{tugas.length}</span>
+-            <span className="text-[12px] text-[#64748B]">Instrumen</span>
+-          </p>
+-          <span className="rounded-md bg-[#DBEAFE] px-2 py-0.5 text-[11px] font-semibold text-[#1D4ED8]">
+-            RPS {labelTA.slice(0, 4)}
+-          </span>
+-        </div>
+-      </div>
+-
+-      <div className={`${KARTU} flex min-h-[96px] flex-col justify-between p-4`}>
+-        <div className="flex items-start justify-between">
+-          <span className="text-[12px] font-medium text-[#64748B]">Bobot Terdistribusi</span>
+-          <Tile ikon="pie" />
+-        </div>
+-        <div className="flex items-end justify-between">
+-          <span className={`text-[28px] font-bold leading-none ${bobotNada.warna}`}>{totalBobot}%</span>
+-          <span className={`text-[11px] font-semibold ${bobotNada.badgeCls}`}>{bobotNada.badge}</span>
+-        </div>
+-      </div>
+-
+-      <div className="flex min-h-[96px] flex-col justify-between rounded-2xl bg-[#2563EB] p-4 text-white shadow-[0_6px_14px_rgba(37,99,235,.30)]">
+-        <div className="flex items-start justify-between">
+-          <span className="text-[12px] font-medium text-white/90">Pemetaan CPMK</span>
+-          <Tile ikon="target" sorot />
+-        </div>
+-        <div className="flex items-end justify-between gap-2">
+-          <p className="flex items-baseline gap-1.5">
+-            <span className="text-[28px] font-bold leading-none">
+-              {tercover.length}/{cpmk.length}
+-            </span>
+-            <span className="text-[12px] text-white/90">CPMK</span>
+-          </p>
+-          <span
+-            className="rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#2563EB]"
+-            title={belum.length ? `Belum tercover: ${belum.map((c) => c.kode).join(", ")}` : undefined}
+-          >
+-            {belum.length === 0
+-              ? `${persenCover}% Tercover`
+-              : `Belum: CPMK ${belum.map((c) => c.angka).join(", ")}`}
+-          </span>
+-        </div>
+-      </div>
+-
+-      <div className={`${KARTU} flex min-h-[96px] flex-col justify-between p-4`}>
+-        <div className="flex items-start justify-between">
+-          <span className="text-[12px] font-medium text-[#64748B]">Mahasiswa Terdaftar</span>
+-          <Tile ikon="users" />
+-        </div>
+-        <div className="flex items-end justify-between">
+-          <p className="flex items-baseline gap-1.5">
+-            <span className="text-[28px] font-bold leading-none">{mahasiswa}</span>
+-            <span className="text-[12px] text-[#64748B]">Mahasiswa</span>
+-          </p>
+-          <span className="rounded-md bg-[#F1F5F9] px-2 py-0.5 text-[11px] font-semibold text-[#64748B]">Total</span>
+-        </div>
+-      </div>
+-    </div>
+-  );
+-}
+diff --git a/src/components/dosen/asesmen/MatriksCPMK.tsx b/src/components/dosen/asesmen/MatriksSub.tsx
+similarity index 75%
+rename from src/components/dosen/asesmen/MatriksCPMK.tsx
+rename to src/components/dosen/asesmen/MatriksSub.tsx
+index bacf40b..67b7acc 100644
+--- a/src/components/dosen/asesmen/MatriksCPMK.tsx
++++ b/src/components/dosen/asesmen/MatriksSub.tsx
+@@ -1,8 +1,9 @@
+ import { Ikon } from "../Ikon";
++import { daftarSubUnik } from "@/lib/asesmen-tampilan";
+ import { KARTU, KartuJudul, FOKUS } from "./KartuUI";
+ import type { CpmkOpsi, TugasRow } from "./tipe";
+ 
+-export function MatriksCPMK({
++export function MatriksSub({
+   cpmk,
+   tugas,
+   sorotId,
+@@ -15,24 +16,31 @@ export function MatriksCPMK({
+   kodeAktif: string | null;
+   onPilih: (kode: string) => void;
+ }) {
++  const subs = daftarSubUnik(cpmk);
++
+   return (
+     <section className={`${KARTU} p-5 lg:col-span-5`}>
+       <KartuJudul
+-        judul="Matriks Pemetaan CPMK"
++        judul="Matriks Pemetaan Sub-CPMK"
+         aksi={<Ikon nama="hierarki" ukuran={20} className="text-[#2563EB]" />}
+       />
+ 
+-      {cpmk.length === 0 ? (
++      {subs.length === 0 ? (
+         <p className="py-6 text-center text-[13px] text-[#64748B]">
+-          Belum ada CPMK untuk mata kuliah ini. Minta admin menyusun CPMK terlebih dahulu.
++          Belum ada Sub-CPMK untuk mata kuliah ini. Minta admin menyusun CPMK dan Sub-CPMK terlebih dahulu.
+         </p>
+       ) : (
+-        <ul className="space-y-2">
+-          {cpmk.map((c) => {
+-            const terkait = tugas.filter((t) => t.cpmkIds.includes(c.id));
++        <ul
++          role="region"
++          aria-label="Matriks pemetaan Sub-CPMK"
++          tabIndex={0}
++          className={`max-h-[180px] space-y-2 overflow-y-auto pr-1 ${FOKUS}`}
++        >
++          {subs.map((s) => {
++            const terkait = tugas.filter((t) => t.subIds.includes(s.id));
+             return (
+               <li
+-                key={c.id}
++                key={s.id}
+                 className={`flex min-h-[34px] flex-wrap items-center gap-2 rounded-[10px] px-2.5 py-1.5 ${
+                   terkait.length === 0
+                     ? "border border-dashed border-[#EA580C] bg-[#FFF7ED]"
+@@ -40,10 +48,10 @@ export function MatriksCPMK({
+                 }`}
+               >
+                 <span className="shrink-0 rounded-md bg-[#2563EB] px-1.5 py-0.5 text-[11px] font-bold text-white">
+-                  CPMK {c.angka}
++                  Sub-{s.angka}
+                 </span>
+-                <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-[#334155]" title={c.deskripsi}>
+-                  {c.deskripsi}
++                <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-[#334155]" title={s.deskripsi}>
++                  {s.deskripsi}
+                 </span>
+                 {terkait.length === 0 ? (
+                   <span className="text-[11px] font-semibold text-[#EA580C]">Belum ada tugas</span>
+diff --git a/src/components/dosen/asesmen/ModalImporAsesmen.tsx b/src/components/dosen/asesmen/ModalImporAsesmen.tsx
+new file mode 100644
+index 0000000..adab1b8
+--- /dev/null
++++ b/src/components/dosen/asesmen/ModalImporAsesmen.tsx
+@@ -0,0 +1,159 @@
++"use client";
++
++import { useEffect, useRef, useState } from "react";
++import { useRouter } from "next/navigation";
++import { imporAsesmenExcel } from "@/lib/actions/impor-asesmen";
++import { Ikon } from "../Ikon";
++import { FOKUS } from "./KartuUI";
++
++export function ModalImporAsesmen({
++  mataKuliahId,
++  kelasId,
++  namaMK,
++  onTutup,
++  onSelesai,
++}: {
++  mataKuliahId: string;
++  kelasId: string | null;
++  namaMK: string;
++  onTutup: () => void;
++  onSelesai: (pesan: string) => void;
++}) {
++  const router = useRouter();
++  const dialog = useRef<HTMLDialogElement>(null);
++  const inputRef = useRef<HTMLInputElement>(null);
++  const [namaFile, setNamaFile] = useState("");
++  const [sedangImpor, setSedangImpor] = useState(false);
++  const [galat, setGalat] = useState<string | null>(null);
++
++  useEffect(() => {
++    dialog.current?.showModal();
++  }, []);
++
++  function tutup() {
++    if (sedangImpor) return;
++    dialog.current?.close();
++    onTutup();
++  }
++
++  async function impor() {
++    const file = inputRef.current?.files?.[0];
++    if (!file) {
++      setGalat("Pilih file Excel (.xlsx) yang sudah diisi terlebih dahulu.");
++      return;
++    }
++    if (!window.confirm("Impor akan menambahkan tugas baru dan menyesuaikan bobot tugas yang sudah ada. Lanjutkan?")) return;
++    setSedangImpor(true);
++    setGalat(null);
++    const formData = new FormData();
++    formData.set("file", file);
++    try {
++      const hasil = await imporAsesmenExcel(mataKuliahId, kelasId, formData);
++      if (!hasil.ok) {
++        setGalat(hasil.pesan);
++        return;
++      }
++      dialog.current?.close();
++      onSelesai(hasil.pesan);
++      router.refresh();
++    } catch (error) {
++      setGalat(error instanceof Error ? error.message : "Impor asesmen gagal.");
++    } finally {
++      setSedangImpor(false);
++    }
++  }
++
++  const query = new URLSearchParams({ mataKuliahId });
++  if (kelasId) query.set("kelasId", kelasId);
++
++  return (
++    <dialog
++      ref={dialog}
++      aria-labelledby="judul-impor-asesmen"
++      onCancel={(e) => {
++        e.preventDefault();
++        tutup();
++      }}
++      onClick={(e) => {
++        if (e.target === dialog.current) tutup();
++      }}
++      className="m-auto max-h-[90vh] w-[520px] max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex max-sm:mb-0 max-sm:mt-auto max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none"
++    >
++      <header className="flex items-start gap-3 border-b border-[#E5E7EB] px-5 pb-3 pt-4">
++        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#2563EB] text-white">
++          <Ikon nama="tabel" ukuran={16} />
++        </span>
++        <div className="min-w-0 flex-1">
++          <h2 id="judul-impor-asesmen" className="text-[15px] font-bold">
++            Import Asesmen MK (.xlsx)
++          </h2>
++          <p className="mt-0.5 text-[12px] text-[#64748B]">
++            {namaMK}. Isi tugas, bobot, dan pemetaan Sub-CPMK di Excel, lalu impor kembali.
++          </p>
++        </div>
++        <button
++          type="button"
++          onClick={tutup}
++          aria-label="Tutup"
++          className={`grid h-8 w-8 place-items-center rounded-lg hover:bg-[#F1F5F9] ${FOKUS}`}
++        >
++          <Ikon nama="tutup" ukuran={16} />
++        </button>
++      </header>
++
++      <div className="space-y-3 px-5 py-4">
++        <a
++          href={`/api/dosen/asesmen/template?${query.toString()}`}
++          className={`flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-4 text-[12px] font-bold text-[#1D4ED8] hover:bg-[#DBEAFE] ${FOKUS}`}
++        >
++          <Ikon nama="unduh" ukuran={14} />
++          Unduh Template Excel
++        </a>
++
++        <label className="block">
++          <span className="mb-1 block text-[12px] font-semibold text-[#334155]">File Excel yang sudah diisi</span>
++          <input
++            ref={inputRef}
++            type="file"
++            accept=".xlsx"
++            disabled={sedangImpor}
++            onChange={(e) => {
++              setNamaFile(e.currentTarget.files?.[0]?.name ?? "");
++              setGalat(null);
++            }}
++            className="block w-full text-[12px] file:mr-3 file:min-h-[36px] file:rounded-[10px] file:border-0 file:bg-[#EEF3FD] file:px-4 file:text-[12px] file:font-semibold file:text-[#111827]"
++          />
++        </label>
++        {namaFile && <p className="truncate text-[11px] text-[#64748B]">Dipilih: {namaFile}</p>}
++        <p className="text-[11px] text-[#64748B]">
++          Impor menambahkan tugas baru dan menyesuaikan bobot tugas yang sudah ada secara proporsional.
++        </p>
++        {galat && (
++          <p role="alert" className="rounded-lg bg-[#FEF2F2] px-3 py-2 text-[12px] text-[#DC2626]">
++            {galat}
++          </p>
++        )}
++      </div>
++
++      <footer className="flex items-center justify-between gap-3 border-t border-[#E5E7EB] px-5 py-3">
++        <button
++          type="button"
++          onClick={tutup}
++          disabled={sedangImpor}
++          className={`min-h-[34px] min-w-[100px] rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] disabled:opacity-50 ${FOKUS}`}
++        >
++          Batal
++        </button>
++        <button
++          type="button"
++          onClick={impor}
++          disabled={sedangImpor}
++          className={`flex min-h-[34px] items-center gap-1.5 rounded-full bg-[#2563EB] px-4 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] hover:bg-[#1D4ED8] disabled:opacity-60 ${FOKUS}`}
++        >
++          <Ikon nama="unggah" ukuran={14} />
++          {sedangImpor ? "Mengimpor..." : "Impor Sekarang"}
++        </button>
++      </footer>
++    </dialog>
++  );
++}
+diff --git a/src/components/dosen/asesmen/ModalTugas.tsx b/src/components/dosen/asesmen/ModalTugas.tsx
+index 86cfe06..30b3024 100644
+--- a/src/components/dosen/asesmen/ModalTugas.tsx
++++ b/src/components/dosen/asesmen/ModalTugas.tsx
+@@ -51,13 +51,10 @@ export function ModalTugas({
+     [tugasLingkup, bobot],
+   );
+ 
+-  const cplTarget = useMemo(() => {
+-    const kode = new Set<string>();
+-    for (const c of data.cpmk) {
+-      if (c.sub.some((s) => subDipilih.has(s.id))) c.cpl.forEach((l) => kode.add(l.kode));
+-    }
+-    return [...kode];
+-  }, [data.cpmk, subDipilih]);
++  const cpmkTerpilih = useMemo(
++    () => data.cpmk.filter((c) => c.sub.some((s) => subDipilih.has(s.id))),
++    [data.cpmk, subDipilih],
++  );
+ 
+   function tutup() {
+     if (kotor && !window.confirm("Perubahan belum disimpan. Tutup formulir?")) return;
+@@ -116,7 +113,7 @@ export function ModalTugas({
+       onClick={(e) => {
+         if (e.target === dialog.current) tutup();
+       }}
+-      className="m-auto max-h-[90vh] w-[490px] max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex"
++      className="m-auto max-h-[90vh] w-[490px] max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex max-sm:mb-0 max-sm:mt-auto max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none"
+     >
+       <header className="border-b border-[#E5E7EB] px-5 pb-3 pt-4">
+         <div className="flex items-center gap-2.5">
+@@ -243,7 +240,7 @@ export function ModalTugas({
+           <div className="flex items-center justify-between">
+             <h3 className="text-[13px] font-bold">Pemetaan CPMK &amp; Sub-CPMK</h3>
+             <span className="text-[11px] font-semibold text-[#2563EB]">
+-              {data.cpmk.filter((c) => c.sub.some((s) => subDipilih.has(s.id))).length} Terpilih
++              {subDipilih.size} Terpilih
+             </span>
+           </div>
+           <p className="mb-2 text-[11px] text-[#64748B]">
+@@ -280,15 +277,18 @@ export function ModalTugas({
+                       {terpilih && <Ikon nama="centang" ukuran={11} />}
+                     </button>
+                     <div className="min-w-0 flex-1">
+-                      <p className="flex flex-wrap items-center gap-1.5">
+-                        <span className="rounded-md bg-[#2563EB] px-1.5 py-0.5 text-[11px] font-bold text-white">
++                      <p className="flex min-w-0 items-center gap-2">
++                        <span className="shrink-0 rounded-md bg-[#2563EB] px-1.5 py-0.5 text-[11px] font-bold text-white">
+                           CPMK {c.angka}
+                         </span>
++                        <span
++                          className={`min-w-0 truncate text-[12px] font-bold ${terpilih ? "text-[#0F172A]" : "text-[#64748B]"}`}
++                          title={c.deskripsi}
++                        >
++                          {c.deskripsi}
++                        </span>
+                       </p>
+-                      <p className={`mt-1 text-[12px] leading-snug ${terpilih ? "text-[#334155]" : "text-[#64748B]"}`}>
+-                        {c.deskripsi}
+-                      </p>
+-                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
++                      <div className="mt-2 flex flex-wrap items-center gap-1.5" role="group" aria-label={`Sub-CPMK ${c.kode}`}>
+                         {c.sub.map((s) => {
+                           const on = subDipilih.has(s.id);
+                           return (
+@@ -308,12 +308,6 @@ export function ModalTugas({
+                             </button>
+                           );
+                         })}
+-                        {c.cpl.length > 0 && (
+-                          <span className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-[#2563EB]">
+-                            <Ikon nama="target" ukuran={12} />
+-                            {c.cpl.map((l) => l.kode).join(", ")}
+-                          </span>
+-                        )}
+                       </div>
+                     </div>
+                   </div>
+@@ -330,17 +324,17 @@ export function ModalTugas({
+         )}
+       </div>
+ 
+-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E5E7EB] px-5 py-3">
+-        <p className="flex items-center gap-1.5 text-[11px] text-[#334155]" aria-live="polite">
+-          <Ikon nama="centang" ukuran={14} className="text-[#2563EB]" />
++      <footer className="space-y-2.5 border-t border-[#E5E7EB] px-5 py-3">
++        <p className="flex flex-wrap items-center justify-end gap-1.5 text-[11px] text-[#334155]" aria-live="polite">
+           <b>{subDipilih.size} Sub-CPMK terpilih</b> • Bobot {bobot}%
+-          {cplTarget.length > 0 && <> • Target {cplTarget.join(" & ")}</>}
++          {cpmkTerpilih.length > 0 && <> • Target {cpmkTerpilih.map((c) => `CPMK ${c.angka}`).join(" & ")}</>}
++          <Ikon nama="centang" ukuran={14} className="text-[#2563EB]" />
+         </p>
+-        <div className="flex gap-2">
++        <div className="flex items-center justify-between gap-2">
+           <button
+             type="button"
+             onClick={tutup}
+-            className={`min-h-[34px] rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] ${FOKUS}`}
++            className={`min-h-[34px] min-w-[100px] rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] ${FOKUS}`}
+           >
+             Batal
+           </button>
+diff --git a/src/components/dosen/asesmen/TabelTugas.tsx b/src/components/dosen/asesmen/TabelTugas.tsx
+index 981bcc2..57815ac 100644
+--- a/src/components/dosen/asesmen/TabelTugas.tsx
++++ b/src/components/dosen/asesmen/TabelTugas.tsx
+@@ -33,9 +33,12 @@ export function TabelTugas({
+   onHalaman,
+   urut,
+   onUrut,
++  cari,
++  onCari,
+   sorotId,
+   mataKuliahId,
+   namaMK,
++  namaKelas,
+   onHapus,
+   sedangHapus,
+   readOnly = false,
+@@ -47,9 +50,12 @@ export function TabelTugas({
+   onHalaman: (h: number) => void;
+   urut: UrutTabel;
+   onUrut: (u: UrutTabel) => void;
++  cari: string;
++  onCari: (nilai: string) => void;
+   sorotId: string | null;
+   mataKuliahId: string;
+   namaMK: string;
++  namaKelas: string | null;
+   onHapus: (t: TugasRow) => void;
+   sedangHapus: boolean;
+   readOnly?: boolean;
+@@ -65,21 +71,33 @@ export function TabelTugas({
+         judul="Daftar Tugas & Instrumen Penilaian"
+         subjudul="Tugas terbaru ditampilkan di urutan pertama"
+         aksi={
+-          <label className="flex items-center gap-1.5 text-[12px] font-medium text-[#334155]">
+-            <span className="sr-only">Urutkan</span>
+-            <select
+-              value={urut}
+-              onChange={(e) => onUrut(e.target.value as UrutTabel)}
+-              className={`min-h-[32px] rounded-lg bg-transparent pr-1 text-[12px] font-semibold ${FOKUS}`}
+-            >
+-              {(Object.keys(LABEL_URUT) as UrutTabel[]).map((u) => (
+-                <option key={u} value={u}>
+-                  {LABEL_URUT[u]}
+-                </option>
+-              ))}
+-            </select>
+-            <Ikon nama="urut" ukuran={14} />
+-          </label>
++          <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
++            <label className="flex min-h-[36px] min-w-[200px] flex-1 items-center gap-2 rounded-[10px] bg-[#F3F5F9] px-3 focus-within:ring-2 focus-within:ring-[#60A5FA] sm:w-[320px] sm:flex-none">
++              <Ikon nama="cari" ukuran={15} className="shrink-0 text-[#64748B]" />
++              <span className="sr-only">Cari tugas</span>
++              <input
++                value={cari}
++                onChange={(e) => onCari(e.target.value)}
++                placeholder="Cari judul tugas, instrumen, atau CPMK..."
++                className="w-full bg-transparent text-[12px] outline-none placeholder:text-[#64748B]"
++              />
++            </label>
++            <label className="flex items-center gap-1.5 text-[12px] font-medium text-[#334155]">
++              <span className="sr-only">Urutkan</span>
++              <select
++                value={urut}
++                onChange={(e) => onUrut(e.target.value as UrutTabel)}
++                className={`min-h-[36px] rounded-lg bg-transparent pr-1 text-[12px] font-semibold ${FOKUS}`}
++              >
++                {(Object.keys(LABEL_URUT) as UrutTabel[]).map((u) => (
++                  <option key={u} value={u}>
++                    {LABEL_URUT[u]}
++                  </option>
++                ))}
++              </select>
++              <Ikon nama="urut" ukuran={14} />
++            </label>
++          </div>
+         }
+       />
+ 
+@@ -104,7 +122,7 @@ export function TabelTugas({
+                 <td colSpan={5} className="py-10 text-center text-[13px] text-[#64748B]">
+                   {totalSemua === 0
+                     ? "Belum ada tugas. Klik “Buat Tugas Baru” untuk memulai."
+-                    : "Tidak ada tugas yang cocok. Hapus filter atau buat tugas baru."}
++                    : "Tidak ada tugas yang cocok. Hapus pencarian atau buat tugas baru."}
+                 </td>
+               </tr>
+             )}
+@@ -245,7 +263,7 @@ export function TabelTugas({
+ 
+       <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#64748B]">
+         <span>
+-          Total {totalSemua} instrumen penilaian aktif untuk kelas {namaMK}
++          Total {totalSemua} instrumen penilaian aktif untuk {namaMK}{namaKelas ? ` · Kelas ${namaKelas}` : ""}
+         </span>
+         <span className="flex items-center gap-2">
+           Menampilkan {awal}–{akhir} dari {totalTersaring}
+diff --git a/src/components/dosen/asesmen/ToastAksi.tsx b/src/components/dosen/asesmen/ToastAksi.tsx
+new file mode 100644
+index 0000000..1643e75
+--- /dev/null
++++ b/src/components/dosen/asesmen/ToastAksi.tsx
+@@ -0,0 +1,43 @@
++"use client";
++
++import { useEffect } from "react";
++import { Ikon } from "../Ikon";
++
++export interface IsiToast {
++  nada: "ok" | "galat";
++  judul: string;
++  deskripsi?: string;
++  kode?: string;
++}
++
++/** Pemberitahuan singkat di pojok kanan bawah; hilang sendiri setelah beberapa detik (galat bertahan lebih lama). */
++export function ToastAksi({ isi, onTutup }: { isi: IsiToast; onTutup: () => void }) {
++  const ok = isi.nada === "ok";
++
++  useEffect(() => {
++    const id = window.setTimeout(onTutup, ok ? 6000 : 10000);
++    return () => window.clearTimeout(id);
++  }, [isi, ok, onTutup]);
++
++  return (
++    <div
++      role={ok ? "status" : "alert"}
++      className="fixed inset-x-3 bottom-4 z-50 flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-white p-3.5 shadow-[0_12px_32px_rgba(15,23,42,.18)] sm:inset-x-auto sm:right-5 sm:w-[380px]"
++    >
++      <Ikon nama={ok ? "centang" : "info"} ukuran={18} className={`mt-0.5 shrink-0 ${ok ? "text-[#16A34A]" : "text-[#DC2626]"}`} />
++      <div className="min-w-0 flex-1">
++        <p className="text-[12px] font-bold text-[#0F172A]">{isi.judul}</p>
++        {isi.deskripsi && <p className="mt-0.5 break-words text-[11px] leading-snug text-[#334155]">{isi.deskripsi}</p>}
++      </div>
++      {isi.kode && <span className="rounded-md bg-[#EFF6FF] px-2 py-0.5 text-[11px] font-bold text-[#2563EB]">{isi.kode}</span>}
++      <button
++        type="button"
++        onClick={onTutup}
++        aria-label="Tutup pemberitahuan"
++        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-[#64748B] hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-[#60A5FA]"
++      >
++        <Ikon nama="tutup" ukuran={14} />
++      </button>
++    </div>
++  );
++}
+diff --git a/src/components/dosen/asesmen/tipe.ts b/src/components/dosen/asesmen/tipe.ts
+index 3585b27..b09ca2d 100644
+--- a/src/components/dosen/asesmen/tipe.ts
++++ b/src/components/dosen/asesmen/tipe.ts
+@@ -26,6 +26,7 @@ export interface TugasRow {
+   cpmkIds: string[];
+   cpmkAngka: string[];
+   subAngka: string[];
++  subIds: string[];
+   masuk: number; // jumlah mahasiswa yang sudah punya nilai
+   total: number; // mahasiswa terdaftar
+   status: StatusTugas; // "baru" hanya ditentukan di client
+@@ -39,6 +40,9 @@ export interface DataAsesmen {
+   kelas: { id: string; nama: string } | null;
+   koordinator: boolean;
+   mahasiswa: number;
++  dosenNama: string;
++  /** Sub-CPMK pada hierarki CPMK: berapa yang sudah terhubung ke minimal satu tugas (seluruh MK pada T.A. ini). */
++  distribusiSub: { terpetakan: number; total: number };
+   tugas: TugasRow[]; // urut pembuatan (kode T1 -> Tn)
+   cpmk: CpmkOpsi[];
+   pertemuanDefault: number;
+diff --git a/src/lib/asesmen-tampilan.ts b/src/lib/asesmen-tampilan.ts
+new file mode 100644
+index 0000000..0d5b84f
+--- /dev/null
++++ b/src/lib/asesmen-tampilan.ts
+@@ -0,0 +1,57 @@
++// Fungsi murni untuk tampilan halaman Kelola Asesmen (bisa diuji tanpa React).
++
++export type StatusDistribusi = {
++  lengkap: boolean;
++  /** Tombol "Distribusikan" hanya berguna jika masih ada Sub-CPMK yang belum terhubung ke tugas. */
++  tombolAktif: boolean;
++  alasanNonaktif: string | null;
++};
++
++export function statusDistribusi(
++  terpetakan: number,
++  total: number,
++  opsi: { adaTugas: boolean; bolehKelola: boolean; arsip: boolean },
++): StatusDistribusi {
++  const lengkap = total > 0 && terpetakan >= total;
++  let alasanNonaktif: string | null = null;
++  if (opsi.arsip) alasanNonaktif = "Tahun Ajaran arsip hanya dapat dilihat.";
++  else if (!opsi.bolehKelola) alasanNonaktif = "Hanya koordinator mata kuliah yang dapat mendistribusikan Sub-CPMK.";
++  else if (total === 0) alasanNonaktif = "Belum ada Sub-CPMK pada mata kuliah ini.";
++  else if (lengkap) alasanNonaktif = "Semua Sub-CPMK sudah terdistribusi";
++  else if (!opsi.adaTugas) alasanNonaktif = "Buat minimal satu tugas sebelum mendistribusikan Sub-CPMK.";
++  return { lengkap, tombolAktif: alasanNonaktif === null, alasanNonaktif };
++}
++
++export type LencanaBobot = { teks: string; nada: "biru" | "oranye" | "merah" | "abu" };
++
++/** Badge kanan atas kartu Distribusi Bobot Tugas. */
++export function lencanaBobot(totalBobot: number, jumlahTugas: number): LencanaBobot {
++  if (jumlahTugas === 0) return { teks: "Belum ada tugas", nada: "abu" };
++  const selisih = Math.round((100 - totalBobot) * 10) / 10;
++  if (selisih === 0) return { teks: "100% Terpakai", nada: "biru" };
++  if (selisih > 0) return { teks: `Kurang ${selisih}%`, nada: "oranye" };
++  return { teks: `Lebih ${Math.abs(selisih)}%`, nada: "merah" };
++}
++
++export type PosisiCallout = { kiri: number; atas: boolean };
++
++/**
++ * Posisi callout pada bar bobot: titik tengah tiap segmen (persen lebar bar) dan sisi bergantian
++ * (indeks ganjil di atas, genap di bawah) supaya label segmen sempit tidak saling menimpa.
++ */
++export function posisiCallout(bobot: number[]): PosisiCallout[] {
++  const total = Math.max(bobot.reduce((a, b) => a + b, 0), 100);
++  let jalan = 0;
++  return bobot.map((b, i) => {
++    const kiri = ((jalan + b / 2) / total) * 100;
++    jalan += b;
++    return { kiri, atas: i % 2 === 1 };
++  });
++}
++
++/** Sub-CPMK unik (satu Sub-CPMK bisa berada di beberapa CPMK), terurut menurut nomor. */
++export function daftarSubUnik<T extends { id: string; angka: string }>(cpmk: { sub: T[] }[]): T[] {
++  const peta = new Map<string, T>();
++  for (const c of cpmk) for (const s of c.sub) if (!peta.has(s.id)) peta.set(s.id, s);
++  return [...peta.values()].sort((a, b) => Number(a.angka) - Number(b.angka));
++}
+diff --git a/src/lib/asesmen.ts b/src/lib/asesmen.ts
+index 4b58567..d3294fe 100644
+--- a/src/lib/asesmen.ts
++++ b/src/lib/asesmen.ts
+@@ -2,6 +2,7 @@ import { auth } from "@/auth";
+ import { prisma } from "@/lib/prisma";
+ import { getTahunAjaranDosen } from "@/lib/tahun-ajaran";
+ import { angkaKode, bobotKePersen } from "@/lib/asesmen-util";
++import { namaDenganGelar } from "@/lib/dosen";
+ import type { CpmkOpsi, DataAsesmen, TugasRow } from "@/components/dosen/asesmen/tipe";
+ 
+ /**
+@@ -64,7 +65,7 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
+     where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelas ? { kelasId: kelas.id } : {}) },
+     select: { mahasiswaId: true },
+   });
+-  const [tugas, cpmk, jumlahNilai] = await Promise.all([
++  const [tugas, cpmk, jumlahNilai, dosen, totalSub, subTerpetakan] = await Promise.all([
+     prisma.tugas.findMany({
+       where: { mataKuliahId, tahunAjaranId: ta.id, ...whereKelas },
+       orderBy: { id: "asc" }, // cuid ~ berurutan waktu pembuatan
+@@ -98,6 +99,12 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
+       },
+       _count: { _all: true },
+     }),
++    prisma.dosen.findUnique({ where: { id: dosenId }, select: { nama: true, gelar: true } }),
++    // Sama dengan kriteria finalisasiDistribusi: hanya Sub-CPMK yang sudah masuk hierarki CPMK.
++    prisma.subCPMK.count({ where: { mataKuliahId, tahunAjaranId: ta.id, cpmkTerkait: { some: {} } } }),
++    prisma.subCPMK.count({
++      where: { mataKuliahId, tahunAjaranId: ta.id, cpmkTerkait: { some: {} }, distribusi: { some: {} } },
++    }),
+   ]);
+ 
+   const masukPerTugas = new Map<string, number>(jumlahNilai.map((n): [string, number] => [n.tugasId, n._count._all]));
+@@ -122,6 +129,7 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
+       cpmkIds: [...cpmkUnik.keys()],
+       cpmkAngka: [...cpmkUnik.values()].map(angkaKode).sort((a, b) => Number(a) - Number(b)),
+       subAngka: sub.map((s) => angkaKode(s.kode)).sort((a, b) => Number(a) - Number(b)),
++      subIds: sub.map((s) => s.id),
+       masuk,
+       total: mahasiswa,
+       status: mahasiswa > 0 && masuk >= mahasiswa ? "dinilai" : masuk > 0 ? "berjalan" : "belum",
+@@ -145,6 +153,8 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
+     kelas,
+     koordinator,
+     mahasiswa,
++    dosenNama: dosen ? namaDenganGelar(dosen) : "",
++    distribusiSub: { terpetakan: subTerpetakan, total: totalSub },
+     tugas: rows,
+     cpmk: cpmkOpsi,
+     pertemuanDefault: Math.min(16, Math.max(0, ...rows.map((r) => r.pertemuanKe)) + 1),
+diff --git a/tests/asesmen-tampilan.test.ts b/tests/asesmen-tampilan.test.ts
+new file mode 100644
+index 0000000..437f07a
+--- /dev/null
++++ b/tests/asesmen-tampilan.test.ts
+@@ -0,0 +1,51 @@
++import { test } from "node:test";
++import assert from "node:assert/strict";
++import { daftarSubUnik, lencanaBobot, posisiCallout, statusDistribusi } from "../src/lib/asesmen-tampilan";
++
++const koordinator = { adaTugas: true, bolehKelola: true, arsip: false };
++
++test("statusDistribusi: tombol aktif hanya jika masih ada Sub-CPMK yang belum terhubung", () => {
++  assert.deepEqual(statusDistribusi(7, 14, koordinator), { lengkap: false, tombolAktif: true, alasanNonaktif: null });
++  const penuh = statusDistribusi(14, 14, koordinator);
++  assert.equal(penuh.lengkap, true);
++  assert.equal(penuh.tombolAktif, false);
++  assert.equal(penuh.alasanNonaktif, "Semua Sub-CPMK sudah terdistribusi");
++});
++
++test("statusDistribusi: nonaktif bila arsip, bukan koordinator, tanpa tugas, atau tanpa Sub-CPMK", () => {
++  assert.equal(statusDistribusi(0, 5, { ...koordinator, arsip: true }).tombolAktif, false);
++  assert.equal(statusDistribusi(0, 5, { ...koordinator, bolehKelola: false }).tombolAktif, false);
++  assert.equal(statusDistribusi(0, 5, { ...koordinator, adaTugas: false }).tombolAktif, false);
++  const kosong = statusDistribusi(0, 0, koordinator);
++  assert.equal(kosong.tombolAktif, false);
++  assert.equal(kosong.lengkap, false);
++});
++
++test("lencanaBobot: biru bila 100%, oranye bila kurang, merah bila lebih", () => {
++  assert.deepEqual(lencanaBobot(100, 8), { teks: "100% Terpakai", nada: "biru" });
++  assert.deepEqual(lencanaBobot(85, 3), { teks: "Kurang 15%", nada: "oranye" });
++  assert.deepEqual(lencanaBobot(110, 3), { teks: "Lebih 10%", nada: "merah" });
++  assert.deepEqual(lencanaBobot(0, 0), { teks: "Belum ada tugas", nada: "abu" });
++});
++
++test("posisiCallout: titik tengah segmen dan sisi bergantian atas/bawah", () => {
++  const posisi = posisiCallout([16, 20, 8, 16, 8, 4, 8, 20]);
++  assert.deepEqual(posisi.map((p) => p.atas), [false, true, false, true, false, true, false, true]);
++  assert.equal(posisi[0].kiri, 8);
++  assert.equal(posisi[1].kiri, 26);
++  assert.equal(posisi[7].kiri, 90);
++});
++
++test("posisiCallout: total di bawah 100 tetap diskalakan terhadap lebar 100%", () => {
++  const [satu] = posisiCallout([50]);
++  assert.equal(satu.kiri, 25);
++});
++
++test("daftarSubUnik membuang duplikat antar-CPMK dan mengurutkan menurut nomor", () => {
++  const sub = (id: string, angka: string) => ({ id, angka });
++  const hasil = daftarSubUnik([
++    { sub: [sub("c", "10"), sub("a", "2")] },
++    { sub: [sub("a", "2"), sub("b", "3")] },
++  ]);
++  assert.deepEqual(hasil.map((s) => s.angka), ["2", "3", "10"]);
++});

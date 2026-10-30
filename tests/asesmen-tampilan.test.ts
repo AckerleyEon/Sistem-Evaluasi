@@ -41,6 +41,12 @@ test("posisiCallout: total di bawah 100 tetap diskalakan terhadap lebar 100%", (
   assert.equal(satu.kiri, 25);
 });
 
+test("posisiCallout: sembilan tugas tetap tersebar selang-seling", () => {
+  const posisi = posisiCallout([19, 20, 11, 6, 10, 4, 8, 11, 11]);
+  assert.deepEqual(posisi.map((p) => p.atas), [false, true, false, true, false, true, false, true, false]);
+  assert.equal(posisi[8].kiri, 94.5);
+});
+
 test("daftarSubUnik membuang duplikat antar-CPMK dan mengurutkan menurut nomor", () => {
   const sub = (id: string, angka: string) => ({ id, angka });
   const hasil = daftarSubUnik([

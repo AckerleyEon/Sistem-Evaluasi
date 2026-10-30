@@ -1,11 +1,13 @@
+import type { RefObject } from "react";
+import { Ikon } from "../Ikon";
 import { lencanaBobot, posisiCallout } from "@/lib/asesmen-tampilan";
-import { KARTU, KartuJudul, FOKUS } from "./KartuUI";
+import { KARTU, FOKUS } from "./KartuUI";
 import type { TugasRow } from "./tipe";
 
 export const WARNA_BOBOT = ["#1E3A8A", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#3B82F6"];
 // Warna segmen yang terang memakai teks gelap supaya callout tetap terbaca.
 const TERANG = new Set(["#93C5FD", "#BFDBFE", "#60A5FA"]);
-const MAKS_CALLOUT = 8;
+const MAKS_CALLOUT = 10;
 
 const LENCANA: Record<"biru" | "oranye" | "merah" | "abu", string> = {
   biru: "bg-[#DBEAFE] text-[#1D4ED8]",
@@ -19,11 +21,17 @@ export function DistribusiBobot({
   sorotId,
   kodeAktif,
   onPilih,
+  onBuatTugas,
+  tombolBuatRef,
+  aktif,
 }: {
   tugas: TugasRow[];
   sorotId: string | null;
   kodeAktif: string | null;
   onPilih: (kode: string) => void;
+  onBuatTugas: () => void;
+  tombolBuatRef: RefObject<HTMLButtonElement | null>;
+  aktif: boolean;
 }) {
   const total = Math.round(tugas.reduce((s, t) => s + t.bobot, 0) * 10) / 10;
   const lencana = lencanaBobot(total, tugas.length);
@@ -32,30 +40,43 @@ export function DistribusiBobot({
   const terakhir = tugas.at(-1);
 
   return (
-    <section className={`${KARTU} p-5 lg:col-span-7`}>
-      <KartuJudul
-        judul="Distribusi Bobot Tugas"
-        subjudul={
-          terakhir
-            ? `Alokasi diperbarui proporsional setelah ${terakhir.kode} ditambahkan`
-            : "Alokasi bobot per instrumen; berubah proporsional saat tugas ditambah atau dihapus"
-        }
-        aksi={
-          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${LENCANA[lencana.nada]}`}>
-            {lencana.teks}
-          </span>
-        }
-      />
+    <section className={`${KARTU} flex min-h-[220px] flex-col p-5 h-full lg:min-h-0 lg:col-span-7 lg:self-start`}>
+      <header className="mb-2 flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-[16px] font-bold leading-tight text-[#0F172A]">Distribusi Bobot Tugas</h2>
+            <span className={`shrink-0 rounded-full px-2 py-1 text-[12px] font-semibold ${LENCANA[lencana.nada]}`}>
+              {lencana.teks}
+            </span>
+          </div>
+          <p className="mt-1 text-[12px] text-[#64748B]">
+            {terakhir
+              ? `Alokasi diperbarui proporsional setelah ${terakhir.kode} ditambahkan`
+              : "Alokasi bobot per instrumen; berubah proporsional saat tugas ditambah atau dihapus"}
+          </p>
+        </div>
+        {aktif && (
+          <button
+            ref={tombolBuatRef}
+            type="button"
+            onClick={onBuatTugas}
+            className={`flex h-9 shrink-0 items-center justify-center gap-2 rounded-full bg-[#2563EB] px-5 text-[12px] font-semibold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] transition hover:bg-[#1D4ED8] ${FOKUS}`}
+          >
+            <Ikon nama="plus" ukuran={16} />
+            Buat Tugas Baru
+          </button>
+        )}
+      </header>
 
       {tugas.length === 0 ? (
-        <p className="py-8 text-center text-[13px] text-[#64748B]">
+        <p className="flex flex-1  items-center justify-center py-8  text-center text-[13px] text-[#64748B]">
           Belum ada tugas. Klik &ldquo;Buat Tugas Baru&rdquo; untuk memulai.
         </p>
       ) : (
         <>
-          <div className={`relative ${pakaiCallout ? "sm:py-10" : ""}`}>
+          <div className={`relative mt-1 flex-1 ${pakaiCallout ? "lg:min-h-0" : "py-2"}`}>
             <div
-              className="flex h-2.5 gap-0.5 overflow-hidden rounded-full"
+              className={`flex h-2.5 gap-0.5 overflow-hidden rounded-full ${pakaiCallout ? "lg:absolute lg:inset-x-0 lg:top-1/2 lg:-translate-y-1/2" : ""}`}
               role="img"
               aria-label={`Distribusi bobot: ${tugas.map((t) => `${t.kode} ${t.bobot}%`).join(", ")}`}
             >
@@ -68,7 +89,7 @@ export function DistribusiBobot({
               ))}
             </div>
 
-            {/* Callout bergantian atas/bawah (layar ≥ sm, maksimal 8 tugas) */}
+            {/* Callout bergantian atas/bawah; layar kecil dan banyak tugas memakai daftar ringkas. */}
             {pakaiCallout &&
               tugas.map((t, i) => {
                 const warna = WARNA_BOBOT[i % 8];
@@ -82,24 +103,26 @@ export function DistribusiBobot({
                     title={`${t.kode} – ${t.nama}`}
                     aria-pressed={t.kode === kodeAktif}
                     style={{ left: `${kiri}%`, background: warna }}
-                    className={`absolute hidden -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 text-[11px] font-bold sm:flex ${atas ? "top-0" : "bottom-0"} ${
+                    className={`absolute left-0 hidden -translate-x-1/2 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[12px] font-bold lg:flex ${
+                      atas ? "top-1/2 -translate-y-full -mt-2" : "top-1/2 mt-2"
+                    } ${
                       TERANG.has(warna) ? "text-[#0F172A]" : "text-white"
                     } ${sorot ? "ring-2 ring-[#0F172A]/30" : ""} ${FOKUS}`}
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-white" />
                     {t.kode} {t.bobot}%
                     <span
                       aria-hidden="true"
                       style={{ background: warna }}
-                      className={`absolute left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 ${atas ? "-bottom-1" : "-top-1"}`}
+                      className={`absolute left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45 ${atas ? "-bottom-1" : "-top-1"}`}
                     />
                   </button>
                 );
               })}
           </div>
 
-          {/* Cadangan: layar sempit, atau lebih dari 8 tugas */}
-          <ul className={`mt-4 grid grid-cols-4 gap-2 sm:grid-cols-8 ${pakaiCallout ? "sm:hidden" : ""}`}>
+          {/* Cadangan: layar sempit, atau lebih dari 10 tugas */}
+          <ul className={`mt-1 grid grid-cols-4 gap-2 sm:grid-cols-8 ${pakaiCallout ? "lg:hidden" : ""}`}>
             {tugas.map((t, i) => {
               const sorot = t.id === sorotId || t.kode === kodeAktif;
               return (

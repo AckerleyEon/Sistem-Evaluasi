@@ -43,7 +43,12 @@ export function ModalTugas({
   const bisaSimpan = !judulKosong && bobot > 0 && subDipilih.size > 0 && !pending;
 
   useEffect(() => {
-    dialog.current?.showModal();
+    const elemen = dialog.current;
+    if (!elemen) return;
+    if (!elemen.open) elemen.showModal();
+    return () => {
+      if (elemen.open) elemen.close();
+    };
   }, []);
 
   const bobotLain = useMemo(

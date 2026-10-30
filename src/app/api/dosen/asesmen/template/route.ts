@@ -27,6 +27,15 @@ export async function GET(request: Request) {
     }),
   ]);
   if (!mataKuliah) return NextResponse.json({ error: "Mata kuliah tidak ditemukan." }, { status: 404 });
+  const kelasMK = await prisma.kelasMK.findMany({
+    where: {
+      mataKuliahId,
+      tahunAjaranId: akses.ta.id,
+      ...(akses.koordinator ? (kelasId ? { id: kelasId } : {}) : { id: akses.kelasId ?? undefined }),
+    },
+    select: { id: true, nama: true },
+    orderBy: { nama: "asc" },
+  });
 
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Sistem Evaluasi CPL";
@@ -36,9 +45,10 @@ export async function GET(request: Request) {
     ["Template Kelola Asesmen"],
     [`Mata kuliah: ${mataKuliah.kode} - ${mataKuliah.nama}`],
     [`Tahun ajaran: ${akses.ta.label}`],
-    [kelasId ? "Template ini menambahkan tugas untuk kelas yang dipilih." : "Template ini menambahkan tugas umum mata kuliah."],
-    ["Isi lembar Asesmen mulai baris 2. Satu baris untuk satu tugas baru."],
-    ["Isi nama tugas, pertemuan 1-16, bobot dalam persen, dan kode Sub-CPMK dari lembar Referensi."],
+    ["Isi lembar Asesmen mulai baris 2. Satu baris untuk satu tugas baru dan pilih kelas pada setiap baris."],
+    ["Kolom wajib: Kelas, Nama Tugas, Pertemuan, Bobot (%), dan Kode Sub-CPMK."],
+    ["Nama file mengikuti format KODEMK_NAMAMK_asesmen.xlsx."],
+    ["Pilih kelas dari daftar yang tersedia pada lembar Referensi Kelas."],
     ["Jika satu tugas memetakan beberapa Sub-CPMK, pisahkan kodenya dengan koma. Contoh: SUB-ELKA-1, SUB-ELKA-2."],
     ["Bobot tugas baru harus bilangan bulat 1-99. Jika belum ada tugas sebelumnya, total bobot semua baris harus 100%."],
     ["Jika sudah ada tugas, total bobot yang diimpor harus kurang dari 100%; sisa bobot tugas sebelumnya akan disesuaikan proporsional."],
@@ -52,13 +62,36 @@ export async function GET(request: Request) {
 
   const asesmen = workbook.addWorksheet("Asesmen");
   asesmen.columns = [
+    { header: "Kelas", key: "kelas", width: 20 },
     { header: "Nama Tugas", key: "nama", width: 32 },
-    { header: "Pertemuan Ke", key: "pertemuan", width: 16 },
+    { header: "Pertemuan", key: "pertemuan", width: 16 },
     { header: "Bobot (%)", key: "bobot", width: 14 },
     { header: "Kode Sub-CPMK (pisahkan koma)", key: "subCpmk", width: 55 },
   ];
+  const kelasDefault = kelasMK.find((kelas) => kelas.id === kelasId)?.nama ?? "";
   for (let row = 2; row <= 101; row += 1) {
-    asesmen.getCell(row, 2).dataValidation = {
+    if (kelasDefault) asesmen.getCell(row, 1).value = kelasDefault;
+    if (kelasMK.length > 0) {
+      asesmen.getCell(row, 1).dataValidation = {
+        type: "list",
+        formulae: ["=DaftarKelas"],
+        allowBlank: false,
+        showErrorMessage: true,
+        errorTitle: "Kelas tidak valid",
+        error: "Pilih kelas dari daftar Referensi Kelas.",
+      };
+    } else {
+      asesmen.getCell(row, 1).dataValidation = {
+        type: "textLength",
+        operator: "greaterThan",
+        formulae: [0],
+        allowBlank: false,
+        showErrorMessage: true,
+        errorTitle: "Kelas wajib diisi",
+        error: "Tambahkan kelas untuk mata kuliah ini terlebih dahulu.",
+      };
+    }
+    asesmen.getCell(row, 3).dataValidation = {
       type: "whole",
       operator: "between",
       formulae: [1, 16],
@@ -67,7 +100,7 @@ export async function GET(request: Request) {
       errorTitle: "Pertemuan tidak valid",
       error: "Isi angka 1 sampai 16.",
     };
-    asesmen.getCell(row, 3).dataValidation = {
+    asesmen.getCell(row, 4).dataValidation = {
       type: "whole",
       operator: "between",
       formulae: [1, 99],
@@ -82,7 +115,7 @@ export async function GET(request: Request) {
   asesmen.getRow(1).alignment = { wrapText: true, vertical: "middle" };
   asesmen.getRow(1).height = 32;
   asesmen.views = [{ state: "frozen", ySplit: 1 }];
-  asesmen.autoFilter = { from: "A1", to: "D1" };
+  asesmen.autoFilter = { from: "A1", to: "E1" };
 
   const referensi = workbook.addWorksheet("Referensi Sub-CPMK");
   referensi.columns = [
@@ -103,13 +136,25 @@ export async function GET(request: Request) {
   referensi.views = [{ state: "frozen", ySplit: 1 }];
   referensi.autoFilter = { from: "A1", to: "C1" };
 
+  const referensiKelas = workbook.addWorksheet("Referensi Kelas");
+  referensiKelas.columns = [{ header: "Nama Kelas", key: "nama", width: 24 }];
+  for (const kelas of kelasMK) referensiKelas.addRow({ nama: kelas.nama });
+  referensiKelas.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
+  referensiKelas.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1D4ED8" } };
+  referensiKelas.views = [{ state: "frozen", ySplit: 1 }];
+  if (kelasMK.length > 0) {
+    workbook.definedNames.add(`'Referensi Kelas'!$A$2:$A$${kelasMK.length + 1}`, "DaftarKelas");
+  }
+
   const metadata = workbook.addWorksheet("_metadata");
   metadata.addRow(["mataKuliahId", "tahunAjaranId", "kelasId"]);
   metadata.addRow([mataKuliahId, akses.ta.id, kelasId ?? ""]);
   metadata.state = "hidden";
 
   const buffer = await workbook.xlsx.writeBuffer();
-  const namaFile = `template-asesmen-${mataKuliah.kode.replace(/[^a-zA-Z0-9-]/g, "-")}.xlsx`;
+  const slug = (teks: string) =>
+    teks.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const namaFile = `${slug(mataKuliah.kode)}_${slug(mataKuliah.nama)}_asesmen.xlsx`;
   return new NextResponse(buffer, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
