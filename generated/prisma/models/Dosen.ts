@@ -321,6 +321,11 @@ export type DosenNullableScalarRelationFilter = {
   isNot?: Prisma.DosenWhereInput | null
 }
 
+export type DosenScalarRelationFilter = {
+  is?: Prisma.DosenWhereInput
+  isNot?: Prisma.DosenWhereInput
+}
+
 export type DosenCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   nama?: Prisma.SortOrder
@@ -346,11 +351,6 @@ export type DosenMinOrderByAggregateInput = {
   alias?: Prisma.SortOrder
   nip?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-}
-
-export type DosenScalarRelationFilter = {
-  is?: Prisma.DosenWhereInput
-  isNot?: Prisma.DosenWhereInput
 }
 
 export type DosenCreateNestedOneWithoutUserInput = {
@@ -391,12 +391,10 @@ export type DosenCreateNestedOneWithoutKelasInput = {
   connect?: Prisma.DosenWhereUniqueInput
 }
 
-export type DosenUpdateOneWithoutKelasNestedInput = {
+export type DosenUpdateOneRequiredWithoutKelasNestedInput = {
   create?: Prisma.XOR<Prisma.DosenCreateWithoutKelasInput, Prisma.DosenUncheckedCreateWithoutKelasInput>
   connectOrCreate?: Prisma.DosenCreateOrConnectWithoutKelasInput
   upsert?: Prisma.DosenUpsertWithoutKelasInput
-  disconnect?: Prisma.DosenWhereInput | boolean
-  delete?: Prisma.DosenWhereInput | boolean
   connect?: Prisma.DosenWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.DosenUpdateToOneWithWhereWithoutKelasInput, Prisma.DosenUpdateWithoutKelasInput>, Prisma.DosenUncheckedUpdateWithoutKelasInput>
 }

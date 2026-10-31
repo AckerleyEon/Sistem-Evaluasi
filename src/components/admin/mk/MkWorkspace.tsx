@@ -257,12 +257,12 @@ export function MkWorkspace({
         />
       )}
 
-      {tambahMhs && selected && (
+      {tambahMhs && selected && selectedKelasId && (
         <ModalTambahMahasiswa
           mk={selected}
           taLabel={ta.label}
           kelasId={selectedKelasId}
-          kelasNama={selected.kelas.find((kelas) => kelas.id === selectedKelasId)?.nama ?? null}
+          kelasNama={selected.kelas.find((kelas) => kelas.id === selectedKelasId)?.nama ?? ""}
           onTutup={() => setTambahMhs(false)}
           onBerhasil={(pesan) => {
             setTambahMhs(false);

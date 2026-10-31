@@ -57,13 +57,13 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
   });
   const kelas = kelasId ? daftarKelas.find((item) => item.id === kelasId) ?? null : daftarKelas[0] ?? null;
   if (kelasId && !kelas) return null;
-  if (!koordinator && !kelas) return null;
+  if (!kelas) return null;
 
-  const whereKelas = kelas ? { OR: [{ kelasId: kelas.id }, ...(koordinator ? [{ kelasId: null }] : [])] } : { kelasId: null };
+  const whereKelas = { kelasId: kelas.id };
 
   const [pendaftaran, mahasiswaTotal] = await Promise.all([
     prisma.pendaftaranMK.findMany({
-      where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelas ? { kelasId: kelas.id } : {}) },
+      where: { mataKuliahId, tahunAjaranId: ta.id, kelasId: kelas.id },
       select: { mahasiswaId: true },
     }),
     prisma.pendaftaranMK.count({ where: { mataKuliahId, tahunAjaranId: ta.id } }),
@@ -106,7 +106,12 @@ export async function ambilAsesmen(dosenId: string, mataKuliahId: string, kelasI
     // Sama dengan kriteria finalisasiDistribusi: hanya Sub-CPMK yang sudah masuk hierarki CPMK.
     prisma.subCPMK.count({ where: { mataKuliahId, tahunAjaranId: ta.id, cpmkTerkait: { some: {} } } }),
     prisma.subCPMK.count({
-      where: { mataKuliahId, tahunAjaranId: ta.id, cpmkTerkait: { some: {} }, distribusi: { some: {} } },
+      where: {
+        mataKuliahId,
+        tahunAjaranId: ta.id,
+        cpmkTerkait: { some: {} },
+        distribusi: { some: { tugas: { kelasId: kelas.id } } },
+      },
     }),
   ]);
 

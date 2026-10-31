@@ -16,7 +16,7 @@ export type DashboardDosenCourse = {
     nama: string;
     pertemuanKe: number;
     bobot: number;
-    kelasId: string | null;
+    kelasId: string;
     dinilai: number;
     total: number;
   }[];
@@ -96,13 +96,13 @@ export async function ambilDashboardDosen(dosenId: string, tahunAjaranId: string
     const idKelasDiampu = new Set(kelasDiampu.map((kelas) => kelas.id));
     const pendaftaran = koordinator
       ? item.pendaftaran
-      : item.pendaftaran.filter((baris) => baris.kelasId !== null && idKelasDiampu.has(baris.kelasId));
+      : item.pendaftaran.filter((baris) => idKelasDiampu.has(baris.kelasId));
     const idMahasiswa = new Set(pendaftaran.map((baris) => baris.mahasiswaId));
     const tugas = item.tugas
-      .filter((tugasItem) => koordinator || tugasItem.kelasId === null || idKelasDiampu.has(tugasItem.kelasId))
+      .filter((tugasItem) => koordinator || idKelasDiampu.has(tugasItem.kelasId))
       .map((tugasItem) => {
         const mahasiswaRelevan = pendaftaran
-          .filter((baris) => tugasItem.kelasId === null || baris.kelasId === tugasItem.kelasId)
+          .filter((baris) => baris.kelasId === tugasItem.kelasId)
           .map((baris) => baris.mahasiswaId);
         const peserta = new Set(mahasiswaRelevan);
         const dinilai = new Set(

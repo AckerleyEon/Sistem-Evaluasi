@@ -18,7 +18,7 @@ export interface CpmkOpsi {
 
 export interface TugasRow {
   id: string;
-  kelasId: string | null;
+  kelasId: string;
   kode: string; // "T1", "T2", ... (urutan pembuatan)
   nama: string;
   pertemuanKe: number;
@@ -37,7 +37,7 @@ export interface DataAsesmen {
   tahunAjaran: { id: string; label: string; status: "AKTIF" | "ARSIP" };
   daftarMK: { id: string; nama: string }[];
   daftarKelas: { id: string; nama: string }[];
-  kelas: { id: string; nama: string } | null;
+  kelas: { id: string; nama: string };
   koordinator: boolean;
   mahasiswa: number;
   mahasiswaTotal: number;

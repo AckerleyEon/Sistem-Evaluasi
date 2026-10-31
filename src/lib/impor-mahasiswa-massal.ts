@@ -56,12 +56,12 @@ export function cariFileGanda(kunciPerFile: (string | null)[]): Map<number, numb
   return ganda;
 }
 
-export type PetaKolomMahasiswa = { nim: number; nama: number; kelas: number | null };
+export type PetaKolomMahasiswa = { nim: number; nama: number; kelas: number };
 
 const normalisasiJudul = (teks: string) => teks.toLowerCase().replace(/[^a-z0-9]/g, "");
 
 /**
- * Mencari baris judul (NIM + Nama, Kelas opsional) pada beberapa baris pertama lembar, karena file ekspor sering
+ * Mencari baris judul (NIM + Nama + Kelas) pada beberapa baris pertama lembar, karena file ekspor sering
  * punya judul/keterangan di atas tabel. `matriks[i][j]` = teks sel baris i (0-based), kolom j (0-based).
  */
 export function cariHeaderMahasiswa(
@@ -72,9 +72,9 @@ export function cariHeaderMahasiswa(
     const sel = matriks[i].map(normalisasiJudul);
     const nim = sel.findIndex((teks) => teks === "nim" || teks === "npm");
     const nama = sel.findIndex((teks) => teks === "nama" || teks === "namamahasiswa");
-    if (nim < 0 || nama < 0) continue;
     const kelas = sel.findIndex((teks) => teks === "kelas");
-    return { indeksBaris: i, kolom: { nim, nama, kelas: kelas >= 0 ? kelas : null } };
+    if (nim < 0 || nama < 0 || kelas < 0) continue;
+    return { indeksBaris: i, kolom: { nim, nama, kelas } };
   }
   return null;
 }

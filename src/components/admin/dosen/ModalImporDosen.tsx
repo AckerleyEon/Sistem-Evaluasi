@@ -67,7 +67,7 @@ export function ModalImporDosen({
       hapusTidakAda &&
       analisis.akanDihapus.length > 0 &&
       !window.confirm(
-        `Hapus ${analisis.akanDihapus.length} akun dosen yang tidak ada di file? Semua penugasan mereka dilepas; mata kuliah dan kelas tetap disimpan tanpa pengampu.`
+        `Hapus ${analisis.akanDihapus.length} akun dosen yang tidak ada di file? Penugasan mata kuliah mereka akan dilepas.`
       )
     ) {
       return;
@@ -204,7 +204,7 @@ export function ModalImporDosen({
                   <input type="checkbox" checked={hapusTidakAda} onChange={(e) => setHapusTidakAda(e.target.checked)} className="mt-0.5" />
                   <span>
                     <span className="block font-semibold">Hapus akun dosen yang tidak ada di file ({analisis.akanDihapus.length})</span>
-                    Penugasan dosen tersebut dilepas. Mata kuliah dan kelas tetap ada dengan status tanpa pengampu.
+                    Penghapusan dibatalkan bila dosen tersebut masih mengampu kelas.
                   </span>
                 </label>
                 {hapusTidakAda && analisis.akanDihapus.length > 0 && (

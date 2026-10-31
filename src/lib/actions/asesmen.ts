@@ -10,9 +10,9 @@ import { cekAksesMK } from "@/lib/otorisasi";
 import { hitungUlangMataKuliah } from "@/lib/perhitungan/hitungUlangMataKuliah";
 import type { HasilAksi, RingkasanBuat } from "@/components/dosen/asesmen/tipe";
 
-type Konteks = { dosenId: string; tahunAjaranId: string; kelasId: string | null; koordinator: boolean };
+type Konteks = { dosenId: string; tahunAjaranId: string; kelasId: string; koordinator: boolean };
 
-async function pastikanPengampu(mataKuliahId: string, kelasId?: string): Promise<Konteks | { galat: string }> {
+async function pastikanPengampu(mataKuliahId: string, kelasId: string): Promise<Konteks | { galat: string }> {
   const dosen = await dosenSaatIni();
   if (!dosen) return { galat: "Sesi tidak valid. Silakan login ulang sebagai dosen." };
   const akses = await cekAksesMK(mataKuliahId, kelasId);
@@ -27,10 +27,11 @@ export interface InputBuatTugas {
   pertemuanKe: number;
   bobot: number; // persen bulat
   subCpmkIds: string[];
-  kelasId?: string;
+  kelasId: string;
 }
 
 export async function buatTugas(input: InputBuatTugas): Promise<HasilAksi & { ringkasan?: RingkasanBuat }> {
+  if (typeof input.kelasId !== "string" || !input.kelasId) return { ok: false, pesan: "Pilih kelas untuk tugas ini." };
   const k = await pastikanPengampu(input.mataKuliahId, input.kelasId);
   if ("galat" in k) return { ok: false, pesan: k.galat };
 
@@ -111,7 +112,7 @@ export async function buatTugas(input: InputBuatTugas): Promise<HasilAksi & { ri
   };
 }
 
-export async function hapusTugas(mataKuliahId: string, tugasId: string, kelasId?: string): Promise<HasilAksi> {
+export async function hapusTugas(mataKuliahId: string, tugasId: string, kelasId: string): Promise<HasilAksi> {
   const k = await pastikanPengampu(mataKuliahId, kelasId);
   if ("galat" in k) return { ok: false, pesan: k.galat };
 
@@ -120,7 +121,7 @@ export async function hapusTugas(mataKuliahId: string, tugasId: string, kelasId?
     select: { id: true, nama: true, kelasId: true },
   });
   if (!ada) return { ok: false, pesan: "Tugas tidak ditemukan." };
-  if (ada.kelasId !== k.kelasId && !(k.koordinator && ada.kelasId === null)) {
+  if (ada.kelasId !== k.kelasId) {
     return { ok: false, pesan: "Tugas ini bukan milik kelas yang sedang dikelola." };
   }
 

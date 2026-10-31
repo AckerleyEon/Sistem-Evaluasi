@@ -16,6 +16,7 @@ export function ManajemenKelas({
 }) {
   const router = useRouter();
   const [nama, setNama] = useState("");
+  const [dosenId, setDosenId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,13 +24,14 @@ export function ManajemenKelas({
     e.preventDefault();
     setError("");
     setLoading(true);
-    const hasil = await buatKelasMK(mk.id, nama, "");
+    const hasil = await buatKelasMK(mk.id, nama, dosenId);
     setLoading(false);
     if (hasil.error) {
       setError(hasil.error);
       return;
     }
     setNama("");
+    setDosenId("");
     router.refresh();
   }
 
@@ -66,7 +68,6 @@ export function ManajemenKelas({
                   onChange={(e) => void pilihPengampu(item.id, e.target.value)}
                   className="h-9 max-w-56 rounded-lg bg-[#EEF3FD] px-2 text-xs text-[#111827] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
                 >
-                  <option value="">Belum ditentukan</option>
                   {dosen.map((d) => (
                     <option key={d.id} value={d.id}>{d.nama}{d.gelar ? `, ${d.gelar}` : ""}</option>
                   ))}
@@ -86,7 +87,17 @@ export function ManajemenKelas({
           aria-label="Nama kelas baru"
           className="h-10 min-w-48 flex-1 rounded-lg bg-[#EEF3FD] px-3 text-sm outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
         />
-        <button type="submit" disabled={!nama.trim() || loading} className="h-10 rounded-lg bg-[#2F6BE8] px-4 text-sm font-semibold text-white disabled:opacity-50">
+        <select
+          value={dosenId}
+          onChange={(e) => setDosenId(e.target.value)}
+          required
+          aria-label="Pilih pengampu kelas"
+          className="h-10 min-w-48 rounded-lg bg-[#EEF3FD] px-3 text-sm outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
+        >
+          <option value="" disabled>Pilih pengampu</option>
+          {dosen.map((item) => <option key={item.id} value={item.id}>{item.nama}{item.gelar ? `, ${item.gelar}` : ""}</option>)}
+        </select>
+        <button type="submit" disabled={!nama.trim() || !dosenId || loading} className="h-10 rounded-lg bg-[#2F6BE8] px-4 text-sm font-semibold text-white disabled:opacity-50">
           {loading ? "Menyimpan…" : "Tambah Kelas"}
         </button>
       </form>

@@ -78,6 +78,16 @@ dari `Nilai` (input asli dosen). Ketiganya punya field `statusLengkap: Boolean`.
   DIABAIKAN dari rata-rata berbobot (bobot lain dinormalisasi ulang), tapi hasilnya
   ditandai `statusLengkap: false`.
 
+**Kelas Operasional:**
+- Setiap pendaftaran mahasiswa harus memiliki kelas, setiap kelas harus memiliki dosen pengampu,
+  dan setiap tugas harus terkait ke tepat satu kelas.
+- Tugas, input nilai, hasil, dan distribusi otomatis dikelola per kelas. Koordinator memilih kelas
+  tertentu; tidak ada tugas global atau tampilan gabungan semua kelas.
+- Distribusi otomatis berjalan terpisah per kelas. Relasi manual diprioritaskan dalam kelasnya dan
+  tidak menghalangi distribusi pada kelas lain.
+- Sebelum migrasi `20261031120000_wajib_kelas_dan_pengampu`, data lama tanpa kelas/pengampu harus
+  dibereskan terlebih dahulu; migrasi sengaja gagal daripada menebak penempatan.
+
 ## Status Implementasi (update manual setiap progres)
 - [x] Setup Next.js + Prisma + PostgreSQL (Laragon, db `evaluasi-db`)
 - [x] schema.prisma lengkap + migrasi
@@ -101,9 +111,6 @@ dari `Nilai` (input asli dosen). Ketiganya punya field `statusLengkap: Boolean`.
   hasilnya disimpan sebagai 0 dengan `statusLengkap: false` dan ikut menurunkan rata-rata CPMK.
   Sub-CPMK yang tidak punya tugas sama sekali justru diabaikan. Konfirmasi apakah keduanya
   seharusnya diperlakukan sama.
-- `finalisasiDistribusi` membagikan Sub-CPMK ke semua tugas mata kuliah, termasuk tugas yang khusus
-  milik satu kelas. Sub-CPMK yang hanya jatuh ke tugas satu kelas tidak punya hasil untuk
-  mahasiswa kelas lain. Konfirmasi apakah tujuan distribusi dibatasi ke tugas tingkat mata kuliah.
 
 ## Konvensi
 - Bahasa penamaan: Indonesia untuk domain/istilah akademik (SubCPMK, MataKuliah, dst),

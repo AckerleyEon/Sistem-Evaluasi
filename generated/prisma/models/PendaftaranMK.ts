@@ -158,7 +158,7 @@ export type PendaftaranMKGroupByOutputType = {
   mahasiswaId: string
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId: string | null
+  kelasId: string
   createdAt: Date
   _count: PendaftaranMKCountAggregateOutputType | null
   _min: PendaftaranMKMinAggregateOutputType | null
@@ -188,12 +188,12 @@ export type PendaftaranMKWhereInput = {
   mahasiswaId?: Prisma.StringFilter<"PendaftaranMK"> | string
   mataKuliahId?: Prisma.StringFilter<"PendaftaranMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"PendaftaranMK"> | string
-  kelasId?: Prisma.StringNullableFilter<"PendaftaranMK"> | string | null
+  kelasId?: Prisma.StringFilter<"PendaftaranMK"> | string
   createdAt?: Prisma.DateTimeFilter<"PendaftaranMK"> | Date | string
   mahasiswa?: Prisma.XOR<Prisma.MahasiswaScalarRelationFilter, Prisma.MahasiswaWhereInput>
   mataKuliah?: Prisma.XOR<Prisma.MataKuliahScalarRelationFilter, Prisma.MataKuliahWhereInput>
   tahunAjaran?: Prisma.XOR<Prisma.TahunAjaranScalarRelationFilter, Prisma.TahunAjaranWhereInput>
-  kelas?: Prisma.XOR<Prisma.KelasMKNullableScalarRelationFilter, Prisma.KelasMKWhereInput> | null
+  kelas?: Prisma.XOR<Prisma.KelasMKScalarRelationFilter, Prisma.KelasMKWhereInput>
 }
 
 export type PendaftaranMKOrderByWithRelationInput = {
@@ -201,7 +201,7 @@ export type PendaftaranMKOrderByWithRelationInput = {
   mahasiswaId?: Prisma.SortOrder
   mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
-  kelasId?: Prisma.SortOrderInput | Prisma.SortOrder
+  kelasId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   mahasiswa?: Prisma.MahasiswaOrderByWithRelationInput
   mataKuliah?: Prisma.MataKuliahOrderByWithRelationInput
@@ -218,12 +218,12 @@ export type PendaftaranMKWhereUniqueInput = Prisma.AtLeast<{
   mahasiswaId?: Prisma.StringFilter<"PendaftaranMK"> | string
   mataKuliahId?: Prisma.StringFilter<"PendaftaranMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"PendaftaranMK"> | string
-  kelasId?: Prisma.StringNullableFilter<"PendaftaranMK"> | string | null
+  kelasId?: Prisma.StringFilter<"PendaftaranMK"> | string
   createdAt?: Prisma.DateTimeFilter<"PendaftaranMK"> | Date | string
   mahasiswa?: Prisma.XOR<Prisma.MahasiswaScalarRelationFilter, Prisma.MahasiswaWhereInput>
   mataKuliah?: Prisma.XOR<Prisma.MataKuliahScalarRelationFilter, Prisma.MataKuliahWhereInput>
   tahunAjaran?: Prisma.XOR<Prisma.TahunAjaranScalarRelationFilter, Prisma.TahunAjaranWhereInput>
-  kelas?: Prisma.XOR<Prisma.KelasMKNullableScalarRelationFilter, Prisma.KelasMKWhereInput> | null
+  kelas?: Prisma.XOR<Prisma.KelasMKScalarRelationFilter, Prisma.KelasMKWhereInput>
 }, "id" | "mahasiswaId_mataKuliahId_tahunAjaranId">
 
 export type PendaftaranMKOrderByWithAggregationInput = {
@@ -231,7 +231,7 @@ export type PendaftaranMKOrderByWithAggregationInput = {
   mahasiswaId?: Prisma.SortOrder
   mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
-  kelasId?: Prisma.SortOrderInput | Prisma.SortOrder
+  kelasId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.PendaftaranMKCountOrderByAggregateInput
   _max?: Prisma.PendaftaranMKMaxOrderByAggregateInput
@@ -246,7 +246,7 @@ export type PendaftaranMKScalarWhereWithAggregatesInput = {
   mahasiswaId?: Prisma.StringWithAggregatesFilter<"PendaftaranMK"> | string
   mataKuliahId?: Prisma.StringWithAggregatesFilter<"PendaftaranMK"> | string
   tahunAjaranId?: Prisma.StringWithAggregatesFilter<"PendaftaranMK"> | string
-  kelasId?: Prisma.StringNullableWithAggregatesFilter<"PendaftaranMK"> | string | null
+  kelasId?: Prisma.StringWithAggregatesFilter<"PendaftaranMK"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PendaftaranMK"> | Date | string
 }
 
@@ -256,7 +256,7 @@ export type PendaftaranMKCreateInput = {
   mahasiswa: Prisma.MahasiswaCreateNestedOneWithoutPendaftaranInput
   mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutPendaftaranInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutPendaftaranInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutPendaftaranInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutPendaftaranInput
 }
 
 export type PendaftaranMKUncheckedCreateInput = {
@@ -264,7 +264,7 @@ export type PendaftaranMKUncheckedCreateInput = {
   mahasiswaId: string
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   createdAt?: Date | string
 }
 
@@ -274,7 +274,7 @@ export type PendaftaranMKUpdateInput = {
   mahasiswa?: Prisma.MahasiswaUpdateOneRequiredWithoutPendaftaranNestedInput
   mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutPendaftaranNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutPendaftaranNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutPendaftaranNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutPendaftaranNestedInput
 }
 
 export type PendaftaranMKUncheckedUpdateInput = {
@@ -282,7 +282,7 @@ export type PendaftaranMKUncheckedUpdateInput = {
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -291,7 +291,7 @@ export type PendaftaranMKCreateManyInput = {
   mahasiswaId: string
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   createdAt?: Date | string
 }
 
@@ -305,7 +305,7 @@ export type PendaftaranMKUncheckedUpdateManyInput = {
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -525,14 +525,14 @@ export type PendaftaranMKCreateWithoutTahunAjaranInput = {
   createdAt?: Date | string
   mahasiswa: Prisma.MahasiswaCreateNestedOneWithoutPendaftaranInput
   mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutPendaftaranInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutPendaftaranInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutPendaftaranInput
 }
 
 export type PendaftaranMKUncheckedCreateWithoutTahunAjaranInput = {
   id?: string
   mahasiswaId: string
   mataKuliahId: string
-  kelasId?: string | null
+  kelasId: string
   createdAt?: Date | string
 }
 
@@ -570,7 +570,7 @@ export type PendaftaranMKScalarWhereInput = {
   mahasiswaId?: Prisma.StringFilter<"PendaftaranMK"> | string
   mataKuliahId?: Prisma.StringFilter<"PendaftaranMK"> | string
   tahunAjaranId?: Prisma.StringFilter<"PendaftaranMK"> | string
-  kelasId?: Prisma.StringNullableFilter<"PendaftaranMK"> | string | null
+  kelasId?: Prisma.StringFilter<"PendaftaranMK"> | string
   createdAt?: Prisma.DateTimeFilter<"PendaftaranMK"> | Date | string
 }
 
@@ -621,14 +621,14 @@ export type PendaftaranMKCreateWithoutMahasiswaInput = {
   createdAt?: Date | string
   mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutPendaftaranInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutPendaftaranInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutPendaftaranInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutPendaftaranInput
 }
 
 export type PendaftaranMKUncheckedCreateWithoutMahasiswaInput = {
   id?: string
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   createdAt?: Date | string
 }
 
@@ -663,14 +663,14 @@ export type PendaftaranMKCreateWithoutMataKuliahInput = {
   createdAt?: Date | string
   mahasiswa: Prisma.MahasiswaCreateNestedOneWithoutPendaftaranInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutPendaftaranInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutPendaftaranInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutPendaftaranInput
 }
 
 export type PendaftaranMKUncheckedCreateWithoutMataKuliahInput = {
   id?: string
   mahasiswaId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   createdAt?: Date | string
 }
 
@@ -704,7 +704,7 @@ export type PendaftaranMKCreateManyTahunAjaranInput = {
   id?: string
   mahasiswaId: string
   mataKuliahId: string
-  kelasId?: string | null
+  kelasId: string
   createdAt?: Date | string
 }
 
@@ -713,14 +713,14 @@ export type PendaftaranMKUpdateWithoutTahunAjaranInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mahasiswa?: Prisma.MahasiswaUpdateOneRequiredWithoutPendaftaranNestedInput
   mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutPendaftaranNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutPendaftaranNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutPendaftaranNestedInput
 }
 
 export type PendaftaranMKUncheckedUpdateWithoutTahunAjaranInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -728,7 +728,7 @@ export type PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -768,7 +768,7 @@ export type PendaftaranMKCreateManyMahasiswaInput = {
   id?: string
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   createdAt?: Date | string
 }
 
@@ -777,14 +777,14 @@ export type PendaftaranMKUpdateWithoutMahasiswaInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutPendaftaranNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutPendaftaranNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutPendaftaranNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutPendaftaranNestedInput
 }
 
 export type PendaftaranMKUncheckedUpdateWithoutMahasiswaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -792,7 +792,7 @@ export type PendaftaranMKUncheckedUpdateManyWithoutMahasiswaInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -800,7 +800,7 @@ export type PendaftaranMKCreateManyMataKuliahInput = {
   id?: string
   mahasiswaId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   createdAt?: Date | string
 }
 
@@ -809,14 +809,14 @@ export type PendaftaranMKUpdateWithoutMataKuliahInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   mahasiswa?: Prisma.MahasiswaUpdateOneRequiredWithoutPendaftaranNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutPendaftaranNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutPendaftaranNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutPendaftaranNestedInput
 }
 
 export type PendaftaranMKUncheckedUpdateWithoutMataKuliahInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -824,7 +824,7 @@ export type PendaftaranMKUncheckedUpdateManyWithoutMataKuliahInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   mahasiswaId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -840,7 +840,7 @@ export type PendaftaranMKSelect<ExtArgs extends runtime.Types.Extensions.Interna
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.PendaftaranMK$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pendaftaranMK"]>
 
 export type PendaftaranMKSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -853,7 +853,7 @@ export type PendaftaranMKSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.PendaftaranMK$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pendaftaranMK"]>
 
 export type PendaftaranMKSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -866,7 +866,7 @@ export type PendaftaranMKSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.PendaftaranMK$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["pendaftaranMK"]>
 
 export type PendaftaranMKSelectScalar = {
@@ -883,19 +883,19 @@ export type PendaftaranMKInclude<ExtArgs extends runtime.Types.Extensions.Intern
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.PendaftaranMK$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }
 export type PendaftaranMKIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.PendaftaranMK$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }
 export type PendaftaranMKIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mahasiswa?: boolean | Prisma.MahasiswaDefaultArgs<ExtArgs>
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.PendaftaranMK$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }
 
 export type $PendaftaranMKPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -904,14 +904,14 @@ export type $PendaftaranMKPayload<ExtArgs extends runtime.Types.Extensions.Inter
     mahasiswa: Prisma.$MahasiswaPayload<ExtArgs>
     mataKuliah: Prisma.$MataKuliahPayload<ExtArgs>
     tahunAjaran: Prisma.$TahunAjaranPayload<ExtArgs>
-    kelas: Prisma.$KelasMKPayload<ExtArgs> | null
+    kelas: Prisma.$KelasMKPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     mahasiswaId: string
     mataKuliahId: string
     tahunAjaranId: string
-    kelasId: string | null
+    kelasId: string
     createdAt: Date
   }, ExtArgs["result"]["pendaftaranMK"]>
   composites: {}
@@ -1310,7 +1310,7 @@ export interface Prisma__PendaftaranMKClient<T, Null = never, ExtArgs extends ru
   mahasiswa<T extends Prisma.MahasiswaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MahasiswaDefaultArgs<ExtArgs>>): Prisma.Prisma__MahasiswaClient<runtime.Types.Result.GetResult<Prisma.$MahasiswaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   mataKuliah<T extends Prisma.MataKuliahDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MataKuliahDefaultArgs<ExtArgs>>): Prisma.Prisma__MataKuliahClient<runtime.Types.Result.GetResult<Prisma.$MataKuliahPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   tahunAjaran<T extends Prisma.TahunAjaranDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaranDefaultArgs<ExtArgs>>): Prisma.Prisma__TahunAjaranClient<runtime.Types.Result.GetResult<Prisma.$TahunAjaranPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  kelas<T extends Prisma.PendaftaranMK$kelasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PendaftaranMK$kelasArgs<ExtArgs>>): Prisma.Prisma__KelasMKClient<runtime.Types.Result.GetResult<Prisma.$KelasMKPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  kelas<T extends Prisma.KelasMKDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.KelasMKDefaultArgs<ExtArgs>>): Prisma.Prisma__KelasMKClient<runtime.Types.Result.GetResult<Prisma.$KelasMKPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1744,25 +1744,6 @@ export type PendaftaranMKDeleteManyArgs<ExtArgs extends runtime.Types.Extensions
    * Limit how many PendaftaranMKS to delete.
    */
   limit?: number
-}
-
-/**
- * PendaftaranMK.kelas
- */
-export type PendaftaranMK$kelasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KelasMK
-   */
-  select?: Prisma.KelasMKSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KelasMK
-   */
-  omit?: Prisma.KelasMKOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KelasMKInclude<ExtArgs> | null
-  where?: Prisma.KelasMKWhereInput
 }
 
 /**

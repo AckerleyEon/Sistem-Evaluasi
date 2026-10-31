@@ -248,11 +248,15 @@ async function main() {
       data: cplMK.map((kode) => ({ mataKuliahId: mk.id, cplId: cplId.get(kode)! })),
     });
     await prisma.penugasanDosenMK.create({ data: { mataKuliahId: mk.id, dosenId: dosenId!, tahunAjaranId: ta.id } });
+    const kelasIds: string[] = [];
     for (const nama of def.kelas) {
-      await prisma.kelasMK.create({ data: { nama, mataKuliahId: mk.id, dosenId: dosenId!, tahunAjaranId: ta.id } });
+      const kelas = await prisma.kelasMK.create({ data: { nama, mataKuliahId: mk.id, dosenId: dosenId!, tahunAjaranId: ta.id } });
+      kelasIds.push(kelas.id);
     }
-    for (const m of mahasiswa) {
-      await prisma.pendaftaranMK.create({ data: { mahasiswaId: m.id, mataKuliahId: mk.id, tahunAjaranId: ta.id } });
+    for (const [indeks, m] of mahasiswa.entries()) {
+      await prisma.pendaftaranMK.create({
+        data: { mahasiswaId: m.id, mataKuliahId: mk.id, tahunAjaranId: ta.id, kelasId: kelasIds[indeks % kelasIds.length] },
+      });
     }
 
     // Sub-CPMK milik MK ini
@@ -275,29 +279,37 @@ async function main() {
     }
 
     // Tugas + distribusi Sub-CPMK. Dibuat berurutan agar urutan id (kode T1..Tn) sama dengan urutan definisi.
-    const tugasBuat: { id: string; dinilai: boolean }[] = [];
-    for (const t of def.tugas) {
-      const tugas = await prisma.tugas.create({
-        data: { nama: t.nama, pertemuanKe: t.pertemuanKe, bobot: t.bobot, mataKuliahId: mk.id, tahunAjaranId: ta.id },
-      });
-      await prisma.distribusiSubCPMK.createMany({
-        data: t.sub.map((no) => ({ tugasId: tugas.id, subCpmkId: subId.get(no)!, sumber: "MANUAL" as const })),
-      });
-      tugasBuat.push({ id: tugas.id, dinilai: t.dinilai });
-    }
+    for (const [indeksKelas, kelasId] of kelasIds.entries()) {
+      const mahasiswaKelas = mahasiswa.filter((_, indeks) => indeks % kelasIds.length === indeksKelas);
+      const tugasBuat: { id: string; dinilai: boolean }[] = [];
+      for (const t of def.tugas) {
+        const tugas = await prisma.tugas.create({
+          data: {
+            nama: t.nama,
+            pertemuanKe: t.pertemuanKe,
+            bobot: t.bobot,
+            mataKuliahId: mk.id,
+            tahunAjaranId: ta.id,
+            kelasId,
+          },
+        });
+        await prisma.distribusiSubCPMK.createMany({
+          data: t.sub.map((no) => ({ tugasId: tugas.id, subCpmkId: subId.get(no)!, sumber: "MANUAL" as const })),
+        });
+        tugasBuat.push({ id: tugas.id, dinilai: t.dinilai });
+      }
 
-    // Nilai (0–100) untuk tugas yang sudah "dinilai"; sisanya sengaja kosong
-    // agar status tugas "berjalan"/"belum" terlihat di halaman Kelola Asesmen.
-    const rnd = acak(1000 + indeksMK);
-    for (const t of tugasBuat.filter((x) => x.dinilai)) {
-      await prisma.nilai.createMany({
-        data: mahasiswa.map((m, i) => ({
-          mahasiswaId: m.id,
-          tugasId: t.id,
-          tahunAjaranId: ta.id,
-          skor: Math.round((55 + rnd() * 40 - (i % 4) * 2) * 10) / 10,
-        })),
-      });
+      const rnd = acak(1000 + indeksMK + indeksKelas);
+      for (const t of tugasBuat.filter((x) => x.dinilai)) {
+        await prisma.nilai.createMany({
+          data: mahasiswaKelas.map((m, i) => ({
+            mahasiswaId: m.id,
+            tugasId: t.id,
+            tahunAjaranId: ta.id,
+            skor: Math.round((55 + rnd() * 40 - (i % 4) * 2) * 10) / 10,
+          })),
+        });
+      }
     }
   }
 

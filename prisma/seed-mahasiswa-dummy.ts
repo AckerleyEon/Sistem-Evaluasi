@@ -233,41 +233,50 @@ async function siapkanCapaianDummy(
       await prisma.subCPMK.update({ where: { id: item.id }, data: { kode } });
     }
 
-    const tugas = await prisma.tugas.findMany({
-      where: { mataKuliahId: mk.id, tahunAjaranId: ta.id, kelasId: null },
-      select: { id: true, nama: true, pertemuanKe: true, bobot: true },
-      orderBy: [{ pertemuanKe: "asc" }, { nama: "asc" }],
+    const kelasMK = await prisma.kelasMK.findMany({
+      where: { mataKuliahId: mk.id, tahunAjaranId: ta.id },
+      select: { id: true },
     });
-    for (const item of tugas) {
-      const nama = item.nama.replace(/^Tugas (?:Dummy|Unik)\b/i, "Tugas");
-      if (nama !== item.nama) {
-        await prisma.tugas.update({ where: { id: item.id }, data: { nama } });
-      }
-    }
-    while (tugas.length < 7) {
-      let nomor = 1;
-      let nama = `Tugas ${nomor}`;
-      while (tugas.some((item) => item.nama === nama)) {
-        nomor += 1;
-        nama = `Tugas ${nomor}`;
-      }
-      const baru = await prisma.tugas.create({
-        data: {
-          nama,
-          pertemuanKe: Math.min(16, Math.max(1, nomor * 2)),
-          bobot: 0,
-          mataKuliahId: mk.id,
-          tahunAjaranId: ta.id,
-        },
-        select: { id: true, nama: true, pertemuanKe: true, bobot: true },
-      });
-      tugas.push(baru);
-      totalTugasBaru += 1;
-    }
+    if (kelasMK.length === 0) throw new Error(`Mata kuliah ${mk.kode} pada T.A. ${ta.label} belum memiliki kelas.`);
 
-    const bobotTugas = bobotProporsional(tugas.map((item) => item.bobot));
-    for (const [indeks, item] of tugas.entries()) {
-      await prisma.tugas.update({ where: { id: item.id }, data: { bobot: bobotTugas[indeks] / 100 } });
+    for (const kelas of kelasMK) {
+      const tugas = await prisma.tugas.findMany({
+        where: { mataKuliahId: mk.id, tahunAjaranId: ta.id, kelasId: kelas.id },
+        select: { id: true, nama: true, pertemuanKe: true, bobot: true },
+        orderBy: [{ pertemuanKe: "asc" }, { nama: "asc" }],
+      });
+      for (const item of tugas) {
+        const nama = item.nama.replace(/^Tugas (?:Dummy|Unik)\b/i, "Tugas");
+        if (nama !== item.nama) {
+          await prisma.tugas.update({ where: { id: item.id }, data: { nama } });
+        }
+      }
+      while (tugas.length < 7) {
+        let nomor = 1;
+        let nama = `Tugas ${nomor}`;
+        while (tugas.some((item) => item.nama === nama)) {
+          nomor += 1;
+          nama = `Tugas ${nomor}`;
+        }
+        const baru = await prisma.tugas.create({
+          data: {
+            nama,
+            pertemuanKe: Math.min(16, Math.max(1, nomor * 2)),
+            bobot: 0,
+            mataKuliahId: mk.id,
+            tahunAjaranId: ta.id,
+            kelasId: kelas.id,
+          },
+          select: { id: true, nama: true, pertemuanKe: true, bobot: true },
+        });
+        tugas.push(baru);
+        totalTugasBaru += 1;
+      }
+
+      const bobotTugas = bobotProporsional(tugas.map((item) => item.bobot));
+      for (const [indeks, item] of tugas.entries()) {
+        await prisma.tugas.update({ where: { id: item.id }, data: { bobot: bobotTugas[indeks] / 100 } });
+      }
     }
 
     const subSemua = await prisma.subCPMK.findMany({
@@ -281,7 +290,7 @@ async function siapkanCapaianDummy(
     });
     const kelompokTugas = new Map<string, typeof semuaTugas>();
     for (const item of semuaTugas) {
-      const kunci = item.kelasId ?? "GLOBAL";
+      const kunci = item.kelasId;
       kelompokTugas.set(kunci, [...(kelompokTugas.get(kunci) ?? []), item]);
     }
     for (const daftarTugas of kelompokTugas.values()) {
@@ -318,6 +327,17 @@ async function main() {
 
   if (tahunAjaran.length === 0) throw new Error("Belum ada tahun ajaran untuk diisi.");
   if (mataKuliah.length === 0) throw new Error("Belum ada mata kuliah untuk diisi.");
+  const kelas = await prisma.kelasMK.findMany({
+    where: { tahunAjaranId: { in: tahunAjaran.map((ta) => ta.id) } },
+    select: { id: true, mataKuliahId: true, tahunAjaranId: true },
+  });
+  const kombinasiTanpaKelas = tahunAjaran.flatMap((ta) =>
+    mataKuliah.filter((mk) => !kelas.some((item) => item.mataKuliahId === mk.id && item.tahunAjaranId === ta.id))
+      .map((mk) => `${mk.kode} (T.A. ${ta.label})`),
+  );
+  if (kombinasiTanpaKelas.length > 0) {
+    throw new Error(`Setiap mata kuliah harus memiliki kelas sebelum membuat data dummy: ${kombinasiTanpaKelas.join(", ")}.`);
+  }
   await siapkanCapaianDummy(tahunAjaran, mataKuliah);
 
   const roster = ANGKATAN.flatMap((angkatan, indeksAngkatan) =>
@@ -373,16 +393,10 @@ async function main() {
   if (mahasiswa.length !== roster.length) {
     throw new Error(`Jumlah mahasiswa dummy tidak sesuai: diharapkan ${roster.length}, ditemukan ${mahasiswa.length}.`);
   }
-  const [kelas, tugas] = await Promise.all([
-    prisma.kelasMK.findMany({
-      where: { tahunAjaranId: { in: tahunAjaran.map((ta) => ta.id) } },
-      select: { id: true, mataKuliahId: true, tahunAjaranId: true },
-    }),
-    prisma.tugas.findMany({
+  const tugas = await prisma.tugas.findMany({
       where: { tahunAjaranId: { in: tahunAjaran.map((ta) => ta.id) } },
       select: { id: true, nama: true, mataKuliahId: true, tahunAjaranId: true, kelasId: true },
-    }),
-  ]);
+    });
 
   const kelasPerKombinasi = new Map<string, typeof kelas>();
   for (const item of kelas) {
@@ -406,10 +420,10 @@ async function main() {
       const kunci = `${ta.id}|${mk.id}`;
       const daftarKelas = kelasPerKombinasi.get(kunci) ?? [];
       const daftarTugas = tugasPerKombinasi.get(kunci) ?? [];
-      const kelasMahasiswa = new Map<string, string | null>();
+      const kelasMahasiswa = new Map<string, string>();
 
       const pendaftaran = mahasiswa.map((mhs, indeks) => {
-        const kelasId = daftarKelas.length ? daftarKelas[indeks % daftarKelas.length].id : null;
+        const kelasId = daftarKelas[indeks % daftarKelas.length].id;
         kelasMahasiswa.set(mhs.id, kelasId);
         return {
           mahasiswaId: mhs.id,
@@ -432,7 +446,7 @@ async function main() {
 
       const nilaiKandidat = mahasiswa.flatMap((mhs) =>
         daftarTugas
-          .filter((item) => item.kelasId === null || item.kelasId === kelasMahasiswa.get(mhs.id))
+          .filter((item) => item.kelasId === kelasMahasiswa.get(mhs.id))
           .map((item) => ({
             mahasiswaId: mhs.id,
             nim: mhs.nim,

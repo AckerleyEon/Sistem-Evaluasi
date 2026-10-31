@@ -52,7 +52,7 @@ type BarisImporMahasiswa = {
   baris: number;
   nim: string;
   nama: string;
-  kelas: string | null;
+  kelas: string;
   status: "siap" | "terdaftar" | "galat";
   pesan: string[];
 };
@@ -99,19 +99,19 @@ export async function analisisImporMahasiswa(
     }
   }
   if (!worksheet || !header) {
-    return { ok: false, error: "Header Excel harus memiliki kolom NIM dan Nama. Kolom Kelas boleh dikosongkan." };
+    return { ok: false, error: "Header Excel harus memiliki kolom NIM, Nama, dan Kelas." };
   }
   const nomorHeader = header.indeksBaris + 1;
   const kolomNim = header.kolom.nim + 1;
   const kolomNama = header.kolom.nama + 1;
-  const kolomKelas = header.kolom.kelas === null ? null : header.kolom.kelas + 1;
+  const kolomKelas = header.kolom.kelas + 1;
 
   const mentah: { baris: number; nim: string; nama: string; kelas: string }[] = [];
   worksheet.eachRow((row, nomor) => {
     if (nomor <= nomorHeader) return;
     const nim = teksSelExcel(row.getCell(kolomNim).value).trim();
     const nama = teksSelExcel(row.getCell(kolomNama).value).replace(/\s+/g, " ").trim();
-    const kelas = kolomKelas ? teksSelExcel(row.getCell(kolomKelas).value).trim() : "";
+    const kelas = teksSelExcel(row.getCell(kolomKelas).value).trim();
     if (!nim && !nama && !kelas) return;
     mentah.push({ baris: nomor, nim, nama, kelas });
   });
@@ -140,12 +140,13 @@ export async function analisisImporMahasiswa(
     const pesan: string[] = [];
     if (!/^\d{12}$/.test(baris.nim)) pesan.push("NIM harus 12 digit angka.");
     if (baris.nama.length < 3 || baris.nama.length > 100) pesan.push("Nama harus 3-100 karakter.");
+    if (!baris.kelas) pesan.push("Kelas wajib diisi.");
     if ((frekuensiNim.get(baris.nim) ?? 0) > 1) pesan.push("NIM muncul lebih dari sekali di file.");
     const kelas = baris.kelas ? kelasPerNama.get(baris.kelas.toLowerCase()) : undefined;
     if (baris.kelas && !kelas) pesan.push(`Kelas "${baris.kelas}" tidak ada pada MK ini di T.A. aktif.`);
     return {
       ...baris,
-      kelas: kelas?.nama ?? null,
+      kelas: kelas?.nama ?? "",
       status: pesan.length > 0 ? "galat" : "siap",
       pesan,
     };
@@ -187,7 +188,7 @@ export async function analisisImporMahasiswa(
 
 export async function terapkanImporMahasiswa(
   mkId: string,
-  barisMentah: { nim: string; nama: string; kelas: string | null }[],
+  barisMentah: { nim: string; nama: string; kelas: string }[],
 ): Promise<Hasil> {
   await pastikanAdmin();
   if (!Array.isArray(barisMentah) || barisMentah.length === 0 || barisMentah.length > MAKS_BARIS_IMPOR_MAHASISWA) {
@@ -207,26 +208,27 @@ export async function terapkanImporMahasiswa(
 
   const kelasPerNama = new Map(kelasAda.map((kelas) => [kelas.nama.toLowerCase(), kelas]));
   const nimDilihat = new Set<string>();
-  const baris: { nim: string; nama: string; kelasId: string | null }[] = [];
+  const baris: { nim: string; nama: string; kelasId: string }[] = [];
   for (const data of barisMentah) {
     if (
       !data ||
       typeof data.nim !== "string" ||
       typeof data.nama !== "string" ||
-      (typeof data.kelas !== "string" && data.kelas !== null)
+      typeof data.kelas !== "string"
     ) {
       return { error: "Format data impor tidak valid." };
     }
     const nim = data.nim.trim();
     const nama = data.nama.replace(/\s+/g, " ").trim();
-    const kelasNama = data.kelas?.trim() ?? "";
+    const kelasNama = data.kelas.trim();
     const salah = validasiIdentitas(nim, nama);
     if (salah) return { error: `Baris dengan NIM ${nim || "(kosong)"} tidak valid: ${salah}` };
+    if (!kelasNama) return { error: `Baris dengan NIM ${nim} tidak valid: kelas wajib dipilih.` };
     if (nimDilihat.has(nim)) return { error: `NIM ${nim} muncul lebih dari sekali di file.` };
     nimDilihat.add(nim);
     const kelas = kelasNama ? kelasPerNama.get(kelasNama.toLowerCase()) : undefined;
     if (kelasNama && !kelas) return { error: `Kelas "${kelasNama}" tidak ditemukan pada MK ini di T.A. aktif.` };
-    baris.push({ nim, nama, kelasId: kelas?.id ?? null });
+    baris.push({ nim, nama, kelasId: kelas!.id });
   }
 
   const hasil = await prisma.$transaction(async (tx) => {
@@ -275,8 +277,9 @@ export async function tambahMahasiswaKeKelas(mkId: string, formData: FormData): 
 
   const ta = await getTahunAjaranAktif();
   if (!ta) return { error: SALAH_TA };
-  const kelasId = ((formData.get("kelasId") as string) ?? "").trim() || null;
-  if (kelasId && !(await prisma.kelasMK.findFirst({ where: { id: kelasId, mataKuliahId: mkId, tahunAjaranId: ta.id } }))) {
+  const kelasId = ((formData.get("kelasId") as string) ?? "").trim();
+  if (!kelasId) return { error: "Kelas wajib dipilih." };
+  if (!(await prisma.kelasMK.findFirst({ where: { id: kelasId, mataKuliahId: mkId, tahunAjaranId: ta.id } }))) {
     return { error: "Kelas tidak ditemukan untuk mata kuliah ini." };
   }
   const mk = await prisma.mataKuliah.findUnique({ where: { id: mkId } });
@@ -313,8 +316,9 @@ export async function buatKelasMK(mkId: string, namaMentah: string, dosenIdMenta
   if (!ta) return { error: SALAH_TA };
   const mk = await prisma.mataKuliah.findUnique({ where: { id: mkId }, select: { id: true } });
   if (!mk) return { error: "Mata kuliah tidak ditemukan." };
-  const dosenId = dosenIdMentah.trim() || null;
-  if (dosenId && !(await prisma.dosen.findUnique({ where: { id: dosenId }, select: { id: true } }))) {
+  const dosenId = dosenIdMentah.trim();
+  if (!dosenId) return { error: "Dosen pengampu wajib dipilih." };
+  if (!(await prisma.dosen.findUnique({ where: { id: dosenId }, select: { id: true } }))) {
     return { error: "Dosen pengampu tidak ditemukan." };
   }
   const ada = await prisma.kelasMK.findUnique({
@@ -333,8 +337,9 @@ export async function ubahPengampuKelas(kelasId: string, dosenIdMentah: string):
   if (!ta) return { error: SALAH_TA };
   const kelas = await prisma.kelasMK.findFirst({ where: { id: kelasId, tahunAjaranId: ta.id }, select: { id: true, mataKuliahId: true } });
   if (!kelas) return { error: "Kelas tidak ditemukan pada Tahun Ajaran aktif." };
-  const dosenId = dosenIdMentah.trim() || null;
-  if (dosenId && !(await prisma.dosen.findUnique({ where: { id: dosenId }, select: { id: true } }))) {
+  const dosenId = dosenIdMentah.trim();
+  if (!dosenId) return { error: "Dosen pengampu wajib dipilih." };
+  if (!(await prisma.dosen.findUnique({ where: { id: dosenId }, select: { id: true } }))) {
     return { error: "Dosen pengampu tidak ditemukan." };
   }
   await prisma.kelasMK.update({ where: { id: kelasId }, data: { dosenId } });
@@ -348,8 +353,9 @@ export async function pindahMahasiswaAntarKelas(mkId: string, mahasiswaId: strin
   await pastikanAdmin();
   const ta = await getTahunAjaranAktif();
   if (!ta) return { error: SALAH_TA };
-  const kelasId = kelasIdMentah.trim() || null;
-  if (kelasId && !(await prisma.kelasMK.findFirst({ where: { id: kelasId, mataKuliahId: mkId, tahunAjaranId: ta.id } }))) {
+  const kelasId = kelasIdMentah.trim();
+  if (!kelasId) return { error: "Kelas tujuan wajib dipilih." };
+  if (!(await prisma.kelasMK.findFirst({ where: { id: kelasId, mataKuliahId: mkId, tahunAjaranId: ta.id } }))) {
     return { error: "Kelas tujuan tidak ditemukan untuk mata kuliah ini." };
   }
   const pendaftaran = await prisma.pendaftaranMK.findUnique({
@@ -416,18 +422,18 @@ export async function hapusDariKelas(mkId: string, mahasiswaId: string): Promise
   return { nilaiTerhapus };
 }
 
-export async function urungkanHapusDariKelas(mkId: string, mahasiswaId: string, kelasId?: string | null): Promise<Hasil> {
+export async function urungkanHapusDariKelas(mkId: string, mahasiswaId: string, kelasId: string | null): Promise<Hasil> {
   await pastikanAdmin();
   const ta = await getTahunAjaranAktif();
   if (!ta) return { error: SALAH_TA };
-  if (kelasId && !(await prisma.kelasMK.findFirst({ where: { id: kelasId, mataKuliahId: mkId, tahunAjaranId: ta.id } }))) {
+  if (!kelasId || !(await prisma.kelasMK.findFirst({ where: { id: kelasId, mataKuliahId: mkId, tahunAjaranId: ta.id } }))) {
     return { error: "Kelas asal tidak ditemukan pada Tahun Ajaran aktif." };
   }
 
   const kunci = { mahasiswaId_mataKuliahId_tahunAjaranId: { mahasiswaId, mataKuliahId: mkId, tahunAjaranId: ta.id } };
   const sudah = await prisma.pendaftaranMK.findUnique({ where: kunci });
   if (!sudah) {
-    await prisma.pendaftaranMK.create({ data: { mahasiswaId, mataKuliahId: mkId, tahunAjaranId: ta.id, kelasId: kelasId ?? null } });
+    await prisma.pendaftaranMK.create({ data: { mahasiswaId, mataKuliahId: mkId, tahunAjaranId: ta.id, kelasId } });
   }
 
   await hitungUlangMataKuliah(mkId, ta.id);
@@ -437,18 +443,19 @@ export async function urungkanHapusDariKelas(mkId: string, mahasiswaId: string, 
   return {};
 }
 
-export async function pindahKelas(mkId: string, mahasiswaId: string, mkTujuanId: string): Promise<Hasil> {
+export async function pindahKelas(mkId: string, mahasiswaId: string, mkTujuanId: string, kelasTujuanId: string): Promise<Hasil> {
   await pastikanAdmin();
   if (mkId === mkTujuanId) return { error: "Pilih mata kuliah tujuan yang berbeda." };
 
   const ta = await getTahunAjaranAktif();
   if (!ta) return { error: SALAH_TA };
 
-  const [asal, tujuan, sudahDiTujuan] = await Promise.all([
+  const [asal, tujuan, kelasTujuan, sudahDiTujuan] = await Promise.all([
     prisma.pendaftaranMK.findUnique({
       where: { mahasiswaId_mataKuliahId_tahunAjaranId: { mahasiswaId, mataKuliahId: mkId, tahunAjaranId: ta.id } },
     }),
     prisma.mataKuliah.findUnique({ where: { id: mkTujuanId } }),
+    prisma.kelasMK.findFirst({ where: { id: kelasTujuanId, mataKuliahId: mkTujuanId, tahunAjaranId: ta.id } }),
     prisma.pendaftaranMK.findUnique({
       where: {
         mahasiswaId_mataKuliahId_tahunAjaranId: { mahasiswaId, mataKuliahId: mkTujuanId, tahunAjaranId: ta.id },
@@ -457,6 +464,7 @@ export async function pindahKelas(mkId: string, mahasiswaId: string, mkTujuanId:
   ]);
   if (!asal) return { error: "Mahasiswa tidak terdaftar di kelas asal." };
   if (!tujuan) return { error: "Mata kuliah tujuan tidak ditemukan." };
+  if (!kelasTujuan) return { error: "Kelas tujuan tidak ditemukan pada mata kuliah ini." };
   if (sudahDiTujuan) return { error: `Mahasiswa sudah terdaftar di ${tujuan.kode}.` };
 
   const nilaiTerhapus = await prisma.$transaction(async (tx) => {
@@ -470,7 +478,7 @@ export async function pindahKelas(mkId: string, mahasiswaId: string, mkTujuanId:
       where: { mahasiswaId, tahunAjaranId: ta.id, cpmk: { mataKuliahId: mkId } },
     });
     await tx.pendaftaranMK.delete({ where: { id: asal.id } });
-    await tx.pendaftaranMK.create({ data: { mahasiswaId, mataKuliahId: mkTujuanId, tahunAjaranId: ta.id } });
+    await tx.pendaftaranMK.create({ data: { mahasiswaId, mataKuliahId: mkTujuanId, tahunAjaranId: ta.id, kelasId: kelasTujuan.id } });
     return n.count;
   });
 
@@ -480,5 +488,5 @@ export async function pindahKelas(mkId: string, mahasiswaId: string, mkTujuanId:
   revalidatePath(HALAMAN);
   revalidatePath(`/dosen/input-nilai/${mkId}`);
   revalidatePath(`/dosen/input-nilai/${mkTujuanId}`);
-  return { nilaiTerhapus, pesan: tujuan.kode };
+  return { nilaiTerhapus, pesan: `${tujuan.kode}, kelas ${kelasTujuan.nama}` };
 }

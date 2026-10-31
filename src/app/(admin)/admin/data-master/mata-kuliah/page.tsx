@@ -48,7 +48,7 @@ export default async function MkMahasiswaPage({
     }),
     prisma.pendaftaranMK.groupBy({
       by: ["kelasId"],
-      where: { tahunAjaranId: ta.id, kelasId: { not: null } },
+      where: { tahunAjaranId: ta.id },
       _count: { _all: true },
     }),
   ]);
@@ -71,7 +71,7 @@ export default async function MkMahasiswaPage({
         id: kelas.id,
         nama: kelas.nama,
         dosenId: kelas.dosenId,
-        dosenNama: kelas.dosen ? namaDenganGelar(kelas.dosen) : null,
+        dosenNama: namaDenganGelar(kelas.dosen),
         jumlahMhs: jumlahPerKelas.get(kelas.id) ?? 0,
       })),
       terpakai: m._count.cpmk + m._count.tugas + m._count.pendaftaran > 0,
@@ -90,7 +90,7 @@ export default async function MkMahasiswaPage({
   let page = 1;
   const mkTerpilih = daftarMK.find((mk) => mk.id === selectedId);
   const kelasDipilih = mkTerpilih ? pilihKelas(mkTerpilih.kelas, sp.kelas) : null;
-  const kelasId = kelasDipilih?.id ?? null;
+  const kelasId = kelasDipilih?.id ?? "";
 
   if (selectedId) {
     const where = {

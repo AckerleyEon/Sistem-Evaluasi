@@ -201,7 +201,7 @@ function ModalMassal({ onTutup, onBerhasil }: { onTutup: () => void; onBerhasil:
             <p className="mt-1 text-[13px] text-[#6B7280]">
               Pilih banyak file sekaligus, satu file per mata kuliah. Mata kuliah dikenali dari kode di awal nama file
               (mis. <span className="font-semibold">UTM_101_Bahasa_Indonesia.xlsx</span>). Isi tiap file memakai format
-              yang sama dengan template impor mahasiswa (NIM, Nama, Kelas opsional). Impor hanya menambah pendaftaran.
+              yang sama dengan template impor mahasiswa (NIM, Nama, dan Kelas wajib). Impor hanya menambah pendaftaran.
             </p>
             <a href="/api/admin/mahasiswa/template" download className="mt-1 inline-block text-[13px] font-semibold text-[#2F6BE8] hover:underline">
               Unduh template Excel

@@ -17,9 +17,7 @@ export async function GET(request: Request) {
   const akses = await cekAksesMK(mataKuliahId, kelasId);
   if (!akses) return NextResponse.json({ error: "Tidak berhak mengakses nilai ini." }, { status: 403 });
 
-  const kelasFilter = akses.kelasId
-    ? { OR: [{ kelasId: akses.kelasId }, ...(akses.koordinator ? [{ kelasId: null }] : [])] }
-    : {};
+  const kelasFilter = { kelasId: akses.kelasId };
   const tugas = await prisma.tugas.findFirst({
     where: { id: tugasId, mataKuliahId, tahunAjaranId: akses.ta.id, ...kelasFilter },
     select: {
@@ -32,19 +30,17 @@ export async function GET(request: Request) {
   });
   if (!tugas) return NextResponse.json({ error: "Tugas tidak ditemukan untuk mata kuliah/kelas ini." }, { status: 404 });
 
-  const kelasMahasiswaId = akses.kelasId ?? tugas.kelasId;
+  const kelasMahasiswaId = akses.kelasId;
   const [pendaftaran, kelas] = await Promise.all([
     prisma.pendaftaranMK.findMany({
-      where: { mataKuliahId, tahunAjaranId: akses.ta.id, ...(kelasMahasiswaId ? { kelasId: kelasMahasiswaId } : {}) },
+      where: { mataKuliahId, tahunAjaranId: akses.ta.id, kelasId: kelasMahasiswaId },
       select: {
         mahasiswaId: true,
         mahasiswa: { select: { nim: true, nama: true } },
       },
       orderBy: { mahasiswa: { nim: "asc" } },
     }),
-    kelasMahasiswaId
-      ? prisma.kelasMK.findUnique({ where: { id: kelasMahasiswaId }, select: { nama: true } })
-      : Promise.resolve(null),
+    prisma.kelasMK.findUnique({ where: { id: kelasMahasiswaId }, select: { nama: true } }),
   ]);
   const nilai = pendaftaran.length
     ? await prisma.nilai.findMany({
@@ -98,7 +94,7 @@ export async function GET(request: Request) {
     [`Mata kuliah: ${tugas.mataKuliah.kode} - ${tugas.mataKuliah.nama}`],
     [`Tahun ajaran: ${akses.ta.label}`],
     [`Tugas: ${tugas.nama} (Pertemuan ${tugas.pertemuanKe})`],
-    [`Kelas: ${kelas?.nama ?? "Semua kelas"}`],
+    [`Kelas: ${kelas?.nama ?? "Kelas"}`],
     ["Isi kolom Nilai dengan angka 0-100. Nilai boleh menggunakan maksimal satu angka desimal."],
     ["Jangan ubah NIM karena digunakan untuk mencocokkan mahasiswa. Kolom Nama Mahasiswa hanya sebagai referensi."],
     ["Baris dengan nilai kosong akan dilewati. Mahasiswa lain di luar daftar nilai tidak terpengaruh."],

@@ -12,6 +12,17 @@ export type NilaiKomponenLaporan = {
   persenTuntas: number | null;
 };
 
+export type NilaiCPMKLaporan = NilaiKomponenLaporan & {
+  mataKuliahId: string;
+  mataKuliahKode: string;
+  mataKuliahNama: string;
+};
+
+export type NilaiSubCPMKLaporan = NilaiKomponenLaporan & {
+  mataKuliahId: string;
+  mataKuliahNama: string;
+};
+
 export type MahasiswaLaporan = {
   id: string;
   nim: string;
@@ -28,8 +39,8 @@ export type DataLaporanCPL = {
   passingGrade: number;
   totalMahasiswa: number;
   cpl: (NilaiKomponenLaporan & { jumlahMK: number })[];
-  cpmk: NilaiKomponenLaporan[];
-  subCpmk: NilaiKomponenLaporan[];
+  cpmk: NilaiCPMKLaporan[];
+  subCpmk: NilaiSubCPMKLaporan[];
   mahasiswa: MahasiswaLaporan[];
 };
 
@@ -74,6 +85,7 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
             select: {
               id: true,
               kode: true,
+              nama: true,
               cplTerkait: { select: { cpl: { select: { id: true, kode: true } } } },
             },
           },
@@ -83,7 +95,7 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
       prisma.subCPMK.findMany({
         where: { tahunAjaranId: tahunAjaran.id },
         orderBy: [{ mataKuliah: { kode: "asc" } }, { kode: "asc" }],
-        select: { id: true, kode: true, deskripsi: true, mataKuliah: { select: { kode: true } } },
+        select: { id: true, kode: true, deskripsi: true, mataKuliah: { select: { id: true, nama: true, kode: true } } },
       }),
       prisma.pendaftaranMK.findMany({
         where: { tahunAjaranId: tahunAjaran.id },
@@ -183,6 +195,9 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
     return {
       id: item.id,
       kode: `${item.mataKuliah.kode} · ${item.kode}`,
+      mataKuliahId: item.mataKuliah.id,
+      mataKuliahKode: item.mataKuliah.kode,
+      mataKuliahNama: item.mataKuliah.nama,
       deskripsi: item.deskripsi,
       nilai: rata(nilai.map((hasil) => hasil.nilai)) ?? 0,
       lengkap: nilai.length > 0 && nilai.every((hasil) => hasil.statusLengkap),
@@ -196,6 +211,8 @@ export async function ambilDataLaporanCPL(tahunAjaranId?: string): Promise<DataL
     return {
       id: item.id,
       kode: `${item.mataKuliah.kode} · ${item.kode}`,
+      mataKuliahId: item.mataKuliah.id,
+      mataKuliahNama: item.mataKuliah.nama,
       deskripsi: item.deskripsi,
       nilai: rata(nilai.map((hasil) => hasil.nilai)) ?? 0,
       lengkap: nilai.length > 0 && nilai.every((hasil) => hasil.statusLengkap),

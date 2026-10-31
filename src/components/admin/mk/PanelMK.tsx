@@ -6,12 +6,11 @@ import { useRouter } from "next/navigation";
 import type { MkItem, MhsItem } from "./tipe";
 import { ManajemenKelas } from "./ManajemenKelas";
 import type { DosenOpsi } from "./tipe";
-import { KELAS_BELUM } from "@/lib/kelas-terpilih";
 
 function buatHref(mk: string, q: string, page: number, kelasParam: string) {
   const params = new URLSearchParams();
   params.set("mk", mk);
-  params.set("kelas", kelasParam); // id kelas, atau KELAS_BELUM untuk mahasiswa tanpa kelas
+  params.set("kelas", kelasParam);
   if (q) params.set("q", q);
   if (page > 1) params.set("page", String(page));
   return `/admin/data-master/mata-kuliah?${params.toString()}`;
@@ -69,7 +68,7 @@ export function PanelMK({
   onUbahKelas: (m: MhsItem, kelasId: string) => void;
 }) {
   const router = useRouter();
-  const kelasParam = kelasId ?? KELAS_BELUM;
+  const kelasParam = kelasId ?? "";
   const [cari, setCari] = useState(q);
   const [isPending, startTransition] = useTransition();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -97,7 +96,7 @@ export function PanelMK({
           <p className="mt-1 text-xs text-[#6B7280]">Koordinator MK (PJMK): {mk.pjmkNama ?? "tanpa pengampu"}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={onTambahMhs} className="h-9 rounded-lg border border-[#2F6BE8] bg-white px-3 text-xs font-semibold text-[#2F6BE8] [@media(hover:hover)]:hover:bg-[#EEF3FD]">
+          <button onClick={onTambahMhs} disabled={mk.kelas.length === 0} className="h-9 rounded-lg border border-[#2F6BE8] bg-white px-3 text-xs font-semibold text-[#2F6BE8] disabled:opacity-50 [@media(hover:hover)]:hover:bg-[#EEF3FD]">
             Tambah Mahasiswa
           </button>
           <button onClick={onImporMhs} className="h-9 rounded-lg bg-[#2F6BE8] px-3 text-xs font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]">
@@ -122,9 +121,8 @@ export function PanelMK({
           aria-label="Pilih kelas mahasiswa"
           className="h-10 rounded-[10px] bg-[#EEF3FD] px-3 text-sm text-[#111827] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30"
         >
-          <option value={KELAS_BELUM}>Belum ditentukan ({mk.jumlahMhs - mk.kelas.reduce((total, k) => total + k.jumlahMhs, 0)})</option>
           {mk.kelas.map((kelas) => (
-            <option key={kelas.id} value={kelas.id}>{kelas.nama} · {kelas.jumlahMhs} mhs · {kelas.dosenNama ?? "tanpa pengampu"}</option>
+            <option key={kelas.id} value={kelas.id}>{kelas.nama} · {kelas.jumlahMhs} mhs · {kelas.dosenNama}</option>
           ))}
         </select>
         <div className="relative w-full sm:max-w-65">
@@ -147,11 +145,7 @@ export function PanelMK({
           {q ? (
             "Tidak ada mahasiswa yang cocok dengan kata kunci pencarian."
           ) : (
-            kelasId === null ? (
-              <p>Tidak ada mahasiswa yang belum ditentukan kelasnya.</p>
-            ) : (
-              <p>Belum ada mahasiswa terdaftar di kelas ini. Gunakan tombol “Tambah Mahasiswa” di atas untuk mendaftarkan mahasiswa.</p>
-            )
+            <p>{mk.kelas.length === 0 ? "Buat kelas terlebih dahulu sebelum mendaftarkan mahasiswa." : "Belum ada mahasiswa terdaftar di kelas ini. Gunakan tombol “Tambah Mahasiswa” di atas untuk mendaftarkan mahasiswa."}</p>
           )}
         </div>
       ) : (
@@ -180,7 +174,6 @@ export function PanelMK({
                       aria-label={`Kelas ${m.nama}`}
                       className="h-9 max-w-36 rounded-lg bg-[#EEF3FD] px-2 text-xs text-[#111827] outline-none"
                     >
-                      <option value="">Belum ditentukan</option>
                       {mk.kelas.map((kelas) => (
                         <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>
                       ))}

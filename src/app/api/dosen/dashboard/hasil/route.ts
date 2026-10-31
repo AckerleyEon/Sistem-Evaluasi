@@ -52,7 +52,7 @@ export async function GET() {
   });
   const pendaftaranDiampu = pendaftaran.filter((row) => {
     const akses = kelasDiampu.get(row.mataKuliahId);
-    return akses?.koordinator || (row.kelasId !== null && akses?.kelas.has(row.kelasId));
+    return akses?.koordinator || akses?.kelas.has(row.kelasId);
   });
   const mahasiswaIds = [...new Set(pendaftaranDiampu.map((row) => row.mahasiswaId))];
   const mataKuliahDiampu = [...new Set(pendaftaranDiampu.map((row) => row.mataKuliahId))];

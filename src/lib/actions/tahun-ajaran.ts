@@ -97,10 +97,26 @@ export async function createTahunAjaran(formData: FormData) {
       });
       if (dataKaitan.length > 0) await tx.cpmkSub.createMany({ data: dataKaitan });
 
-      // 4. Tugas
+      // 4. Kelas dan tugas
+      const petaKelas = new Map<string, string>();
+      const kelasLama = await tx.kelasMK.findMany({ where: { tahunAjaranId: sumberId } });
+      for (const kelas of kelasLama) {
+        const kelasBaru = await tx.kelasMK.create({
+          data: {
+            nama: kelas.nama,
+            mataKuliahId: kelas.mataKuliahId,
+            dosenId: kelas.dosenId,
+            tahunAjaranId: baru.id,
+          },
+        });
+        petaKelas.set(kelas.id, kelasBaru.id);
+      }
+
       const petaTugas = new Map<string, string>();
       const tugasLama = await tx.tugas.findMany({ where: { tahunAjaranId: sumberId } });
       for (const t of tugasLama) {
+        const kelasId = petaKelas.get(t.kelasId);
+        if (!kelasId) throw new Error(`Kelas tugas "${t.nama}" tidak ditemukan pada Tahun Ajaran sumber.`);
         const baruTugas = await tx.tugas.create({
           data: {
             nama: t.nama,
@@ -108,6 +124,7 @@ export async function createTahunAjaran(formData: FormData) {
             bobot: t.bobot,
             mataKuliahId: t.mataKuliahId,
             tahunAjaranId: baru.id,
+            kelasId,
           },
         });
         petaTugas.set(t.id, baruTugas.id);

@@ -28,9 +28,16 @@ export function ModalTugas({
     () => data.tugas.filter((t) => t.kelasId === (data.kelas?.id ?? null)),
     [data.tugas, data.kelas?.id],
   );
-  const [judul, setJudul] = useState("");
-  const [pertemuan, setPertemuan] = useState(data.pertemuanDefault);
-  const [bobot, setBobot] = useState(tugasLingkup.length === 0 ? 100 : 20);
+const [judul, setJudul] = useState("");
+const [pertemuan, setPertemuan] = useState(data.pertemuanDefault);
+
+const [bobot, setBobot] = useState(
+  tugasLingkup.length === 0 ? 100 : 20
+);
+
+const [bobotTeks, setBobotTeks] = useState(
+  String(tugasLingkup.length === 0 ? 100 : 20)
+);
   const [subDipilih, setSubDipilih] = useState<Set<string>>(new Set());
   const [sentuh, setSentuh] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
@@ -203,9 +210,58 @@ export function ModalTugas({
         {/* Bobot */}
         <div className="rounded-xl bg-[#F3F5F9] p-3">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] font-bold">Alokasi Bobot Nilai (%)</span>
-            <span className="rounded-full bg-[#DBEAFE] px-2.5 py-0.5 text-[12px] font-bold text-[#1D4ED8]">{bobot}%</span>
-          </div>
+  <span className="text-[12px] font-bold">
+    Alokasi Bobot Nilai (%)
+  </span>
+
+  <label className="inline-flex h-7 min-w-15 items-center justify-center gap-0.5 rounded-full bg-[#DBEAFE] px-2.5 text-[12px] font-bold text-[#1D4ED8] transition-all focus-within:ring-2 focus-within:ring-[#93C5FD]">
+    <input
+      type="number"
+      min={1}
+      max={adaTugas ? 99 : 100}
+      step={1}
+      value={bobotTeks}
+      disabled={!adaTugas}
+      aria-label="Bobot nilai dalam persen"
+      onChange={(e) => {
+        const teks = e.target.value;
+
+        setBobotTeks(teks);
+
+        if (teks === "") return;
+
+        const angka = Number(teks);
+
+        if (
+          Number.isInteger(angka) &&
+          angka >= 1 &&
+          angka <= (adaTugas ? 99 : 100)
+        ) {
+          setBobot(angka);
+        }
+      }}
+      onBlur={() => {
+        const maksimum = adaTugas ? 99 : 100;
+        const angka = Number(bobotTeks);
+
+        const nilai =
+          bobotTeks.trim() === "" || !Number.isFinite(angka)
+            ? bobot
+            : Math.min(maksimum, Math.max(1, Math.round(angka)));
+
+        setBobot(nilai);
+        setBobotTeks(String(nilai));
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.currentTarget.blur();
+        }
+      }}
+      className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none w-7 min-w-0 bg-transparent text-right text-[12px] font-bold outline-none disabled:cursor-not-allowed"
+    />
+    <span>%</span>
+  </label>
+</div>
 
           <div className="mt-2 flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-white" aria-hidden="true">
             {tugasLingkup.map((t, i) => (
@@ -225,7 +281,12 @@ export function ModalTugas({
             step={1}
             value={bobot}
             disabled={!adaTugas}
-            onChange={(e) => setBobot(e.target.valueAsNumber)}
+            onChange={(e) => {
+              const nilai = e.target.valueAsNumber;
+
+              setBobot(nilai);
+              setBobotTeks(String(nilai));
+            }}
             aria-label="Alokasi bobot nilai"
             className="mt-2 w-full cursor-pointer accent-[#2563EB] disabled:cursor-not-allowed"
           />

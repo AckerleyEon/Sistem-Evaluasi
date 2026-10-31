@@ -202,7 +202,7 @@ export type TugasGroupByOutputType = {
   bobot: number
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId: string | null
+  kelasId: string
   _count: TugasCountAggregateOutputType | null
   _avg: TugasAvgAggregateOutputType | null
   _sum: TugasSumAggregateOutputType | null
@@ -235,10 +235,10 @@ export type TugasWhereInput = {
   bobot?: Prisma.FloatFilter<"Tugas"> | number
   mataKuliahId?: Prisma.StringFilter<"Tugas"> | string
   tahunAjaranId?: Prisma.StringFilter<"Tugas"> | string
-  kelasId?: Prisma.StringNullableFilter<"Tugas"> | string | null
+  kelasId?: Prisma.StringFilter<"Tugas"> | string
   mataKuliah?: Prisma.XOR<Prisma.MataKuliahScalarRelationFilter, Prisma.MataKuliahWhereInput>
   tahunAjaran?: Prisma.XOR<Prisma.TahunAjaranScalarRelationFilter, Prisma.TahunAjaranWhereInput>
-  kelas?: Prisma.XOR<Prisma.KelasMKNullableScalarRelationFilter, Prisma.KelasMKWhereInput> | null
+  kelas?: Prisma.XOR<Prisma.KelasMKScalarRelationFilter, Prisma.KelasMKWhereInput>
   distribusi?: Prisma.DistribusiSubCPMKListRelationFilter
   nilai?: Prisma.NilaiListRelationFilter
 }
@@ -250,7 +250,7 @@ export type TugasOrderByWithRelationInput = {
   bobot?: Prisma.SortOrder
   mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
-  kelasId?: Prisma.SortOrderInput | Prisma.SortOrder
+  kelasId?: Prisma.SortOrder
   mataKuliah?: Prisma.MataKuliahOrderByWithRelationInput
   tahunAjaran?: Prisma.TahunAjaranOrderByWithRelationInput
   kelas?: Prisma.KelasMKOrderByWithRelationInput
@@ -268,10 +268,10 @@ export type TugasWhereUniqueInput = Prisma.AtLeast<{
   bobot?: Prisma.FloatFilter<"Tugas"> | number
   mataKuliahId?: Prisma.StringFilter<"Tugas"> | string
   tahunAjaranId?: Prisma.StringFilter<"Tugas"> | string
-  kelasId?: Prisma.StringNullableFilter<"Tugas"> | string | null
+  kelasId?: Prisma.StringFilter<"Tugas"> | string
   mataKuliah?: Prisma.XOR<Prisma.MataKuliahScalarRelationFilter, Prisma.MataKuliahWhereInput>
   tahunAjaran?: Prisma.XOR<Prisma.TahunAjaranScalarRelationFilter, Prisma.TahunAjaranWhereInput>
-  kelas?: Prisma.XOR<Prisma.KelasMKNullableScalarRelationFilter, Prisma.KelasMKWhereInput> | null
+  kelas?: Prisma.XOR<Prisma.KelasMKScalarRelationFilter, Prisma.KelasMKWhereInput>
   distribusi?: Prisma.DistribusiSubCPMKListRelationFilter
   nilai?: Prisma.NilaiListRelationFilter
 }, "id">
@@ -283,7 +283,7 @@ export type TugasOrderByWithAggregationInput = {
   bobot?: Prisma.SortOrder
   mataKuliahId?: Prisma.SortOrder
   tahunAjaranId?: Prisma.SortOrder
-  kelasId?: Prisma.SortOrderInput | Prisma.SortOrder
+  kelasId?: Prisma.SortOrder
   _count?: Prisma.TugasCountOrderByAggregateInput
   _avg?: Prisma.TugasAvgOrderByAggregateInput
   _max?: Prisma.TugasMaxOrderByAggregateInput
@@ -301,7 +301,7 @@ export type TugasScalarWhereWithAggregatesInput = {
   bobot?: Prisma.FloatWithAggregatesFilter<"Tugas"> | number
   mataKuliahId?: Prisma.StringWithAggregatesFilter<"Tugas"> | string
   tahunAjaranId?: Prisma.StringWithAggregatesFilter<"Tugas"> | string
-  kelasId?: Prisma.StringNullableWithAggregatesFilter<"Tugas"> | string | null
+  kelasId?: Prisma.StringWithAggregatesFilter<"Tugas"> | string
 }
 
 export type TugasCreateInput = {
@@ -311,7 +311,7 @@ export type TugasCreateInput = {
   bobot: number
   mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutTugasInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutTugasInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutTugasInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutTugasInput
   distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutTugasInput
   nilai?: Prisma.NilaiCreateNestedManyWithoutTugasInput
 }
@@ -323,7 +323,7 @@ export type TugasUncheckedCreateInput = {
   bobot: number
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutTugasInput
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTugasInput
 }
@@ -335,7 +335,7 @@ export type TugasUpdateInput = {
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutTugasNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutTugasNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutTugasNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutTugasNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutTugasNestedInput
   nilai?: Prisma.NilaiUpdateManyWithoutTugasNestedInput
 }
@@ -347,7 +347,7 @@ export type TugasUncheckedUpdateInput = {
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutTugasNestedInput
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTugasNestedInput
 }
@@ -359,7 +359,7 @@ export type TugasCreateManyInput = {
   bobot: number
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
 }
 
 export type TugasUpdateManyMutationInput = {
@@ -376,7 +376,7 @@ export type TugasUncheckedUpdateManyInput = {
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type TugasListRelationFilter = {
@@ -602,7 +602,7 @@ export type TugasCreateWithoutTahunAjaranInput = {
   pertemuanKe: number
   bobot: number
   mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutTugasInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutTugasInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutTugasInput
   distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutTugasInput
   nilai?: Prisma.NilaiCreateNestedManyWithoutTugasInput
 }
@@ -613,7 +613,7 @@ export type TugasUncheckedCreateWithoutTahunAjaranInput = {
   pertemuanKe: number
   bobot: number
   mataKuliahId: string
-  kelasId?: string | null
+  kelasId: string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutTugasInput
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTugasInput
 }
@@ -654,7 +654,7 @@ export type TugasScalarWhereInput = {
   bobot?: Prisma.FloatFilter<"Tugas"> | number
   mataKuliahId?: Prisma.StringFilter<"Tugas"> | string
   tahunAjaranId?: Prisma.StringFilter<"Tugas"> | string
-  kelasId?: Prisma.StringNullableFilter<"Tugas"> | string | null
+  kelasId?: Prisma.StringFilter<"Tugas"> | string
 }
 
 export type TugasCreateWithoutKelasInput = {
@@ -711,7 +711,7 @@ export type TugasCreateWithoutMataKuliahInput = {
   pertemuanKe: number
   bobot: number
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutTugasInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutTugasInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutTugasInput
   distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutTugasInput
   nilai?: Prisma.NilaiCreateNestedManyWithoutTugasInput
 }
@@ -722,7 +722,7 @@ export type TugasUncheckedCreateWithoutMataKuliahInput = {
   pertemuanKe: number
   bobot: number
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutTugasInput
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTugasInput
 }
@@ -760,7 +760,7 @@ export type TugasCreateWithoutDistribusiInput = {
   bobot: number
   mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutTugasInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutTugasInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutTugasInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutTugasInput
   nilai?: Prisma.NilaiCreateNestedManyWithoutTugasInput
 }
 
@@ -771,7 +771,7 @@ export type TugasUncheckedCreateWithoutDistribusiInput = {
   bobot: number
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTugasInput
 }
 
@@ -798,7 +798,7 @@ export type TugasUpdateWithoutDistribusiInput = {
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutTugasNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutTugasNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutTugasNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutTugasNestedInput
   nilai?: Prisma.NilaiUpdateManyWithoutTugasNestedInput
 }
 
@@ -809,7 +809,7 @@ export type TugasUncheckedUpdateWithoutDistribusiInput = {
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTugasNestedInput
 }
 
@@ -820,7 +820,7 @@ export type TugasCreateWithoutNilaiInput = {
   bobot: number
   mataKuliah: Prisma.MataKuliahCreateNestedOneWithoutTugasInput
   tahunAjaran: Prisma.TahunAjaranCreateNestedOneWithoutTugasInput
-  kelas?: Prisma.KelasMKCreateNestedOneWithoutTugasInput
+  kelas: Prisma.KelasMKCreateNestedOneWithoutTugasInput
   distribusi?: Prisma.DistribusiSubCPMKCreateNestedManyWithoutTugasInput
 }
 
@@ -831,7 +831,7 @@ export type TugasUncheckedCreateWithoutNilaiInput = {
   bobot: number
   mataKuliahId: string
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedCreateNestedManyWithoutTugasInput
 }
 
@@ -858,7 +858,7 @@ export type TugasUpdateWithoutNilaiInput = {
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutTugasNestedInput
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutTugasNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutTugasNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutTugasNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutTugasNestedInput
 }
 
@@ -869,7 +869,7 @@ export type TugasUncheckedUpdateWithoutNilaiInput = {
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutTugasNestedInput
 }
 
@@ -879,7 +879,7 @@ export type TugasCreateManyTahunAjaranInput = {
   pertemuanKe: number
   bobot: number
   mataKuliahId: string
-  kelasId?: string | null
+  kelasId: string
 }
 
 export type TugasUpdateWithoutTahunAjaranInput = {
@@ -888,7 +888,7 @@ export type TugasUpdateWithoutTahunAjaranInput = {
   pertemuanKe?: Prisma.IntFieldUpdateOperationsInput | number
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliah?: Prisma.MataKuliahUpdateOneRequiredWithoutTugasNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutTugasNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutTugasNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutTugasNestedInput
   nilai?: Prisma.NilaiUpdateManyWithoutTugasNestedInput
 }
@@ -899,7 +899,7 @@ export type TugasUncheckedUpdateWithoutTahunAjaranInput = {
   pertemuanKe?: Prisma.IntFieldUpdateOperationsInput | number
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutTugasNestedInput
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTugasNestedInput
 }
@@ -910,7 +910,7 @@ export type TugasUncheckedUpdateManyWithoutTahunAjaranInput = {
   pertemuanKe?: Prisma.IntFieldUpdateOperationsInput | number
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   mataKuliahId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type TugasCreateManyKelasInput = {
@@ -959,7 +959,7 @@ export type TugasCreateManyMataKuliahInput = {
   pertemuanKe: number
   bobot: number
   tahunAjaranId: string
-  kelasId?: string | null
+  kelasId: string
 }
 
 export type TugasUpdateWithoutMataKuliahInput = {
@@ -968,7 +968,7 @@ export type TugasUpdateWithoutMataKuliahInput = {
   pertemuanKe?: Prisma.IntFieldUpdateOperationsInput | number
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   tahunAjaran?: Prisma.TahunAjaranUpdateOneRequiredWithoutTugasNestedInput
-  kelas?: Prisma.KelasMKUpdateOneWithoutTugasNestedInput
+  kelas?: Prisma.KelasMKUpdateOneRequiredWithoutTugasNestedInput
   distribusi?: Prisma.DistribusiSubCPMKUpdateManyWithoutTugasNestedInput
   nilai?: Prisma.NilaiUpdateManyWithoutTugasNestedInput
 }
@@ -979,7 +979,7 @@ export type TugasUncheckedUpdateWithoutMataKuliahInput = {
   pertemuanKe?: Prisma.IntFieldUpdateOperationsInput | number
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
   distribusi?: Prisma.DistribusiSubCPMKUncheckedUpdateManyWithoutTugasNestedInput
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTugasNestedInput
 }
@@ -990,7 +990,7 @@ export type TugasUncheckedUpdateManyWithoutMataKuliahInput = {
   pertemuanKe?: Prisma.IntFieldUpdateOperationsInput | number
   bobot?: Prisma.FloatFieldUpdateOperationsInput | number
   tahunAjaranId?: Prisma.StringFieldUpdateOperationsInput | string
-  kelasId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  kelasId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -1043,7 +1043,7 @@ export type TugasSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   kelasId?: boolean
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.Tugas$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
   distribusi?: boolean | Prisma.Tugas$distribusiArgs<ExtArgs>
   nilai?: boolean | Prisma.Tugas$nilaiArgs<ExtArgs>
   _count?: boolean | Prisma.TugasCountOutputTypeDefaultArgs<ExtArgs>
@@ -1059,7 +1059,7 @@ export type TugasSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   kelasId?: boolean
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.Tugas$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tugas"]>
 
 export type TugasSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1072,7 +1072,7 @@ export type TugasSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   kelasId?: boolean
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.Tugas$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tugas"]>
 
 export type TugasSelectScalar = {
@@ -1089,7 +1089,7 @@ export type TugasOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
 export type TugasInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.Tugas$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
   distribusi?: boolean | Prisma.Tugas$distribusiArgs<ExtArgs>
   nilai?: boolean | Prisma.Tugas$nilaiArgs<ExtArgs>
   _count?: boolean | Prisma.TugasCountOutputTypeDefaultArgs<ExtArgs>
@@ -1097,12 +1097,12 @@ export type TugasInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type TugasIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.Tugas$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }
 export type TugasIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mataKuliah?: boolean | Prisma.MataKuliahDefaultArgs<ExtArgs>
   tahunAjaran?: boolean | Prisma.TahunAjaranDefaultArgs<ExtArgs>
-  kelas?: boolean | Prisma.Tugas$kelasArgs<ExtArgs>
+  kelas?: boolean | Prisma.KelasMKDefaultArgs<ExtArgs>
 }
 
 export type $TugasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1110,7 +1110,7 @@ export type $TugasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   objects: {
     mataKuliah: Prisma.$MataKuliahPayload<ExtArgs>
     tahunAjaran: Prisma.$TahunAjaranPayload<ExtArgs>
-    kelas: Prisma.$KelasMKPayload<ExtArgs> | null
+    kelas: Prisma.$KelasMKPayload<ExtArgs>
     distribusi: Prisma.$DistribusiSubCPMKPayload<ExtArgs>[]
     nilai: Prisma.$NilaiPayload<ExtArgs>[]
   }
@@ -1121,7 +1121,7 @@ export type $TugasPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     bobot: number
     mataKuliahId: string
     tahunAjaranId: string
-    kelasId: string | null
+    kelasId: string
   }, ExtArgs["result"]["tugas"]>
   composites: {}
 }
@@ -1518,7 +1518,7 @@ export interface Prisma__TugasClient<T, Null = never, ExtArgs extends runtime.Ty
   readonly [Symbol.toStringTag]: "PrismaPromise"
   mataKuliah<T extends Prisma.MataKuliahDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MataKuliahDefaultArgs<ExtArgs>>): Prisma.Prisma__MataKuliahClient<runtime.Types.Result.GetResult<Prisma.$MataKuliahPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   tahunAjaran<T extends Prisma.TahunAjaranDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaranDefaultArgs<ExtArgs>>): Prisma.Prisma__TahunAjaranClient<runtime.Types.Result.GetResult<Prisma.$TahunAjaranPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  kelas<T extends Prisma.Tugas$kelasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tugas$kelasArgs<ExtArgs>>): Prisma.Prisma__KelasMKClient<runtime.Types.Result.GetResult<Prisma.$KelasMKPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  kelas<T extends Prisma.KelasMKDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.KelasMKDefaultArgs<ExtArgs>>): Prisma.Prisma__KelasMKClient<runtime.Types.Result.GetResult<Prisma.$KelasMKPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   distribusi<T extends Prisma.Tugas$distribusiArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tugas$distribusiArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DistribusiSubCPMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   nilai<T extends Prisma.Tugas$nilaiArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tugas$nilaiArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NilaiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1955,25 +1955,6 @@ export type TugasDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Limit how many Tugases to delete.
    */
   limit?: number
-}
-
-/**
- * Tugas.kelas
- */
-export type Tugas$kelasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the KelasMK
-   */
-  select?: Prisma.KelasMKSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the KelasMK
-   */
-  omit?: Prisma.KelasMKOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.KelasMKInclude<ExtArgs> | null
-  where?: Prisma.KelasMKWhereInput
 }
 
 /**

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { analisisImporNilai, simpanNilaiMassal, type BarisImporNilai } from "@/lib/actions/nilai";
 
@@ -18,7 +17,7 @@ type TugasItem = {
   nama: string;
   pertemuanKe: number;
   bobot: number;
-  kelasId: string | null;
+  kelasId: string;
   indikator: {
     id: string;
     kode: string;
@@ -33,16 +32,15 @@ type MahasiswaItem = {
   nim: string;
   nama: string;
   angkatan: number;
-  kelasId: string | null;
+  kelasId: string;
 };
 
 type Props = {
   mataKuliah: { id: string; kode: string; nama: string };
   daftarMK: MataKuliahItem[];
   tahunAjaran: string;
-  kelasId: string | null;
-  kelasNama: string | null;
-  semuaKelasAllowed: boolean;
+  kelasId: string;
+  pengampuNama: string;
   daftarKelas: { id: string; nama: string }[];
   tugas: TugasItem[];
   tugasDipilihId: string | null;
@@ -79,7 +77,7 @@ function hitungIndikator(
   nilai: Record<string, number>,
 ) {
   const tugasRelevan = indikator.tugas.filter(
-    (tugas) => tugas.kelasId === null || tugas.kelasId === mahasiswa.kelasId,
+    (tugas) => tugas.kelasId === mahasiswa.kelasId,
   );
   const terisi = tugasRelevan.flatMap((tugas) =>
     nilai[tugas.id] === undefined ? [] : [{ nilai: nilai[tugas.id], bobot: tugas.bobot }],
@@ -145,8 +143,7 @@ export function InputNilaiWorkspace({
   daftarMK,
   tahunAjaran,
   kelasId,
-  kelasNama,
-  semuaKelasAllowed,
+  pengampuNama,
   daftarKelas,
   tugas,
   tugasDipilihId,
@@ -282,8 +279,6 @@ export function InputNilaiWorkspace({
     belum: mahasiswa.filter((item) => skorDraft(item.id) === null).length,
     tuntas: mahasiswa.filter((item) => skorDraft(item.id) !== null && skorDraft(item.id)! >= passingGrade).length,
   };
-  const jumlahIndikator = tugasDipilih?.indikator.length ?? 0;
-  const kodeCpmkTerpetakan = [...new Set(tugasDipilih?.indikator.flatMap((indikator) => indikator.cpmk.map((item) => item.kode)) ?? [])];
   const kodeSubCpmkTerpetakan = tugasDipilih?.indikator.map((indikator) => indikator.kode) ?? [];
   const semuaTerpilih = mahasiswaTampil.length > 0 && mahasiswaTampil.every((item) => terpilih.has(item.id));
   function gantiSkor(mahasiswaId: string, nilai: string) {
@@ -393,8 +388,6 @@ export function InputNilaiWorkspace({
   }
 
   const totalImportValid = (pratinjauImpor ?? []).filter((baris) => baris.pesan === null).length;
-  const jumlahKelas = daftarKelas.length;
-
   return (
     <div className="space-y-4 pb-2">
       {toast && (
@@ -440,173 +433,95 @@ export function InputNilaiWorkspace({
         </p>
       )}
 
-      <nav aria-label="Mata kuliah" className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {daftarMK.map((mk) => {
-          const aktif = mk.id === mataKuliah.id;
-          return (
-            <Link
-              key={mk.id}
-              href={`/dosen/input-nilai/${mk.id}`}
-              aria-current={aktif ? "page" : undefined}
-              className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
-                aktif
-                  ? "border-[#1D4ED8] bg-[#1D4ED8] text-white"
-                  : "border-[#E5E9F0] bg-white text-[#475569] hover:border-[#C9D8F7] hover:bg-[#EEF3FC]"
-              }`}
-            >
-              {aktif && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-white" />}
-              {mk.nama.replace(/\s*\([^)]*\)\s*$/, "")}
-              <span className={`rounded-full px-2 py-0.5 text-[10px] ${aktif ? "bg-white/20 text-white" : "bg-[#F1F5F9] text-[#64748B]"}`}>
-                {mk.jumlahMahasiswa} Mhs
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#E5E9F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] sm:justify-between">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#EEF3FC] text-[#1D4ED8]">
-            <Ikon nama="task" ukuran={20} />
-          </span>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-sm font-bold text-[#0F172A]">
-                {tugasDipilih ? `${tugasDipilih.nama} — Pertemuan ${tugasDipilih.pertemuanKe}` : "Belum ada tugas penilaian"}
-              </h2>
-              {tugasDipilih && (
-                <span className="rounded-full bg-[#DBE7FB] px-2 py-0.5 text-[10px] font-semibold text-[#1D4ED8]">
-                  Bobot: {formatNilai(tugasDipilih.bobot * 100, 1)}%
-                </span>
-              )}
+      <section className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-[minmax(0,1.8fr)_minmax(280px,1fr)]">
+        <div className="overflow-hidden rounded-[18px] border border-[#DCE5F5] bg-white shadow-[0_2px_8px_rgba(23,43,77,.06)]">
+          <article className="flex min-h-[108px] flex-wrap items-center justify-between gap-4 bg-[#2F6FEB] p-4 text-white sm:p-5">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-[18px] font-semibold leading-tight">{mataKuliah.nama.replace(/\s*\([^)]*\)\s*$/, "")}</h2>
+                <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold">{mataKuliah.kode}</span>
+              </div>
+              <p className="mt-1 text-[12px] text-white/85">{pengampuNama}</p>
             </div>
-            <p className="mt-0.5 text-[11px] text-[#64748B]">
-              {tugasDipilih && jumlahIndikator ? (
-                <span className="flex flex-wrap items-center gap-1.5">
-                  <span>Pemetaan:</span>
-                  {kodeCpmkTerpetakan.length > 0 ? (
-                    <span
-                      className="rounded-full bg-[#EEF3FC] px-2 py-0.5 font-semibold text-[#1D4ED8]"
-                      title={`CPMK: ${kodeCpmkTerpetakan.join(", ")}`}
-                    >
-                      {kodeCpmkTerpetakan.length} CPMK
-                    </span>
-                  ) : (
-                    <span className="font-semibold text-[#64748B]">CPMK belum ditautkan</span>
-                  )}
-                  <span
-                    className="rounded-full bg-[#EEF3FC] px-2 py-0.5 font-semibold text-[#1D4ED8]"
-                    title={`Sub-CPMK: ${kodeSubCpmkTerpetakan.join(", ")}`}
-                  >
-                    {kodeSubCpmkTerpetakan.length} Sub-CPMK
-                  </span>
-                  {kelasNama && <span>· Kelas <b className="text-[#1D4ED8]">{kelasNama}</b></span>}
-                </span>
-              ) : "Hubungkan tugas dengan Sub-CPMK melalui menu Kelola Asesmen."}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {jumlahKelas > 0 && (
-            <form action={`/dosen/input-nilai/${mataKuliah.id}`} method="get">
-              {tugasDipilih && <input type="hidden" name="tugas" value={tugasDipilih.id} />}
-              <label className="sr-only" htmlFor="pilih-kelas-nilai">Pilih kelas</label>
+            <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+              <label className="sr-only" htmlFor="pilih-mk-nilai">Pilih mata kuliah</label>
               <select
-                id="pilih-kelas-nilai"
-                name="kelas"
-                defaultValue={kelasId ?? ""}
-                onChange={(event) => event.currentTarget.form?.requestSubmit()}
-                className="h-9 max-w-56 rounded-xl border border-[#E5E9F0] bg-[#F8FAFC] px-3 text-xs font-semibold text-[#1D4ED8] outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+                id="pilih-mk-nilai"
+                value=""
+                onChange={(event) => router.push(`/dosen/input-nilai/${event.target.value}`)}
+                className="h-9 w-32 max-w-full flex-none rounded-full border border-white/35 bg-white/10 px-3 text-xs font-semibold text-white outline-none focus:ring-2 focus:ring-white/60 [&>option]:text-[#0F172A]"
               >
-                {semuaKelasAllowed && <option value="">Semua kelas</option>}
-                {daftarKelas.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>)}
+                <option value="" disabled>Pilih MK</option>
+                {daftarMK.map((mk) => <option key={mk.id} value={mk.id}>{mk.nama}</option>)}
+              </select>
+              <form action={`/dosen/input-nilai/${mataKuliah.id}`} method="get">
+                {tugasDipilih && <input type="hidden" name="tugas" value={tugasDipilih.id} />}
+                <label className="sr-only" htmlFor="pilih-kelas-nilai">Pilih kelas</label>
+                <select
+                  id="pilih-kelas-nilai"
+                  name="kelas"
+                  defaultValue={kelasId}
+                  onChange={(event) => event.currentTarget.form?.requestSubmit()}
+                  className="h-9 min-w-24 rounded-full border border-white/35 bg-white/10 px-3 text-xs font-semibold text-white outline-none focus:ring-2 focus:ring-white/60 [&>option]:text-[#0F172A]"
+                >
+                  {daftarKelas.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>)}
+                </select>
+              </form>
+            </div>
+          </article>
+
+          <div className="relative bg-white before:absolute before:inset-x-0 before:top-0 before:h-4 before:bg-[#2F6FEB]">
+          <article className="relative flex min-h-[70px] flex-wrap items-center justify-between gap-3 rounded-t-[18px] bg-white p-3 sm:p-3.5">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#EEF3FC] text-[#1D4ED8]"><Ikon nama="task" ukuran={19} /></span>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-[13px] font-bold text-[#172033]">
+                    {tugasDipilih ? `${tugasDipilih.nama} — Pertemuan ${tugasDipilih.pertemuanKe}` : "Belum ada tugas penilaian"}
+                  </h2>
+                  {tugasDipilih && <span className="text-[11px] font-semibold text-[#2563EB]">Bobot: {formatNilai(tugasDipilih.bobot * 100, 1)}%</span>}
+                </div>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {kodeSubCpmkTerpetakan.length > 0 ? kodeSubCpmkTerpetakan.map((kode) => (
+                    <span key={kode} className="rounded-full bg-[#DBEAFE] px-2 py-0.5 text-[9px] font-semibold text-[#1D4ED8]">{kode}</span>
+                  )) : <span className="text-[10px] text-[#64748B]">Hubungkan tugas dengan Sub-CPMK melalui menu Kelola Asesmen.</span>}
+                </div>
+              </div>
+            </div>
+            <form action={`/dosen/input-nilai/${mataKuliah.id}`} method="get" className="ml-auto">
+              <input type="hidden" name="kelas" value={kelasId} />
+              <label className="sr-only" htmlFor="pilih-tugas-nilai">Pilih tugas</label>
+              <select
+                id="pilih-tugas-nilai"
+                name="tugas"
+                value={tugasDipilih?.id ?? ""}
+                onChange={(event) => event.currentTarget.form?.requestSubmit()}
+                disabled={tugas.length === 0}
+                className="h-9 max-w-56 rounded-full border border-[#D7E2F7] bg-[#F7F9FD] px-3 text-xs font-semibold text-[#1D4ED8] outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+              >
+                {tugas.length === 0 && <option value="">Belum ada tugas</option>}
+                {tugas.map((item, index) => <option key={item.id} value={item.id}>Tugas {index + 1} — {item.nama}</option>)}
               </select>
             </form>
-          )}
-          <form action={`/dosen/input-nilai/${mataKuliah.id}`} method="get">
-            {kelasId && <input type="hidden" name="kelas" value={kelasId} />}
-            <label className="sr-only" htmlFor="pilih-tugas-nilai">Pilih tugas</label>
-            <select
-              id="pilih-tugas-nilai"
-              name="tugas"
-              value={tugasDipilih?.id ?? ""}
-              onChange={(event) => event.currentTarget.form?.requestSubmit()}
-              disabled={tugas.length === 0}
-              className="h-9 max-w-56 rounded-xl border border-[#C9D8F7] bg-[#EEF3FC] px-3 text-xs font-semibold text-[#1D4ED8] outline-none focus:ring-2 focus:ring-[#2563EB]/30"
-            >
-              {tugas.length === 0 && <option value="">Belum ada tugas</option>}
-              {tugas.map((item) => <option key={item.id} value={item.id}>Pilih Tugas: {item.nama}</option>)}
-            </select>
-          </form>
-          <Link
-            href={`/dosen/hasil/${mataKuliah.id}${kelasId ? `?kelas=${encodeURIComponent(kelasId)}` : ""}`}
-            className="text-xs font-semibold text-[#1D4ED8] hover:underline"
-          >
-            Lihat Hasil →
-          </Link>
+          </article>
+          </div>
         </div>
-      </div>
 
-      <section aria-label="Ringkasan penilaian" aria-live="polite" className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <article className="rounded-2xl border border-[#E5E9F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
+        <article aria-label="Ringkasan penilaian" aria-live="polite" className="flex min-h-[150px] flex-col justify-center rounded-[18px] border border-[#E5E9F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] sm:p-5">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">Sudah Dinilai</p>
+            <p className="text-[11px] font-semibold text-[#64748B]">Sudah Dinilai</p>
             <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${statistik.belum ? "bg-[#FDE8E8] text-[#B91C1C]" : "bg-[#E6F7EC] text-[#15803D]"}`}>
               {statistik.belum} Belum
             </span>
           </div>
-          <div className="mt-2 flex items-baseline gap-1">
-            <strong className="text-3xl font-bold tracking-tight text-[#1D4ED8]">{statistik.dinilai}</strong>
-            <span className="text-sm text-[#64748B]">/{mahasiswa.length}</span>
-            <span className="ml-auto text-xs font-semibold text-[#1D4ED8]">{formatNilai(statistik.persenDinilai)}%</span>
+          <div className="mt-3 flex items-baseline gap-1.5">
+            <strong className="text-[32px] font-semibold leading-none text-[#1261D8]">{statistik.dinilai}</strong>
+            <span className="text-[12px] text-[#64748B]">/{mahasiswa.length}</span>
+            <span className="ml-auto text-[11px] font-semibold text-[#1261D8]">{formatNilai(statistik.persenDinilai)}%</span>
           </div>
-          <div
-            className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#E8ECF3]"
-            role="progressbar"
-            aria-label="Persentase mahasiswa yang sudah dinilai"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(statistik.persenDinilai)}
-          >
-            <div className="h-full rounded-full bg-[#2563EB] transition-all" style={{ width: `${statistik.persenDinilai}%` }} />
+          <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#E8ECF3]" role="progressbar" aria-label="Persentase mahasiswa yang sudah dinilai" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(statistik.persenDinilai)}>
+            <div className="h-full rounded-full bg-[#3478EF] transition-all" style={{ width: `${statistik.persenDinilai}%` }} />
           </div>
-        </article>
-
-        <article className="rounded-2xl border border-[#E5E9F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">Rata-rata Skor Tugas</p>
-            <span className="rounded-full bg-[#E6F7EC] px-2 py-1 text-[10px] font-semibold text-[#15803D]">Ambang {passingGrade}</span>
-          </div>
-          <div className="mt-2 flex items-baseline gap-1">
-            <strong className="text-3xl font-bold tracking-tight text-[#1D4ED8]">
-              {statistik.rata === null ? "–" : formatNilai(statistik.rata)}
-            </strong>
-            <span className="text-sm text-[#64748B]">/100</span>
-          </div>
-          <p className="mt-2 text-[11px] text-[#64748B]">
-            {statistik.rata === null
-              ? "Belum ada nilai pada tugas ini."
-              : statistik.rata >= passingGrade ? "Rata-rata memenuhi nilai ambang." : "Rata-rata masih di bawah nilai ambang."}
-          </p>
-        </article>
-
-        <article className="rounded-2xl border border-[#E5E9F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-[#64748B]">Ketercapaian Sub-CPMK</p>
-            <span className="rounded-full bg-[#DBE7FB] px-2 py-1 text-[10px] font-semibold text-[#1D4ED8]">Skor ≥ {passingGrade}</span>
-          </div>
-          <div className="mt-2 flex items-baseline gap-1">
-            <strong className="text-3xl font-bold tracking-tight text-[#1D4ED8]">
-              {statistik.persenTercapai === null ? "–" : formatNilai(statistik.persenTercapai, 0)}
-            </strong>
-            <span className="text-sm text-[#64748B]">%</span>
-            <span className="ml-auto text-[10px] font-semibold text-[#15803D]">{statistik.mahasiswaTercapai} mahasiswa tercapai</span>
-          </div>
-          <p className="mt-2 text-[11px] text-[#64748B]">
-            {statistik.persenTercapai === null
-              ? "Belum ada nilai pada indikator yang dipetakan."
-              : `${statistik.remedial} hasil indikator masih membutuhkan remedial.`}
-          </p>
         </article>
       </section>
 
@@ -619,22 +534,26 @@ export function InputNilaiWorkspace({
         {tugasDipilih && tugasDipilih.indikator.length > 0 ? (
           <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
             {tugasDipilih.indikator.map((indikator) => (
-              <article key={indikator.id} className="rounded-xl border border-[#DCE7FB] bg-[#EEF3FC] p-3.5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="rounded-full bg-[#1D4ED8] px-2.5 py-1 text-[10px] font-semibold text-white">{indikator.kode}</span>
-                  <span className="rounded-full border border-[#C9D8F7] bg-white px-2.5 py-1 text-[10px] font-semibold text-[#1D4ED8]">
-                    {indikator.cpmk.length ? indikator.cpmk.map((item) => `${item.kode} · ${item.bobot}%`).join(" / ") : "Belum dipetakan"}
-                  </span>
-                </div>
-                <h3 className="mt-2 text-[13px] font-bold text-[#0F172A]">{indikator.deskripsi}</h3>
-                <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-[#475569]">
-                  CPL target: {indikator.cpmk.flatMap((item) => item.cpl).filter((kode, i, daftar) => daftar.indexOf(kode) === i).join(", ") || "Belum ditentukan"}
-                </p>
-                <div className="mt-3 flex flex-wrap justify-between gap-2 border-t border-[#D6E1F4] pt-2 text-[10px] text-[#64748B]">
-                  <span>Skala input: 0–100</span>
-                  <span>Nilai ambang: <b className="text-[#1D4ED8]">{passingGrade}</b></span>
-                </div>
-              </article>
+              (() => {
+                const targetCpl = [...new Set(indikator.cpmk.flatMap((item) => item.cpl))];
+                const bobotKomponen = indikator.cpmk.reduce((jumlah, item) => jumlah + item.bobot, 0);
+                return (
+                  <article key={indikator.id} className="rounded-[12px] border border-[#DCE7FB] bg-[#F0F5FF] p-3.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-[#0758D3] px-2.5 py-1 text-[10px] font-semibold text-white">{indikator.kode}</span>
+                      <span className="text-[10px] text-[#52627A]">Bobot Komponen: {formatNilai(bobotKomponen, 1)}%</span>
+                      <span className="ml-auto rounded-full border border-[#D9E5FA] bg-white px-2.5 py-1 text-[9px] font-semibold text-[#315D9D]">
+                        Target {targetCpl.length ? targetCpl.join(", ") : "—"}
+                      </span>
+                    </div>
+                    <h3 className="mt-2.5 text-[13px] font-semibold text-[#172033]">{indikator.deskripsi}</h3>
+                    <div className="mt-3 flex flex-wrap justify-between gap-2 border-t border-[#D6E1F4] pt-2 text-[10px] text-[#64748B]">
+                      <span>Skala Input: 0–100</span>
+                      <span>Nilai Ambang: <b className="text-[#2563EB]">{passingGrade}</b></span>
+                    </div>
+                  </article>
+                );
+              })()
             ))}
           </div>
         ) : (
@@ -724,7 +643,7 @@ export function InputNilaiWorkspace({
                 {mahasiswaTampil.map((item, index) => {
                   const score = skorDraft(item.id);
                   const valid = !tidakValid(item.id);
-                  const terjangkau = Boolean(tugasDipilih && (!tugasDipilih.kelasId || tugasDipilih.kelasId === item.kelasId));
+                  const terjangkau = Boolean(tugasDipilih && tugasDipilih.kelasId === item.kelasId);
                   const nilaiAkhir = score === null || !tugasDipilih ? null : score * tugasDipilih.bobot;
                   return (
                     <tr key={item.id} className="group h-[54px] border-b border-[#EDF0F4] text-xs transition-colors hover:bg-[#F8FAFD]">
@@ -875,7 +794,7 @@ export function InputNilaiWorkspace({
               <a
                 href={`/api/dosen/nilai/template?${new URLSearchParams({
                   mataKuliahId: mataKuliah.id,
-                  ...(kelasId ? { kelasId } : {}),
+                  kelasId,
                   tugasId: tugasDipilih.id,
                 }).toString()}`}
                 className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#EEF3FC] px-3 py-2 text-xs font-semibold text-[#1D4ED8] hover:bg-[#DBE7FB]"

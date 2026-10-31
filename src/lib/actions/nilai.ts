@@ -30,11 +30,11 @@ export type BarisImporNilai = {
 
 export async function analisisImporNilai(
   mataKuliahId: string,
-  kelasId: string | null,
+  kelasId: string,
   tugasId: string,
   formData: FormData,
 ): Promise<{ ok: true; baris: BarisImporNilai[] } | { ok: false; error: string }> {
-  const akses = await pastikanPengelolaMK(mataKuliahId, kelasId ?? undefined);
+  const akses = await pastikanPengelolaMK(mataKuliahId, kelasId);
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Pilih file Excel (.xlsx) terlebih dahulu." };
   if (!file.name.toLowerCase().endsWith(".xlsx")) return { ok: false, error: "Format file harus .xlsx." };
@@ -44,9 +44,7 @@ export async function analisisImporNilai(
     id: tugasId,
     mataKuliahId,
     tahunAjaranId: akses.ta.id,
-    ...(akses.kelasId
-      ? { OR: [{ kelasId: akses.kelasId }, ...(akses.koordinator ? [{ kelasId: null }] : [])] }
-      : {}),
+    kelasId: akses.kelasId,
   };
   const tugas = await prisma.tugas.findFirst({ where: whereTugas, select: { id: true, kelasId: true } });
   if (!tugas) return { ok: false, error: "Tugas tidak tersedia untuk mata kuliah atau kelas ini." };
@@ -63,7 +61,7 @@ export async function analisisImporNilai(
     const metadataCocok =
       teksSel(metadata.getCell("A2").value) === mataKuliahId &&
       teksSel(metadata.getCell("B2").value) === akses.ta.id &&
-      teksSel(metadata.getCell("C2").value) === (akses.kelasId ?? "") &&
+      teksSel(metadata.getCell("C2").value) === akses.kelasId &&
       teksSel(metadata.getCell("D2").value) === tugasId;
     if (!metadataCocok) {
       return { ok: false, error: "Template bukan untuk mata kuliah, tahun ajaran, kelas, atau tugas yang dipilih." };
@@ -94,7 +92,7 @@ export async function analisisImporNilai(
   if (entriExcel.length > 500) return { ok: false, error: "Maksimal 500 baris per impor." };
 
   const pendaftaran = await prisma.pendaftaranMK.findMany({
-    where: { mataKuliahId, tahunAjaranId: akses.ta.id, ...(akses.kelasId ? { kelasId: akses.kelasId } : {}) },
+    where: { mataKuliahId, tahunAjaranId: akses.ta.id, kelasId: akses.kelasId },
     select: { mahasiswaId: true, kelasId: true, mahasiswa: { select: { nim: true, nama: true } } },
   });
   const mahasiswaPerNim = new Map(pendaftaran.map((item) => [item.mahasiswa.nim, {
@@ -116,7 +114,7 @@ export async function analisisImporNilai(
       if (!entri.nim) pesan = "NIM wajib diisi.";
       else if (frekuensiNim.get(entri.nim)! > 1) pesan = "NIM muncul lebih dari sekali.";
       else if (!siswa) pesan = "Mahasiswa tidak terdaftar pada mata kuliah/kelas ini.";
-      else if (tugas.kelasId !== null && siswa.kelasId !== tugas.kelasId) pesan = "Mahasiswa tidak terdaftar di kelas tugas ini.";
+      else if (siswa.kelasId !== tugas.kelasId) pesan = "Mahasiswa tidak terdaftar di kelas tugas ini.";
       else if (!entri.nilaiTeks || !Number.isFinite(nilai) || nilai < 0 || nilai > 100) {
         pesan = "Nilai harus berupa angka 0–100.";
       }
@@ -134,11 +132,11 @@ export async function analisisImporNilai(
 
 export async function simpanNilaiMassal(
   mataKuliahId: string,
-  kelasId: string | null,
+  kelasId: string,
   tugasId: string,
   formData: FormData,
 ) {
-  const akses = await pastikanPengelolaMK(mataKuliahId, kelasId ?? undefined);
+  const akses = await pastikanPengelolaMK(mataKuliahId, kelasId);
   const { ta } = akses;
 
   const entri: { mahasiswaId: string; skor: number }[] = [];
@@ -167,14 +165,12 @@ export async function simpanNilaiMassal(
     id: tugasId,
     mataKuliahId,
     tahunAjaranId: ta.id,
-    ...(akses.kelasId
-      ? { OR: [{ kelasId: akses.kelasId }, ...(akses.koordinator ? [{ kelasId: null }] : [])] }
-      : {}),
+    kelasId: akses.kelasId,
   };
   const [tugasValid, terdaftar] = await Promise.all([
     prisma.tugas.findMany({ where: whereTugas, select: { id: true, kelasId: true } }),
     prisma.pendaftaranMK.findMany({
-      where: { mataKuliahId, tahunAjaranId: ta.id, ...(akses.kelasId ? { kelasId: akses.kelasId } : {}) },
+      where: { mataKuliahId, tahunAjaranId: ta.id, kelasId: akses.kelasId },
       select: { mahasiswaId: true, kelasId: true },
     }),
   ]);
@@ -187,7 +183,7 @@ export async function simpanNilaiMassal(
     [...entri.map((e) => e.mahasiswaId), ...hapus].some(
       (mahasiswaId) =>
         !idMahasiswa.has(mahasiswaId) ||
-        (tugasValidId.kelasId !== null && kelasPerMahasiswa.get(mahasiswaId) !== tugasValidId.kelasId),
+        kelasPerMahasiswa.get(mahasiswaId) !== tugasValidId.kelasId,
     )
   ) {
     throw new Error("Ada nilai untuk tugas atau mahasiswa yang tidak terdaftar pada mata kuliah ini.");

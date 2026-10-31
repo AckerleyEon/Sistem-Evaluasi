@@ -11,40 +11,48 @@ const urut = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: 
 
 export async function finalisasiDistribusi(formData: FormData) {
   const mataKuliahId = formData.get("mataKuliahId") as string;
-  const { ta } = await pastikanPengelolaMK(mataKuliahId);
+  const kelasId = formData.get("kelasId") as string;
+  const { ta } = await pastikanPengelolaMK(mataKuliahId, kelasId);
 
   const daftarTugas = await prisma.tugas.findMany({
-    where: { mataKuliahId, tahunAjaranId: ta.id },
+    where: { mataKuliahId, tahunAjaranId: ta.id, kelasId },
     orderBy: { pertemuanKe: "asc" },
   });
 
-  // Rebalance: hapus semua distribusi OTOMATIS di mata kuliah dan T.A. ini. MANUAL tidak disentuh.
+  // Rebalance otomatis hanya untuk kelas ini. Pemetaan manual tetap dipertahankan.
   await prisma.distribusiSubCPMK.deleteMany({
-    where: { sumber: "OTOMATIS", tugas: { mataKuliahId, tahunAjaranId: ta.id } },
+    where: { sumber: "OTOMATIS", tugas: { mataKuliahId, tahunAjaranId: ta.id, kelasId } },
   });
 
   if (daftarTugas.length > 0) {
-    // Sub-CPMK mata kuliah ini yang sudah masuk hierarki (terkait ke CPMK) dan belum dipetakan ke tugas.
-    const sisa = await prisma.subCPMK.findMany({
+    const kandidat = await prisma.subCPMK.findMany({
       where: {
         mataKuliahId,
         tahunAjaranId: ta.id,
         cpmkTerkait: { some: {} },
-        distribusi: { none: {} },
       },
       include: { cpmkTerkait: { include: { cpmk: true } } },
     });
+    const [manual, subManual] = await Promise.all([
+      prisma.distribusiSubCPMK.groupBy({
+        by: ["tugasId"],
+        where: { sumber: "MANUAL", tugas: { mataKuliahId, tahunAjaranId: ta.id, kelasId } },
+        _count: { tugasId: true },
+      }),
+      prisma.distribusiSubCPMK.findMany({
+        where: { sumber: "MANUAL", tugas: { mataKuliahId, tahunAjaranId: ta.id, kelasId } },
+        select: { subCpmkId: true },
+        distinct: ["subCpmkId"],
+      }),
+    ]);
+    const subManualId = new Set(subManual.map((item) => item.subCpmkId));
+    const sisa = kandidat.filter((item) => !subManualId.has(item.id));
 
     const kodeInduk = (s: { cpmkTerkait: { cpmk: { kode: string } }[] }) =>
       s.cpmkTerkait.map((t) => t.cpmk.kode).sort(urut)[0] ?? "";
     sisa.sort((a, b) => urut(kodeInduk(a), kodeInduk(b)) || urut(a.kode, b.kode));
 
     if (sisa.length > 0) {
-      const manual = await prisma.distribusiSubCPMK.groupBy({
-        by: ["tugasId"],
-        where: { sumber: "MANUAL", tugas: { mataKuliahId, tahunAjaranId: ta.id } },
-        _count: { tugasId: true },
-      });
       const jumlahAwal = new Map<string, number>(manual.map((r) => [r.tugasId, r._count.tugasId]));
 
       const hasil = distribusikanSeimbang(sisa, daftarTugas, jumlahAwal);
@@ -61,5 +69,5 @@ export async function finalisasiDistribusi(formData: FormData) {
   await hitungUlangMataKuliah(mataKuliahId, ta.id);
 
   revalidatePath(`/dosen/komponen-penilaian/${mataKuliahId}`);
-  redirect(`/dosen/komponen-penilaian/${mataKuliahId}`);
+  redirect(`/dosen/komponen-penilaian/${mataKuliahId}?kelas=${encodeURIComponent(kelasId)}`);
 }

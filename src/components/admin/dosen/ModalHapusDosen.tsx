@@ -54,18 +54,18 @@ export function ModalHapusDosen({
           Hapus akun {nama}?
         </h2>
 
-        {memeriksa && <p className="mb-5 text-sm text-[#6B7280]">Memeriksa penugasan mengajar…</p>}
+        {memeriksa && <p className="mb-5 text-sm text-[#6B7280]">Memeriksa kelas yang diampu…</p>}
 
         {adaPenugasan && (
           <div className="mb-5 space-y-2 text-sm text-[#6B7280]">
-            <p>Dosen ini masih tercatat sebagai pengampu:</p>
+            <p>Dosen ini masih mengampu kelas berikut:</p>
             <ul className="list-disc space-y-0.5 pl-5 text-[#111827]">
               {penugasan.slice(0, 4).map((p) => (
                 <li key={p}>{p}</li>
               ))}
               {penugasan.length > 4 && <li className="list-none text-[#6B7280]">dan {penugasan.length - 4} lainnya</li>}
             </ul>
-            <p>Jika dihapus, semua penugasan dilepas. Mata kuliah dan kelas tetap ada dengan status tanpa pengampu.</p>
+            <p>Ganti pengampu kelas terlebih dahulu sebelum menghapus akun ini.</p>
           </div>
         )}
 
@@ -92,7 +92,7 @@ export function ModalHapusDosen({
           </button>
           <button
             onClick={konfirmasi}
-            disabled={memeriksa || loading}
+            disabled={memeriksa || adaPenugasan || loading}
             className="h-11 rounded-[10px] bg-[#DC2626] text-sm font-semibold text-white disabled:opacity-50"
           >
             {loading ? "Menghapus…" : "Hapus"}

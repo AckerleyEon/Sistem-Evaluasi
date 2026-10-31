@@ -13,14 +13,12 @@ export async function cekAksesMK(mataKuliahId: string, kelasId?: string) {
   if (!ta) return null;
 
   if (user.role === "ADMIN") {
-    if (kelasId) {
-      const kelas = await prisma.kelasMK.findFirst({
-        where: { id: kelasId, mataKuliahId, tahunAjaranId: ta.id },
-        select: { id: true },
-      });
-      if (!kelas) return null;
-    }
-    return { ta, kelasId: kelasId ?? null, koordinator: true };
+    const kelas = await prisma.kelasMK.findFirst({
+      where: { ...(kelasId ? { id: kelasId } : {}), mataKuliahId, tahunAjaranId: ta.id },
+      select: { id: true },
+      orderBy: { nama: "asc" },
+    });
+    return kelas ? { ta, kelasId: kelas.id, koordinator: true } : null;
   }
   if (!user.dosenId) return null;
 
@@ -28,14 +26,12 @@ export async function cekAksesMK(mataKuliahId: string, kelasId?: string) {
     where: { mataKuliahId, tahunAjaranId: ta.id, dosenId: user.dosenId },
   });
   if (penugasan) {
-    if (kelasId) {
-      const kelas = await prisma.kelasMK.findFirst({
-        where: { id: kelasId, mataKuliahId, tahunAjaranId: ta.id },
-        select: { id: true },
-      });
-      if (!kelas) return null;
-    }
-    return { ta, kelasId: kelasId ?? null, koordinator: true };
+    const kelas = await prisma.kelasMK.findFirst({
+      where: { ...(kelasId ? { id: kelasId } : {}), mataKuliahId, tahunAjaranId: ta.id },
+      select: { id: true },
+      orderBy: { nama: "asc" },
+    });
+    return kelas ? { ta, kelasId: kelas.id, koordinator: true } : null;
   }
   const kelas = await prisma.kelasMK.findFirst({
     where: { ...(kelasId ? { id: kelasId } : {}), mataKuliahId, tahunAjaranId: ta.id, dosenId: user.dosenId },
@@ -45,9 +41,10 @@ export async function cekAksesMK(mataKuliahId: string, kelasId?: string) {
   return kelas ? { ta, kelasId: kelas.id, koordinator: false } : null;
 }
 
-export async function pastikanPengelolaMK(mataKuliahId: string, kelasId?: string) {
+export async function pastikanPengelolaMK(mataKuliahId: string, kelasId: string) {
+  if (!kelasId) throw new Error("Pilih kelas yang akan dikelola.");
   const akses = await cekAksesMK(mataKuliahId, kelasId);
-  if (!akses || (!akses.koordinator && !kelasId)) {
+  if (!akses) {
     throw new Error("Anda tidak berhak mengelola mata kuliah atau kelas ini pada Tahun Ajaran yang dipilih.");
   }
   if (akses.ta.status !== "AKTIF") throw new Error("Tahun Ajaran arsip hanya dapat dilihat; perubahan data dinonaktifkan.");

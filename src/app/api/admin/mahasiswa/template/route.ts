@@ -24,7 +24,7 @@ export async function GET() {
     ["Petunjuk impor mahasiswa ke mata kuliah"],
     ["Isi lembar Data Mahasiswa mulai baris 2. Jangan ubah nama atau urutan kolom."],
     ["NIM wajib 12 digit dan disimpan sebagai Teks. Nama wajib diisi."],
-    ["Kelas boleh dikosongkan. Jika diisi, gunakan nama kelas yang tersedia pada mata kuliah terpilih."],
+    ["Kelas wajib diisi. Gunakan nama kelas yang tersedia pada mata kuliah terpilih."],
     ["Impor hanya menambahkan pendaftaran; mahasiswa yang tidak ada di file tetap terdaftar."],
     ["NIM yang sudah ada di sistem akan memakai data mahasiswa yang sudah tersimpan."],
   ]);

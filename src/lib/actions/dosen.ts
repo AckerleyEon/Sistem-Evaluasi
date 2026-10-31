@@ -151,13 +151,13 @@ export async function updateDosen(id: string, formData: FormData): Promise<Hasil
 export async function cekPenugasanDosen(id: string): Promise<string[]> {
   await pastikanAdmin();
 
-  const penugasan = await prisma.penugasanDosenMK.findMany({
+  const kelas = await prisma.kelasMK.findMany({
     where: { dosenId: id },
     include: { mataKuliah: true, tahunAjaran: true },
-    orderBy: { tahunAjaran: { label: "desc" } },
+    orderBy: [{ tahunAjaran: { label: "desc" } }, { nama: "asc" }],
   });
 
-  return penugasan.map((p) => `${p.mataKuliah.kode} ${p.mataKuliah.nama} (T.A. ${p.tahunAjaran.label})`);
+  return kelas.map((item) => `${item.mataKuliah.kode} ${item.mataKuliah.nama}, kelas ${item.nama} (T.A. ${item.tahunAjaran.label})`);
 }
 
 export async function deleteDosen(id: string): Promise<HasilAksi> {
@@ -167,10 +167,12 @@ export async function deleteDosen(id: string): Promise<HasilAksi> {
     where: { id },
   });
   if (!dosen) return { error: "Akun dosen tidak ditemukan." };
+  if (await prisma.kelasMK.count({ where: { dosenId: id } })) {
+    return { error: "Dosen masih menjadi pengampu kelas. Ganti pengampu kelas terlebih dahulu." };
+  }
 
   await prisma.$transaction(async (tx) => {
     await tx.penugasanDosenMK.deleteMany({ where: { dosenId: id } });
-    await tx.kelasMK.updateMany({ where: { dosenId: id }, data: { dosenId: null } });
     await tx.dosen.delete({ where: { id } });
     await tx.user.delete({ where: { id: dosen.userId } });
   });
@@ -297,6 +299,16 @@ export async function terapkanImporDosen(
       })
     : [];
 
+  const kelasDosenHilang = dosenHilang.length
+    ? await prisma.kelasMK.findMany({
+        where: { dosenId: { in: dosenHilang.map((dosen) => dosen.id) } },
+        select: { nama: true, mataKuliah: { select: { kode: true } } },
+      })
+    : [];
+  if (kelasDosenHilang.length > 0) {
+    return { ok: false, error: "Impor dibatalkan: dosen yang akan dihapus masih mengampu kelas. Ganti pengampu kelas terlebih dahulu." };
+  }
+
   await prisma.$transaction(async (tx) => {
     for (let i = 0; i < baru.length; i++) {
       const dosen = baru[i];
@@ -313,7 +325,6 @@ export async function terapkanImporDosen(
     if (dosenHilang.length > 0) {
       const ids = dosenHilang.map((dosen) => dosen.id);
       await tx.penugasanDosenMK.deleteMany({ where: { dosenId: { in: ids } } });
-      await tx.kelasMK.updateMany({ where: { dosenId: { in: ids } }, data: { dosenId: null } });
       await tx.dosen.deleteMany({ where: { id: { in: ids } } });
       await tx.user.deleteMany({ where: { id: { in: dosenHilang.map((dosen) => dosen.userId) } } });
     }

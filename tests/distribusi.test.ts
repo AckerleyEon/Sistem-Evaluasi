@@ -45,3 +45,11 @@ test("peta jumlah awal dari pemanggil tidak dimodifikasi", () => {
   distribusikanSeimbang(["s1", "s2"], tugas("t1", "t2"), awal);
   assert.deepEqual([...awal], [["t1", 1]]);
 });
+
+test("distribusi antar kelas memakai antrean dan beban manual masing-masing", () => {
+  const kelasA = distribusikanSeimbang(["s1", "s2"], tugas("a1", "a2"), new Map([["a1", 1]]));
+  const kelasB = distribusikanSeimbang(["s1", "s2"], tugas("b1", "b2"), new Map());
+
+  assert.deepEqual(petaTujuan(kelasA), ["s1->a2", "s2->a1"]);
+  assert.deepEqual(petaTujuan(kelasB), ["s1->b1", "s2->b2"]);
+});

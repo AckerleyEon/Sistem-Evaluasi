@@ -23,8 +23,8 @@ export function ModalTambahMahasiswa({
 }: {
   mk: MkItem;
   taLabel: string;
-  kelasId: string | null;
-  kelasNama: string | null;
+  kelasId: string;
+  kelasNama: string;
   onTutup: () => void;
   onBerhasil: (pesan: string) => void;
 }) {
@@ -48,7 +48,7 @@ export function ModalTambahMahasiswa({
     const fd = new FormData();
     fd.set("nim", nim);
     fd.set("nama", nama);
-    if (kelasId) fd.set("kelasId", kelasId);
+    fd.set("kelasId", kelasId);
     const hasil = await tambahMahasiswaKeKelas(mk.id, fd);
     setLoading(false);
     if (hasil.error) {
@@ -62,7 +62,7 @@ export function ModalTambahMahasiswa({
     <ModalShell onTutup={onTutup}>
       <h2 className="text-base font-bold text-[#111827]">Tambah Mahasiswa</h2>
       <p className="mb-4 text-[13px] text-[#6B7280]">
-        {mk.kode} • {mk.nama} • {kelasNama ?? "Kelas belum ditentukan"} (T.A. {taLabel}). Jika NIM sudah ada di sistem, mahasiswanya langsung didaftarkan.
+        {mk.kode} • {mk.nama} • Kelas {kelasNama} (T.A. {taLabel}). Jika NIM sudah ada di sistem, mahasiswanya langsung didaftarkan.
       </p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -128,7 +128,7 @@ export function ModalEditMahasiswa({
   return (
     <ModalShell onTutup={onTutup}>
       <h2 className="text-base font-bold text-[#111827]">Edit Data Mahasiswa</h2>
-      <p className="mb-4 text-[13px] text-[#6B7280]">Perubahan berlaku di semua kelas yang diikuti mahasiswa ini.</p>
+      <p className="mb-4 text-[13px] text-[#6B7280]">Perubahan berlaku untuk seluruh pendaftaran mahasiswa ini.</p>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="em-nama" className="mb-2 block text-[13px] font-medium text-[#111827]">Nama Mahasiswa</label>
@@ -228,12 +228,14 @@ export function ModalPindahKelas({
 }) {
   const [cari, setCari] = useState("");
   const [tujuanId, setTujuanId] = useState("");
+  const [kelasTujuanId, setKelasTujuanId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const pilihan = daftarMK.filter(
     (m) =>
       m.id !== mk.id &&
+      m.kelas.length > 0 &&
       (m.kode.toLowerCase().includes(cari.toLowerCase()) || m.nama.toLowerCase().includes(cari.toLowerCase()))
   );
 
@@ -241,7 +243,7 @@ export function ModalPindahKelas({
     e.preventDefault();
     setError("");
     setLoading(true);
-    const hasil = await pindahKelas(mk.id, mhs.id, tujuanId);
+    const hasil = await pindahKelas(mk.id, mhs.id, tujuanId, kelasTujuanId);
     setLoading(false);
     if (hasil.error) {
       setError(hasil.error);
@@ -271,7 +273,10 @@ export function ModalPindahKelas({
             <li key={m.id} className="border-b border-[#F1F3F5] last:border-0">
               <button
                 type="button"
-                onClick={() => setTujuanId(m.id)}
+                onClick={() => {
+                  setTujuanId(m.id);
+                  setKelasTujuanId(m.kelas[0]?.id ?? "");
+                }}
                 aria-pressed={m.id === tujuanId}
                 className={`block w-full px-4 py-2.5 text-left text-sm ${
                   m.id === tujuanId ? "bg-[#EEF3FD] font-semibold text-[#2F6BE8]" : "text-[#111827] [@media(hover:hover)]:hover:bg-[#F8FAFF]"
@@ -282,6 +287,22 @@ export function ModalPindahKelas({
             </li>
           ))}
         </ul>
+
+        {tujuanId && (
+          <label className="block text-xs font-medium text-[#4B5563]">
+            Kelas tujuan
+            <select
+              value={kelasTujuanId}
+              onChange={(e) => setKelasTujuanId(e.target.value)}
+              required
+              className={`${kelasInput} mt-1`}
+            >
+              {daftarMK.find((item) => item.id === tujuanId)?.kelas.map((kelas) => (
+                <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>
+              ))}
+            </select>
+          </label>
+        )}
 
         {jumlahNilai !== null && jumlahNilai > 0 && (
           <div className="rounded-xl bg-[#FEF2F2] p-3 text-sm text-[#991B1B]">
@@ -294,7 +315,7 @@ export function ModalPindahKelas({
           <button type="button" onClick={onTutup} className="h-11 rounded-[10px] bg-[#EEF3FD] text-sm font-semibold text-[#111827]">Batal</button>
           <button
             type="submit"
-            disabled={!tujuanId || jumlahNilai === null || loading}
+            disabled={!tujuanId || !kelasTujuanId || jumlahNilai === null || loading}
             className="h-11 rounded-[10px] bg-[#2F6BE8] text-sm font-semibold text-white disabled:opacity-50"
           >
             {loading ? "Memindahkan…" : "Pindahkan"}

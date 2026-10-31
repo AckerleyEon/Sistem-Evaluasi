@@ -129,7 +129,7 @@ export function ModalImporMahasiswa({
           </button>
         </div>
         <p className="mt-2 text-xs text-[#6B7280]">
-          Kolom wajib: NIM dan Nama. Kolom Kelas opsional; jika diisi, nama kelas harus sudah tersedia pada MK ini. NIM harus disimpan sebagai teks.
+          Kolom wajib: NIM, Nama, dan Kelas. Nama kelas harus tersedia pada MK ini. NIM harus disimpan sebagai teks.
         </p>
 
         {error && (
@@ -169,7 +169,7 @@ export function ModalImporMahasiswa({
                       <td className="px-3 py-2 text-[#6B7280]">{baris.baris}</td>
                       <td className="whitespace-nowrap px-3 py-2">{baris.nim || "–"}</td>
                       <td className="px-3 py-2">{baris.nama || "–"}</td>
-                      <td className="px-3 py-2">{baris.kelas ?? "Belum ditentukan"}</td>
+                      <td className="px-3 py-2">{baris.kelas || "–"}</td>
                       <td className="px-3 py-2">
                         <span className={`inline-block rounded-full px-2 py-0.5 font-semibold ${
                           baris.status === "siap"

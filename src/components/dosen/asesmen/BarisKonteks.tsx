@@ -68,19 +68,18 @@ export function BarisKonteks({
           </div>
           {data.daftarKelas.length > 0 && (
             <label className="relative z-10 ml-auto inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-white px-2.5 text-[11px] font-semibold text-[#2563EB]">
-              <span>{data.kelas ? `Kelas ${data.kelas.nama}` : "Semua Kelas"}</span>
+              <span>Kelas {data.kelas.nama}</span>
               <span className="rounded-full bg-[#EFF6FF] px-1.5 py-0.5">{data.mahasiswa} Mhs</span>
               <Ikon nama="chevronBawah" ukuran={12} />
               <select
                 aria-label="Pilih kelas"
-                value={data.kelas?.id ?? ""}
+                value={data.kelas.id}
                 onChange={(e) => {
-                  const suffix = e.target.value ? `?kelas=${encodeURIComponent(e.target.value)}` : "";
+                  const suffix = `?kelas=${encodeURIComponent(e.target.value)}`;
                   router.push(`/dosen/komponen-penilaian/${data.mataKuliah.id}${suffix}`);
                 }}
                 className="absolute inset-0 h-full w-full cursor-pointer opacity-0 [&>option]:text-[#0F172A]"
               >
-                <option value="">Semua kelas</option>
                 {data.daftarKelas.map((kelas) => (
                   <option key={kelas.id} value={kelas.id}>
                     Kelas {kelas.nama}
@@ -119,6 +118,7 @@ export function BarisKonteks({
         className={`${KARTU} flex min-h-20 flex-col justify-between p-5 sm:col-span-3 lg:col-span-3`}
       >
         <input type="hidden" name="mataKuliahId" value={data.mataKuliah.id} />
+        <input type="hidden" name="kelasId" value={data.kelas.id} />
         <div className="flex items-start justify-between">
           <span className="text-[13px] font-medium text-[#64748B]">Distribusi Sub-CPMK</span>
           <Tile ikon="hierarki" />

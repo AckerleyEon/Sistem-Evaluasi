@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { namaDenganGelar } from "@/lib/dosen";
 import { cekAksesMK } from "@/lib/otorisasi";
 import { InputNilaiWorkspace } from "@/components/dosen/input-nilai/InputNilaiWorkspace";
 
@@ -58,16 +59,14 @@ export default async function InputNilaiPage({
         tahunAjaranId: ta.id,
         ...(koordinator ? {} : { dosenId: dosenId ?? "" }),
       },
-      select: { id: true, nama: true },
+      select: { id: true, nama: true, dosen: { select: { nama: true, gelar: true } } },
       orderBy: { nama: "asc" },
     }),
     prisma.pengaturan.findUnique({ where: { kunci: KUNCI_PASSING_GRADE } }),
   ]);
   if (!mataKuliah || !daftarMK.some((mk) => mk.id === mataKuliahId)) notFound();
 
-  const kelasFilter = kelasId
-    ? { OR: [{ kelasId }, ...(koordinator ? [{ kelasId: null }] : [])] }
-    : {};
+  const kelasFilter = { kelasId };
   const whereTugas = { mataKuliahId, tahunAjaranId: ta.id, ...kelasFilter };
   const [daftarTugasMentah, pendaftaran] = await Promise.all([
     prisma.tugas.findMany({
@@ -98,7 +97,7 @@ export default async function InputNilaiPage({
       },
     }),
     prisma.pendaftaranMK.findMany({
-      where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelasId ? { kelasId } : {}) },
+      where: { mataKuliahId, tahunAjaranId: ta.id, kelasId },
       select: {
         kelasId: true,
         mahasiswa: { select: { id: true, nim: true, nama: true, angkatan: true } },
@@ -178,7 +177,7 @@ export default async function InputNilaiPage({
     100,
     Math.max(50, Math.round(Number(pengaturan?.nilai)) || PASSING_GRADE_DEFAULT),
   );
-  const kelasMahasiswa = kelasId ? daftarKelas.find((kelas) => kelas.id === kelasId)?.nama ?? null : null;
+  const pengampuNama = namaDenganGelar(daftarKelas.find((kelas) => kelas.id === kelasId)?.dosen ?? { nama: "", gelar: null });
 
   return (
     <InputNilaiWorkspace
@@ -189,8 +188,7 @@ export default async function InputNilaiPage({
       }))}
       tahunAjaran={ta.label}
       kelasId={kelasId}
-      kelasNama={kelasMahasiswa}
-      semuaKelasAllowed={koordinator}
+      pengampuNama={pengampuNama}
       daftarKelas={daftarKelas}
       tugas={tugas}
       tugasDipilihId={tugasAktif?.id ?? null}

@@ -46,7 +46,7 @@ export default async function HasilPerhitunganPage({
 
   const [pendaftaran, hasilSub, hasilCpmk] = await Promise.all([
     prisma.pendaftaranMK.findMany({
-      where: { mataKuliahId, tahunAjaranId: ta.id, ...(kelasId ? { kelasId } : {}) },
+      where: { mataKuliahId, tahunAjaranId: ta.id, kelasId },
       include: { mahasiswa: true },
       orderBy: { mahasiswa: { nim: "asc" } },
     }),
@@ -78,7 +78,6 @@ export default async function HasilPerhitunganPage({
         <form action={`/dosen/hasil/${mataKuliahId}`} method="get" className="flex items-center gap-2 text-sm">
           <label htmlFor="kelas-hasil">Kelas</label>
           <select id="kelas-hasil" name="kelas" defaultValue={kelasId ?? ""} className="rounded border px-2 py-1">
-            {akses.koordinator && <option value="">Semua kelas</option>}
             {daftarKelas.map((kelas) => <option key={kelas.id} value={kelas.id}>{kelas.nama}</option>)}
           </select>
           <button type="submit" className="rounded bg-slate-100 px-2 py-1">Pilih</button>

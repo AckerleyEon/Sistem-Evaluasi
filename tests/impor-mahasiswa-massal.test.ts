@@ -50,7 +50,7 @@ test("cariFileGanda menandai file kedua dan seterusnya untuk MK yang sama", () =
   assert.deepEqual([...ganda], [[2, 0], [4, 0]]);
 });
 
-test("cariHeaderMahasiswa menemukan judul di baris ke-3 dan kolom Kelas opsional", () => {
+test("cariHeaderMahasiswa mewajibkan kolom Kelas pada judul", () => {
   const hasil = cariHeaderMahasiswa([
     ["DAFTAR PESERTA KULIAH"],
     [],
@@ -58,6 +58,6 @@ test("cariHeaderMahasiswa menemukan judul di baris ke-3 dan kolom Kelas opsional
     ["1", "210411100001", "Budi", "A"],
   ]);
   assert.deepEqual(hasil, { indeksBaris: 2, kolom: { nim: 1, nama: 2, kelas: 3 } });
-  assert.deepEqual(cariHeaderMahasiswa([["NIM", "Nama"]]), { indeksBaris: 0, kolom: { nim: 0, nama: 1, kelas: null } });
+  assert.equal(cariHeaderMahasiswa([["NIM", "Nama"]]), null);
   assert.equal(cariHeaderMahasiswa([["Kode", "Nilai"]]), null);
 });

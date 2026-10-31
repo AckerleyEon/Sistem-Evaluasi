@@ -71,7 +71,7 @@ export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId:
     const hasilSub = new Map<string, HasilHitung>();
     const kelasId = kelasPerMhs.get(mahasiswaId) ?? null;
     for (const [subId, tugas] of tugasPerSub) {
-      const tugasKelas = tugas.filter((t) => t.kelasId === null || t.kelasId === kelasId);
+      const tugasKelas = tugas.filter((t) => t.kelasId === kelasId);
       const hasil = hitungSubCPMK(tugasKelas, skor);
       if (!hasil) continue;
       hasilSub.set(subId, hasil);
