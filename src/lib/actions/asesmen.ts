@@ -118,7 +118,11 @@ export async function hapusTugas(mataKuliahId: string, tugasId: string, kelasId:
 
   const ada = await prisma.tugas.findFirst({
     where: { id: tugasId, mataKuliahId, tahunAjaranId: k.tahunAjaranId },
-    select: { id: true, nama: true, kelasId: true },
+    select: {
+      id: true,
+      nama: true,
+      kelasId: true,
+    },
   });
   if (!ada) return { ok: false, pesan: "Tugas tidak ditemukan." };
   if (ada.kelasId !== k.kelasId) {
@@ -143,4 +147,43 @@ export async function hapusTugas(mataKuliahId: string, tugasId: string, kelasId:
   await hitungUlangMataKuliah(mataKuliahId, k.tahunAjaranId);
   revalidatePath(`/dosen/komponen-penilaian/${mataKuliahId}`);
   return { ok: true, pesan: `"${ada.nama}" dihapus. Bobot tugas lain disesuaikan agar total tetap 100%.` };
+}
+
+export async function hapusSemuaTugas(
+  mataKuliahId: string,
+  kelasId: string,
+): Promise<HasilAksi> {
+  if (typeof mataKuliahId !== "string" || !mataKuliahId || typeof kelasId !== "string" || !kelasId) {
+    return { ok: false, pesan: "Mata kuliah atau kelas tidak valid." };
+  }
+
+  const k = await pastikanPengampu(mataKuliahId, kelasId);
+  if ("galat" in k) return { ok: false, pesan: k.galat };
+
+  const hasil = await prisma.$transaction(async (tx) => {
+    const tugas = await tx.tugas.findMany({
+      where: { mataKuliahId, tahunAjaranId: k.tahunAjaranId, kelasId: k.kelasId },
+      select: { id: true },
+    });
+    if (tugas.length === 0) return { jumlahTugas: 0, jumlahNilai: 0 };
+
+    const idTugas = tugas.map((item) => item.id);
+    const jumlahNilai = await tx.nilai.count({ where: { tugasId: { in: idTugas } } });
+    const terhapus = await tx.tugas.deleteMany({ where: { id: { in: idTugas } } });
+    return { jumlahTugas: terhapus.count, jumlahNilai };
+  });
+
+  if (hasil.jumlahTugas > 0) {
+    await hitungUlangMataKuliah(mataKuliahId, k.tahunAjaranId);
+    revalidatePath(`/dosen/komponen-penilaian/${mataKuliahId}`);
+    revalidatePath(`/dosen/input-nilai/${mataKuliahId}`);
+    revalidatePath(`/dosen/hasil/${mataKuliahId}`);
+  }
+
+  return {
+    ok: true,
+    pesan: hasil.jumlahTugas > 0
+      ? `${hasil.jumlahTugas} tugas, ${hasil.jumlahNilai} nilai, dan seluruh pemetaan Sub-CPMK terkait berhasil dihapus.`
+      : "Tidak ada tugas pada kelas ini.",
+  };
 }

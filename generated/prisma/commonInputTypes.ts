@@ -297,6 +297,23 @@ export type BoolWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
+export type EnumJenisAktivitasDosenFilter<$PrismaModel = never> = {
+  equals?: $Enums.JenisAktivitasDosen | Prisma.EnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  in?: $Enums.JenisAktivitasDosen[] | Prisma.ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JenisAktivitasDosen[] | Prisma.ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJenisAktivitasDosenFilter<$PrismaModel> | $Enums.JenisAktivitasDosen
+}
+
+export type EnumJenisAktivitasDosenWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.JenisAktivitasDosen | Prisma.EnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  in?: $Enums.JenisAktivitasDosen[] | Prisma.ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JenisAktivitasDosen[] | Prisma.ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJenisAktivitasDosenWithAggregatesFilter<$PrismaModel> | $Enums.JenisAktivitasDosen
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumJenisAktivitasDosenFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumJenisAktivitasDosenFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -580,6 +597,23 @@ export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedBoolFilter<$PrismaModel>
   _max?: Prisma.NestedBoolFilter<$PrismaModel>
+}
+
+export type NestedEnumJenisAktivitasDosenFilter<$PrismaModel = never> = {
+  equals?: $Enums.JenisAktivitasDosen | Prisma.EnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  in?: $Enums.JenisAktivitasDosen[] | Prisma.ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JenisAktivitasDosen[] | Prisma.ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJenisAktivitasDosenFilter<$PrismaModel> | $Enums.JenisAktivitasDosen
+}
+
+export type NestedEnumJenisAktivitasDosenWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.JenisAktivitasDosen | Prisma.EnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  in?: $Enums.JenisAktivitasDosen[] | Prisma.ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  notIn?: $Enums.JenisAktivitasDosen[] | Prisma.ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumJenisAktivitasDosenWithAggregatesFilter<$PrismaModel> | $Enums.JenisAktivitasDosen
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumJenisAktivitasDosenFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumJenisAktivitasDosenFilter<$PrismaModel>
 }
 
 

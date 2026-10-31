@@ -2,6 +2,7 @@ import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
 import { cekAksesMK } from "@/lib/otorisasi";
 import { prisma } from "@/lib/prisma";
+import { KOLOM_ASESMEN } from "@/lib/asesmen-impor-util";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,7 @@ export async function GET(request: Request) {
     [`Mata kuliah: ${mataKuliah.kode} - ${mataKuliah.nama}`],
     [`Tahun ajaran: ${akses.ta.label}`],
     ["Isi lembar Asesmen mulai baris 2. Satu baris untuk satu tugas baru dan pilih kelas pada setiap baris."],
-    ["Kolom wajib: Kelas, Nama Tugas, Pertemuan, Bobot (%), dan Kode Sub-CPMK."],
+    [`Kolom wajib: ${KOLOM_ASESMEN.join(", ")}.`],
     ["Nama file mengikuti format KODEMK_NAMAMK_asesmen.xlsx."],
     ["Pilih kelas dari daftar yang tersedia pada lembar Referensi Kelas."],
     ["Jika satu tugas memetakan beberapa Sub-CPMK, pisahkan kodenya dengan koma. Contoh: SUB-ELKA-1, SUB-ELKA-2."],
@@ -62,11 +63,11 @@ export async function GET(request: Request) {
 
   const asesmen = workbook.addWorksheet("Asesmen");
   asesmen.columns = [
-    { header: "Kelas", key: "kelas", width: 20 },
-    { header: "Nama Tugas", key: "nama", width: 32 },
-    { header: "Pertemuan", key: "pertemuan", width: 16 },
-    { header: "Bobot (%)", key: "bobot", width: 14 },
-    { header: "Kode Sub-CPMK (pisahkan koma)", key: "subCpmk", width: 55 },
+    { header: KOLOM_ASESMEN[0], key: "kelas", width: 20 },
+    { header: KOLOM_ASESMEN[1], key: "nama", width: 32 },
+    { header: KOLOM_ASESMEN[2], key: "pertemuan", width: 16 },
+    { header: KOLOM_ASESMEN[3], key: "bobot", width: 14 },
+    { header: KOLOM_ASESMEN[4], key: "subCpmk", width: 55 },
   ];
   const kelasDefault = kelasMK.find((kelas) => kelas.id === kelasId)?.nama ?? "";
   for (let row = 2; row <= 101; row += 1) {

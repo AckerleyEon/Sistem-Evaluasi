@@ -39,3 +39,12 @@ export const StatusTahunAjaran = {
 } as const
 
 export type StatusTahunAjaran = (typeof StatusTahunAjaran)[keyof typeof StatusTahunAjaran]
+
+
+export const JenisAktivitasDosen = {
+  NILAI: 'NILAI',
+  ASESMEN: 'ASESMEN',
+  DISTRIBUSI: 'DISTRIBUSI'
+} as const
+
+export type JenisAktivitasDosen = (typeof JenisAktivitasDosen)[keyof typeof JenisAktivitasDosen]

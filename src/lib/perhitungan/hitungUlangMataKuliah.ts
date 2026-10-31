@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { hitungSubCPMK } from "./hitungSubCPMK";
 import { hitungCPMK } from "./hitungCPMK";
 import { hitungCPL } from "./hitungCPL";
+import { hitungProfilLulusan } from "./hitungProfilLulusan";
 import type { HasilHitung } from "./rumus";
 
 export async function hitungUlangMataKuliah(mataKuliahId: string, tahunAjaranId: string) {
@@ -183,4 +184,76 @@ export async function hitungUlangCPL(mahasiswaIds: string[], tahunAjaranId: stri
     prisma.hasilCPL.deleteMany({ where: { mahasiswaId: { in: mahasiswaIds }, tahunAjaranId } }),
     prisma.hasilCPL.createMany({ data: baris }),
   ]);
+
+  await hitungUlangProfilLulusan(mahasiswaIds, tahunAjaranId);
+}
+
+export async function hitungUlangProfilLulusan(mahasiswaIds: string[], tahunAjaranId: string) {
+  if (mahasiswaIds.length === 0) return;
+
+  const profil = await prisma.profilLulusan.findMany({
+    include: { cplTerkait: { select: { cplId: true } } },
+    orderBy: { kode: "asc" },
+  });
+  const cplIds = [...new Set(profil.flatMap((item) => item.cplTerkait.map((relasi) => relasi.cplId)))];
+  const hasilCpl = cplIds.length
+    ? await prisma.hasilCPL.findMany({
+        where: {
+          mahasiswaId: { in: mahasiswaIds },
+          tahunAjaranId,
+          cplId: { in: cplIds },
+        },
+        select: { mahasiswaId: true, cplId: true, nilai: true, statusLengkap: true },
+      })
+    : [];
+  const hasilPerMahasiswa = new Map<string, Map<string, { nilai: number; statusLengkap: boolean }>>();
+  for (const hasil of hasilCpl) {
+    const perCpl = hasilPerMahasiswa.get(hasil.mahasiswaId) ?? new Map();
+    perCpl.set(hasil.cplId, { nilai: hasil.nilai, statusLengkap: hasil.statusLengkap });
+    hasilPerMahasiswa.set(hasil.mahasiswaId, perCpl);
+  }
+
+  const baris: {
+    mahasiswaId: string;
+    profilLulusanId: string;
+    tahunAjaranId: string;
+    nilai: number;
+    statusLengkap: boolean;
+  }[] = [];
+  for (const mahasiswaId of mahasiswaIds) {
+    const perCpl = hasilPerMahasiswa.get(mahasiswaId) ?? new Map();
+    for (const item of profil) {
+      const hasil = hitungProfilLulusan(
+        item.cplTerkait
+          .map(({ cplId }) => perCpl.get(cplId))
+          .filter((nilai): nilai is { nilai: number; statusLengkap: boolean } => nilai !== undefined),
+        item.cplTerkait.length,
+      );
+      if (!hasil) continue;
+      baris.push({ mahasiswaId, profilLulusanId: item.id, tahunAjaranId, ...hasil });
+    }
+  }
+
+  await prisma.$transaction([
+    prisma.hasilProfilLulusan.deleteMany({
+      where: { mahasiswaId: { in: mahasiswaIds }, tahunAjaranId },
+    }),
+    prisma.hasilProfilLulusan.createMany({ data: baris }),
+  ]);
+}
+
+export async function hitungUlangSemuaProfilLulusan() {
+  const pendaftaran = await prisma.pendaftaranMK.findMany({
+    select: { mahasiswaId: true, tahunAjaranId: true },
+    distinct: ["mahasiswaId", "tahunAjaranId"],
+  });
+  const mahasiswaPerTahun = new Map<string, Set<string>>();
+  for (const item of pendaftaran) {
+    const mahasiswa = mahasiswaPerTahun.get(item.tahunAjaranId) ?? new Set<string>();
+    mahasiswa.add(item.mahasiswaId);
+    mahasiswaPerTahun.set(item.tahunAjaranId, mahasiswa);
+  }
+  for (const [tahunAjaranId, mahasiswa] of mahasiswaPerTahun) {
+    await hitungUlangProfilLulusan([...mahasiswa], tahunAjaranId);
+  }
 }

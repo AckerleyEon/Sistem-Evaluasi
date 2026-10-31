@@ -213,6 +213,7 @@ export type MahasiswaWhereInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKListRelationFilter
   hasilCPMK?: Prisma.HasilCPMKListRelationFilter
   hasilCPL?: Prisma.HasilCPLListRelationFilter
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanListRelationFilter
 }
 
 export type MahasiswaOrderByWithRelationInput = {
@@ -225,6 +226,7 @@ export type MahasiswaOrderByWithRelationInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKOrderByRelationAggregateInput
   hasilCPMK?: Prisma.HasilCPMKOrderByRelationAggregateInput
   hasilCPL?: Prisma.HasilCPLOrderByRelationAggregateInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanOrderByRelationAggregateInput
 }
 
 export type MahasiswaWhereUniqueInput = Prisma.AtLeast<{
@@ -240,6 +242,7 @@ export type MahasiswaWhereUniqueInput = Prisma.AtLeast<{
   hasilSubCPMK?: Prisma.HasilSubCPMKListRelationFilter
   hasilCPMK?: Prisma.HasilCPMKListRelationFilter
   hasilCPL?: Prisma.HasilCPLListRelationFilter
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanListRelationFilter
 }, "id" | "nim">
 
 export type MahasiswaOrderByWithAggregationInput = {
@@ -274,6 +277,7 @@ export type MahasiswaCreateInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaUncheckedCreateInput = {
@@ -286,6 +290,7 @@ export type MahasiswaUncheckedCreateInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaUpdateInput = {
@@ -298,6 +303,7 @@ export type MahasiswaUpdateInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaUncheckedUpdateInput = {
@@ -310,6 +316,7 @@ export type MahasiswaUncheckedUpdateInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaCreateManyInput = {
@@ -445,6 +452,20 @@ export type MahasiswaUpdateOneRequiredWithoutHasilCPLNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.MahasiswaUpdateToOneWithWhereWithoutHasilCPLInput, Prisma.MahasiswaUpdateWithoutHasilCPLInput>, Prisma.MahasiswaUncheckedUpdateWithoutHasilCPLInput>
 }
 
+export type MahasiswaCreateNestedOneWithoutHasilProfilLulusanInput = {
+  create?: Prisma.XOR<Prisma.MahasiswaCreateWithoutHasilProfilLulusanInput, Prisma.MahasiswaUncheckedCreateWithoutHasilProfilLulusanInput>
+  connectOrCreate?: Prisma.MahasiswaCreateOrConnectWithoutHasilProfilLulusanInput
+  connect?: Prisma.MahasiswaWhereUniqueInput
+}
+
+export type MahasiswaUpdateOneRequiredWithoutHasilProfilLulusanNestedInput = {
+  create?: Prisma.XOR<Prisma.MahasiswaCreateWithoutHasilProfilLulusanInput, Prisma.MahasiswaUncheckedCreateWithoutHasilProfilLulusanInput>
+  connectOrCreate?: Prisma.MahasiswaCreateOrConnectWithoutHasilProfilLulusanInput
+  upsert?: Prisma.MahasiswaUpsertWithoutHasilProfilLulusanInput
+  connect?: Prisma.MahasiswaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.MahasiswaUpdateToOneWithWhereWithoutHasilProfilLulusanInput, Prisma.MahasiswaUpdateWithoutHasilProfilLulusanInput>, Prisma.MahasiswaUncheckedUpdateWithoutHasilProfilLulusanInput>
+}
+
 export type MahasiswaCreateWithoutPendaftaranInput = {
   id?: string
   nim: string
@@ -454,6 +475,7 @@ export type MahasiswaCreateWithoutPendaftaranInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaUncheckedCreateWithoutPendaftaranInput = {
@@ -465,6 +487,7 @@ export type MahasiswaUncheckedCreateWithoutPendaftaranInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaCreateOrConnectWithoutPendaftaranInput = {
@@ -492,6 +515,7 @@ export type MahasiswaUpdateWithoutPendaftaranInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaUncheckedUpdateWithoutPendaftaranInput = {
@@ -503,6 +527,7 @@ export type MahasiswaUncheckedUpdateWithoutPendaftaranInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaCreateWithoutNilaiInput = {
@@ -514,6 +539,7 @@ export type MahasiswaCreateWithoutNilaiInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaUncheckedCreateWithoutNilaiInput = {
@@ -525,6 +551,7 @@ export type MahasiswaUncheckedCreateWithoutNilaiInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaCreateOrConnectWithoutNilaiInput = {
@@ -552,6 +579,7 @@ export type MahasiswaUpdateWithoutNilaiInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaUncheckedUpdateWithoutNilaiInput = {
@@ -563,6 +591,7 @@ export type MahasiswaUncheckedUpdateWithoutNilaiInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaCreateWithoutHasilSubCPMKInput = {
@@ -574,6 +603,7 @@ export type MahasiswaCreateWithoutHasilSubCPMKInput = {
   nilai?: Prisma.NilaiCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaUncheckedCreateWithoutHasilSubCPMKInput = {
@@ -585,6 +615,7 @@ export type MahasiswaUncheckedCreateWithoutHasilSubCPMKInput = {
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaCreateOrConnectWithoutHasilSubCPMKInput = {
@@ -612,6 +643,7 @@ export type MahasiswaUpdateWithoutHasilSubCPMKInput = {
   nilai?: Prisma.NilaiUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaUncheckedUpdateWithoutHasilSubCPMKInput = {
@@ -623,6 +655,7 @@ export type MahasiswaUncheckedUpdateWithoutHasilSubCPMKInput = {
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaCreateWithoutHasilCPMKInput = {
@@ -634,6 +667,7 @@ export type MahasiswaCreateWithoutHasilCPMKInput = {
   nilai?: Prisma.NilaiCreateNestedManyWithoutMahasiswaInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaUncheckedCreateWithoutHasilCPMKInput = {
@@ -645,6 +679,7 @@ export type MahasiswaUncheckedCreateWithoutHasilCPMKInput = {
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaCreateOrConnectWithoutHasilCPMKInput = {
@@ -672,6 +707,7 @@ export type MahasiswaUpdateWithoutHasilCPMKInput = {
   nilai?: Prisma.NilaiUpdateManyWithoutMahasiswaNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaUncheckedUpdateWithoutHasilCPMKInput = {
@@ -683,6 +719,7 @@ export type MahasiswaUncheckedUpdateWithoutHasilCPMKInput = {
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaCreateWithoutHasilCPLInput = {
@@ -694,6 +731,7 @@ export type MahasiswaCreateWithoutHasilCPLInput = {
   nilai?: Prisma.NilaiCreateNestedManyWithoutMahasiswaInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaUncheckedCreateWithoutHasilCPLInput = {
@@ -705,6 +743,7 @@ export type MahasiswaUncheckedCreateWithoutHasilCPLInput = {
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutMahasiswaInput
 }
 
 export type MahasiswaCreateOrConnectWithoutHasilCPLInput = {
@@ -732,6 +771,7 @@ export type MahasiswaUpdateWithoutHasilCPLInput = {
   nilai?: Prisma.NilaiUpdateManyWithoutMahasiswaNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutMahasiswaNestedInput
 }
 
 export type MahasiswaUncheckedUpdateWithoutHasilCPLInput = {
@@ -743,6 +783,71 @@ export type MahasiswaUncheckedUpdateWithoutHasilCPLInput = {
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutMahasiswaNestedInput
+}
+
+export type MahasiswaCreateWithoutHasilProfilLulusanInput = {
+  id?: string
+  nim: string
+  nama: string
+  angkatan: number
+  pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutMahasiswaInput
+  nilai?: Prisma.NilaiCreateNestedManyWithoutMahasiswaInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutMahasiswaInput
+  hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutMahasiswaInput
+  hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutMahasiswaInput
+}
+
+export type MahasiswaUncheckedCreateWithoutHasilProfilLulusanInput = {
+  id?: string
+  nim: string
+  nama: string
+  angkatan: number
+  pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutMahasiswaInput
+  nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutMahasiswaInput
+  hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutMahasiswaInput
+}
+
+export type MahasiswaCreateOrConnectWithoutHasilProfilLulusanInput = {
+  where: Prisma.MahasiswaWhereUniqueInput
+  create: Prisma.XOR<Prisma.MahasiswaCreateWithoutHasilProfilLulusanInput, Prisma.MahasiswaUncheckedCreateWithoutHasilProfilLulusanInput>
+}
+
+export type MahasiswaUpsertWithoutHasilProfilLulusanInput = {
+  update: Prisma.XOR<Prisma.MahasiswaUpdateWithoutHasilProfilLulusanInput, Prisma.MahasiswaUncheckedUpdateWithoutHasilProfilLulusanInput>
+  create: Prisma.XOR<Prisma.MahasiswaCreateWithoutHasilProfilLulusanInput, Prisma.MahasiswaUncheckedCreateWithoutHasilProfilLulusanInput>
+  where?: Prisma.MahasiswaWhereInput
+}
+
+export type MahasiswaUpdateToOneWithWhereWithoutHasilProfilLulusanInput = {
+  where?: Prisma.MahasiswaWhereInput
+  data: Prisma.XOR<Prisma.MahasiswaUpdateWithoutHasilProfilLulusanInput, Prisma.MahasiswaUncheckedUpdateWithoutHasilProfilLulusanInput>
+}
+
+export type MahasiswaUpdateWithoutHasilProfilLulusanInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nim?: Prisma.StringFieldUpdateOperationsInput | string
+  nama?: Prisma.StringFieldUpdateOperationsInput | string
+  angkatan?: Prisma.IntFieldUpdateOperationsInput | number
+  pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutMahasiswaNestedInput
+  nilai?: Prisma.NilaiUpdateManyWithoutMahasiswaNestedInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutMahasiswaNestedInput
+  hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutMahasiswaNestedInput
+  hasilCPL?: Prisma.HasilCPLUpdateManyWithoutMahasiswaNestedInput
+}
+
+export type MahasiswaUncheckedUpdateWithoutHasilProfilLulusanInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nim?: Prisma.StringFieldUpdateOperationsInput | string
+  nama?: Prisma.StringFieldUpdateOperationsInput | string
+  angkatan?: Prisma.IntFieldUpdateOperationsInput | number
+  pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutMahasiswaNestedInput
+  nilai?: Prisma.NilaiUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutMahasiswaNestedInput
+  hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutMahasiswaNestedInput
 }
 
 
@@ -756,6 +861,7 @@ export type MahasiswaCountOutputType = {
   hasilSubCPMK: number
   hasilCPMK: number
   hasilCPL: number
+  hasilProfilLulusan: number
 }
 
 export type MahasiswaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -764,6 +870,7 @@ export type MahasiswaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensi
   hasilSubCPMK?: boolean | MahasiswaCountOutputTypeCountHasilSubCPMKArgs
   hasilCPMK?: boolean | MahasiswaCountOutputTypeCountHasilCPMKArgs
   hasilCPL?: boolean | MahasiswaCountOutputTypeCountHasilCPLArgs
+  hasilProfilLulusan?: boolean | MahasiswaCountOutputTypeCountHasilProfilLulusanArgs
 }
 
 /**
@@ -811,6 +918,13 @@ export type MahasiswaCountOutputTypeCountHasilCPLArgs<ExtArgs extends runtime.Ty
   where?: Prisma.HasilCPLWhereInput
 }
 
+/**
+ * MahasiswaCountOutputType without action
+ */
+export type MahasiswaCountOutputTypeCountHasilProfilLulusanArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.HasilProfilLulusanWhereInput
+}
+
 
 export type MahasiswaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -822,6 +936,7 @@ export type MahasiswaSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   hasilSubCPMK?: boolean | Prisma.Mahasiswa$hasilSubCPMKArgs<ExtArgs>
   hasilCPMK?: boolean | Prisma.Mahasiswa$hasilCPMKArgs<ExtArgs>
   hasilCPL?: boolean | Prisma.Mahasiswa$hasilCPLArgs<ExtArgs>
+  hasilProfilLulusan?: boolean | Prisma.Mahasiswa$hasilProfilLulusanArgs<ExtArgs>
   _count?: boolean | Prisma.MahasiswaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["mahasiswa"]>
 
@@ -853,6 +968,7 @@ export type MahasiswaInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   hasilSubCPMK?: boolean | Prisma.Mahasiswa$hasilSubCPMKArgs<ExtArgs>
   hasilCPMK?: boolean | Prisma.Mahasiswa$hasilCPMKArgs<ExtArgs>
   hasilCPL?: boolean | Prisma.Mahasiswa$hasilCPLArgs<ExtArgs>
+  hasilProfilLulusan?: boolean | Prisma.Mahasiswa$hasilProfilLulusanArgs<ExtArgs>
   _count?: boolean | Prisma.MahasiswaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type MahasiswaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -866,6 +982,7 @@ export type $MahasiswaPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     hasilSubCPMK: Prisma.$HasilSubCPMKPayload<ExtArgs>[]
     hasilCPMK: Prisma.$HasilCPMKPayload<ExtArgs>[]
     hasilCPL: Prisma.$HasilCPLPayload<ExtArgs>[]
+    hasilProfilLulusan: Prisma.$HasilProfilLulusanPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1271,6 +1388,7 @@ export interface Prisma__MahasiswaClient<T, Null = never, ExtArgs extends runtim
   hasilSubCPMK<T extends Prisma.Mahasiswa$hasilSubCPMKArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Mahasiswa$hasilSubCPMKArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilSubCPMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hasilCPMK<T extends Prisma.Mahasiswa$hasilCPMKArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Mahasiswa$hasilCPMKArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilCPMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hasilCPL<T extends Prisma.Mahasiswa$hasilCPLArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Mahasiswa$hasilCPLArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilCPLPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  hasilProfilLulusan<T extends Prisma.Mahasiswa$hasilProfilLulusanArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Mahasiswa$hasilProfilLulusanArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilProfilLulusanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1814,6 +1932,30 @@ export type Mahasiswa$hasilCPLArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.HasilCPLScalarFieldEnum | Prisma.HasilCPLScalarFieldEnum[]
+}
+
+/**
+ * Mahasiswa.hasilProfilLulusan
+ */
+export type Mahasiswa$hasilProfilLulusanArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HasilProfilLulusan
+   */
+  select?: Prisma.HasilProfilLulusanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HasilProfilLulusan
+   */
+  omit?: Prisma.HasilProfilLulusanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HasilProfilLulusanInclude<ExtArgs> | null
+  where?: Prisma.HasilProfilLulusanWhereInput
+  orderBy?: Prisma.HasilProfilLulusanOrderByWithRelationInput | Prisma.HasilProfilLulusanOrderByWithRelationInput[]
+  cursor?: Prisma.HasilProfilLulusanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.HasilProfilLulusanScalarFieldEnum | Prisma.HasilProfilLulusanScalarFieldEnum[]
 }
 
 /**

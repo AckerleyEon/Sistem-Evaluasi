@@ -31,7 +31,7 @@ export function KpiCard({
       href={href}
       className={`${
         sorot ? "bg-[#2563EB] text-white shadow-[0_6px_14px_rgba(37,99,235,.30)]" : `${KARTU} text-[#0F172A]`
-      } flex min-h-[92px] flex-col justify-between rounded-2xl p-4 transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,.10)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60A5FA]`}
+      } flex min-h-23 flex-col justify-between rounded-2xl p-4 transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(15,23,42,.10)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#60A5FA]`}
     >
       <div className="flex items-start justify-between gap-2">
         <span className={`text-[12px] font-medium leading-tight ${sorot ? "text-white/90" : "text-[#64748B]"}`}>

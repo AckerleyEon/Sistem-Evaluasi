@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { analisisImporNilai, simpanNilaiMassal, type BarisImporNilai } from "@/lib/actions/nilai";
+import {
+  analisisImporNilaiBanyak,
+  kosongkanNilaiTugas,
+  simpanImporNilaiBanyak,
+  simpanNilaiMassal,
+  type BarisImporNilai,
+} from "@/lib/actions/nilai";
+import { BATAS_IMPOR_NILAI } from "@/lib/nilai-impor-util";
 
 type MataKuliahItem = {
   id: string;
@@ -166,7 +173,7 @@ export function InputNilaiWorkspace({
   const [halaman, setHalaman] = useState(1);
   const [terpilih, setTerpilih] = useState<Set<string>>(new Set());
   const [dialogImpor, setDialogImpor] = useState(false);
-  const [fileImpor, setFileImpor] = useState<File | null>(null);
+  const [filesImpor, setFilesImpor] = useState<File[]>([]);
   const [pratinjauImpor, setPratinjauImpor] = useState<BarisImporNilai[] | null>(null);
   const [galatImpor, setGalatImpor] = useState("");
   const [toast, setToast] = useState("");
@@ -348,14 +355,44 @@ export function InputNilaiWorkspace({
     setTerpilih(new Set());
   }
 
+  function kosongkanSemuaNilai() {
+    if (!tugasDipilih || berubah || readOnly || isPending || statistik.dinilai === 0) return;
+    const namaKelas = daftarKelas.find((kelas) => kelas.id === kelasId)?.nama ?? "kelas terpilih";
+    const konfirmasi = window.confirm(
+      `Hapus seluruh nilai tersimpan untuk tugas "${tugasDipilih.nama}" di kelas ${namaKelas}? Tindakan ini berlaku untuk semua mahasiswa dan tidak dapat dibatalkan.`,
+    );
+    if (!konfirmasi) return;
+
+    setGalatSimpan("");
+    startTransition(async () => {
+      try {
+        const hasil = await kosongkanNilaiTugas(mataKuliah.id, kelasId, tugasDipilih.id);
+        setNilaiDraft((sebelumnya) => {
+          const berikutnya = { ...sebelumnya };
+          for (const item of mahasiswa) berikutnya[item.id] = "";
+          return berikutnya;
+        });
+        setTerpilih(new Set());
+        setToast(
+          hasil.dihapus > 0
+            ? `${hasil.dihapus} nilai untuk ${tugasDipilih.nama} berhasil dikosongkan.`
+            : "Tidak ada nilai tersimpan untuk dikosongkan.",
+        );
+        router.refresh();
+      } catch (error) {
+        setGalatSimpan(error instanceof Error ? error.message : "Nilai gagal dikosongkan.");
+      }
+    });
+  }
+
   function analisisExcel() {
-    if (!fileImpor || !tugasDipilih) return;
+    if (!filesImpor.length) return;
     const formData = new FormData();
-    formData.set("file", fileImpor);
+    for (const file of filesImpor) formData.append("files", file);
     setGalatImpor("");
     startImporTransition(async () => {
       try {
-        const hasil = await analisisImporNilai(mataKuliah.id, kelasId, tugasDipilih.id, formData);
+        const hasil = await analisisImporNilaiBanyak(formData);
         if (!hasil.ok) {
           setGalatImpor(hasil.error);
           setPratinjauImpor(null);
@@ -371,23 +408,51 @@ export function InputNilaiWorkspace({
 
   function terapkanImpor() {
     const barisValid = (pratinjauImpor ?? []).filter(
-      (baris): baris is BarisImporNilai & { mahasiswaId: string; nilai: number } =>
-        baris.mahasiswaId !== null && baris.nilai !== null && baris.pesan === null,
+      (baris): baris is BarisImporNilai & {
+        mahasiswaId: string;
+        nilai: number;
+        mataKuliahId: string;
+        kelasId: string;
+        tugasId: string;
+      } =>
+        baris.mahasiswaId !== null &&
+        baris.nilai !== null &&
+        baris.pesan === null &&
+        Boolean(baris.mataKuliahId && baris.kelasId && baris.tugasId),
     );
-    setNilaiDraft((sebelumnya) => {
-      const berikutnya = { ...sebelumnya };
-      for (const baris of barisValid) {
-        if (mahasiswa.some((item) => item.id === baris.mahasiswaId)) {
-          berikutnya[baris.mahasiswaId] = String(baris.nilai);
-        }
+    if (!barisValid.length) return;
+    const formData = new FormData();
+    formData.set("entri", JSON.stringify(barisValid.map((baris) => ({
+      mataKuliahId: baris.mataKuliahId,
+      kelasId: baris.kelasId,
+      tugasId: baris.tugasId,
+      mahasiswaId: baris.mahasiswaId,
+      nilai: baris.nilai,
+    }))));
+    setGalatImpor("");
+    startTransition(async () => {
+      try {
+        const hasil = await simpanImporNilaiBanyak(formData);
+        setDialogImpor(false);
+        setFilesImpor([]);
+        setPratinjauImpor(null);
+        setToast(`${hasil.tersimpan} nilai berhasil disimpan dari ${hasil.jumlahMataKuliah} mata kuliah.`);
+        router.refresh();
+      } catch (error) {
+        setGalatImpor(error instanceof Error ? error.message : "Nilai gagal disimpan.");
       }
-      return berikutnya;
     });
-    setDialogImpor(false);
-    setToast(`${barisValid.length} nilai valid dimasukkan. Simpan perubahan untuk menerapkannya.`);
   }
 
   const totalImportValid = (pratinjauImpor ?? []).filter((baris) => baris.pesan === null).length;
+  const totalNilaiDiganti = (pratinjauImpor ?? []).filter(
+    (baris) => baris.pesan === null && baris.nilaiSebelumnya !== null && baris.nilaiSebelumnya !== baris.nilai,
+  ).length;
+  const totalUkuranImpor = filesImpor.reduce((total, file) => total + file.size, 0);
+  const batasUkuranImpor =
+    filesImpor.length > BATAS_IMPOR_NILAI.jumlahFile ||
+    totalUkuranImpor > BATAS_IMPOR_NILAI.ukuranTotal ||
+    filesImpor.some((file) => file.size > BATAS_IMPOR_NILAI.ukuranPerFile);
   return (
     <div className="space-y-4 pb-2">
       {toast && (
@@ -408,15 +473,16 @@ export function InputNilaiWorkspace({
             type="button"
             onClick={() => {
               setDialogImpor(true);
-              setFileImpor(null);
+              setFilesImpor([]);
               setPratinjauImpor(null);
               setGalatImpor("");
             }}
-            disabled={readOnly || !tugasDipilih}
+            disabled={readOnly || berubah || isPending}
             className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-[#C9D8F7] bg-white px-3 text-xs font-semibold text-[#1D4ED8] transition hover:bg-[#EEF3FC] disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
           >
             <Ikon nama="file" ukuran={16} /> Import Excel (.xlsx)
           </button>
+
           <button
             type="submit"
             form="form-input-nilai"
@@ -435,7 +501,7 @@ export function InputNilaiWorkspace({
 
       <section className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-[minmax(0,1.8fr)_minmax(280px,1fr)]">
         <div className="overflow-hidden rounded-[18px] border border-[#DCE5F5] bg-white shadow-[0_2px_8px_rgba(23,43,77,.06)]">
-          <article className="flex min-h-[108px] flex-wrap items-center justify-between gap-4 bg-[#2F6FEB] p-4 text-white sm:p-5">
+          <article className="flex min-h-27 flex-wrap items-center justify-between gap-4 bg-[#2F6FEB] p-4 text-white sm:p-5">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-[18px] font-semibold leading-tight">{mataKuliah.nama.replace(/\s*\([^)]*\)\s*$/, "")}</h2>
@@ -471,7 +537,7 @@ export function InputNilaiWorkspace({
           </article>
 
           <div className="relative bg-white before:absolute before:inset-x-0 before:top-0 before:h-4 before:bg-[#2F6FEB]">
-          <article className="relative flex min-h-[70px] flex-wrap items-center justify-between gap-3 rounded-t-[18px] bg-white p-3 sm:p-3.5">
+          <article className="relative flex min-h-17.5 flex-wrap items-center justify-between gap-3 rounded-t-[18px] bg-white p-3 sm:p-3.5">
             <div className="flex min-w-0 items-center gap-2.5">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#EEF3FC] text-[#1D4ED8]"><Ikon nama="task" ukuran={19} /></span>
               <div className="min-w-0">
@@ -507,7 +573,7 @@ export function InputNilaiWorkspace({
           </div>
         </div>
 
-        <article aria-label="Ringkasan penilaian" aria-live="polite" className="flex min-h-[150px] flex-col justify-center rounded-[18px] border border-[#E5E9F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] sm:p-5">
+        <article aria-label="Ringkasan penilaian" aria-live="polite" className="flex min-h-37.5 flex-col justify-center rounded-[18px] border border-[#E5E9F0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,.04)] sm:p-5">
           <div className="flex items-center justify-between gap-2">
             <p className="text-[11px] font-semibold text-[#64748B]">Sudah Dinilai</p>
             <span className={`rounded-full px-2 py-1 text-[10px] font-semibold ${statistik.belum ? "bg-[#FDE8E8] text-[#B91C1C]" : "bg-[#E6F7EC] text-[#15803D]"}`}>
@@ -581,7 +647,7 @@ export function InputNilaiWorkspace({
                   setTerpilih(new Set());
                 }}
                 aria-pressed={filter === value}
-                className={`rounded-full px-3 py-1.5 text-[10px] font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
+                className={`rounded-full px-3 py-1.5 text-[10px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${
                   filter === value ? "bg-[#1D4ED8] text-white" : "bg-[#EEF3FC] text-[#475569] hover:bg-[#DBE7FB]"
                 }`}
               >
@@ -589,7 +655,8 @@ export function InputNilaiWorkspace({
               </button>
             ))}
           </div>
-          <label className="relative block w-full lg:max-w-60">
+         < div className="flex flex-row items-center gap-2">
+          <label className="relative block w-full lg:max-w-100">
             <span className="sr-only">Cari NIM atau nama mahasiswa</span>
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]"><Ikon nama="search" ukuran={15} /></span>
             <input
@@ -600,9 +667,18 @@ export function InputNilaiWorkspace({
                 setHalaman(1);
               }}
               placeholder="Cari NIM atau Nama Mahasiswa..."
-              className="h-9 w-full rounded-xl bg-[#EEF3FC] pl-9 pr-3 text-xs text-[#0F172A] placeholder:text-[#94A3B8] outline-none focus:ring-2 focus:ring-[#2563EB]/30"
+              className="h-9 w-80 rounded-xl bg-[#EEF3FC] pl-9 pr-3 text-xs text-[#0F172A] placeholder:text-[#94A3B8] outline-none focus:ring-2 focus:ring-[#2563EB]/30"
             />
           </label>
+                    <button
+            type="button"
+            onClick={kosongkanSemuaNilai}
+            disabled={readOnly || !tugasDipilih || statistik.dinilai === 0 || berubah || isPending}
+            className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-[#F2B8B8] bg-white px-3 text-xs font-semibold text-[#B91C1C] transition hover:bg-[#FDE8E8] disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+          >
+            {isPending ? "Memproses..." : "Kosongkan Semua Nilai"}
+          </button>
+          </div>
         </div>
 
         {!readOnly && terpilih.size > 0 && (
@@ -616,7 +692,7 @@ export function InputNilaiWorkspace({
 
         <form id="form-input-nilai" onSubmit={simpan}>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[850px] border-collapse text-left">
+            <table className="w-full min-w-212.5 border-collapse text-left">
               <thead>
                 <tr className="h-11 bg-[#EEF3FC] text-[9px] font-bold uppercase tracking-wide text-[#475569]">
                   <th scope="col" className="w-10 px-3 text-center">
@@ -630,7 +706,7 @@ export function InputNilaiWorkspace({
                     />
                   </th>
                   <th scope="col" className="w-12 px-2 text-center">No</th>
-                  <th scope="col" className="sticky left-[88px] z-20 min-w-60 bg-[#EEF3FC] px-3">Mahasiswa</th>
+                  <th scope="col" className="sticky left-22 z-20 min-w-60 bg-[#EEF3FC] px-3">Mahasiswa</th>
                   <th scope="col" className="w-32 px-3 text-center">Input Nilai</th>
                   <th scope="col" className="w-32 px-3 text-center">
                     Nilai Akhir <span className="block text-[8px] font-medium">Bobot {tugasDipilih ? formatNilai(tugasDipilih.bobot * 100, 1) : 0}%</span>
@@ -646,7 +722,7 @@ export function InputNilaiWorkspace({
                   const terjangkau = Boolean(tugasDipilih && tugasDipilih.kelasId === item.kelasId);
                   const nilaiAkhir = score === null || !tugasDipilih ? null : score * tugasDipilih.bobot;
                   return (
-                    <tr key={item.id} className="group h-[54px] border-b border-[#EDF0F4] text-xs transition-colors hover:bg-[#F8FAFD]">
+                    <tr key={item.id} className="group h-13.5 border-b border-[#EDF0F4] text-xs transition-colors hover:bg-[#F8FAFD]">
                       <td className="px-3 text-center">
                         <input
                           type="checkbox"
@@ -663,7 +739,7 @@ export function InputNilaiWorkspace({
                         />
                       </td>
                       <td className="px-2 text-center text-[10px] text-[#64748B]">{mulai + index + 1}</td>
-                      <td className="sticky left-[88px] z-10 bg-white px-3 group-hover:bg-[#F8FAFD]">
+                      <td className="sticky left-22 z-10 bg-white px-3 group-hover:bg-[#F8FAFD]">
                         <div className="flex items-center gap-2.5">
                           <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-[10px] font-bold ${
                             score === null ? "bg-[#E8ECF3] text-[#64748B]" : score < passingGrade ? "bg-[#FDE8E8] text-[#B91C1C]" : "bg-[#DBE7FB] text-[#1D4ED8]"
@@ -780,7 +856,7 @@ export function InputNilaiWorkspace({
 
       {dialogImpor && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/40 p-4" role="presentation" onMouseDown={(event) => {
-          if (event.target === event.currentTarget) setDialogImpor(false);
+          if (event.target === event.currentTarget && !isPending && !isImporPending) setDialogImpor(false);
         }}>
           <section role="dialog" aria-modal="true" aria-labelledby="judul-impor-nilai" className="max-h-[90dvh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
@@ -788,54 +864,72 @@ export function InputNilaiWorkspace({
                 <h2 id="judul-impor-nilai" className="text-lg font-bold text-[#0F172A]">Import Nilai dari Excel</h2>
                 <p className="mt-1 text-xs text-[#64748B]">Gunakan kolom NIM dan Nilai. File akan dipratinjau sebelum dimasukkan ke formulir.</p>
               </div>
-              <button type="button" onClick={() => setDialogImpor(false)} aria-label="Tutup dialog" className="rounded-lg p-2 text-[#64748B] hover:bg-[#F1F5F9]"><Ikon nama="close" /></button>
+              <button type="button" onClick={() => setDialogImpor(false)} disabled={isPending || isImporPending} aria-label="Tutup dialog" className="rounded-lg p-2 text-[#64748B] hover:bg-[#F1F5F9] disabled:opacity-50"><Ikon nama="close" /></button>
             </div>
-            {tugasDipilih && (
-              <a
-                href={`/api/dosen/nilai/template?${new URLSearchParams({
-                  mataKuliahId: mataKuliah.id,
-                  kelasId,
-                  tugasId: tugasDipilih.id,
-                }).toString()}`}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#EEF3FC] px-3 py-2 text-xs font-semibold text-[#1D4ED8] hover:bg-[#DBE7FB]"
-              >
-                <Ikon nama="file" ukuran={14} />
-                Unduh Template Excel berisi daftar mahasiswa
-              </a>
-            )}
+            <a
+              href={`/api/dosen/nilai/template-massal?${new URLSearchParams({ mataKuliahId: mataKuliah.id }).toString()}`}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#EEF3FC] px-3 py-2 text-xs font-semibold text-[#1D4ED8] hover:bg-[#DBE7FB]"
+            >
+              <Ikon nama="file" ukuran={14} />
+              Unduh Template Semua Tugas dan Kelas yang Diampu
+            </a>
+            <p className="mt-2 text-xs leading-relaxed text-[#64748B]">
+              Pilih beberapa workbook sekaligus, satu file untuk setiap mata kuliah. Gunakan format nama KODEMK_NAMA-MK_nilai.xlsx, contoh TEO-308_Prak-Sistem-Digital_nilai.xlsx. Setiap workbook memuat sheet tugas untuk semua kelas yang dapat Anda kelola.
+            </p>
             <label className="mt-4 block rounded-xl border border-dashed border-[#C9D8F7] bg-[#F8FAFC] p-4">
-              <span className="mb-2 block text-xs font-semibold text-[#334155]">File Excel (.xlsx)</span>
+              <span className="mb-2 block text-xs font-semibold text-[#334155]">File Excel (.xlsx), maksimal {BATAS_IMPOR_NILAI.jumlahFile} mata kuliah</span>
               <input
                 type="file"
                 accept=".xlsx"
+                multiple
+                disabled={isImporPending || isPending}
                 onChange={(event) => {
-                  setFileImpor(event.target.files?.[0] ?? null);
+                  setFilesImpor(Array.from(event.target.files ?? []));
                   setPratinjauImpor(null);
                   setGalatImpor("");
                 }}
                 className="block w-full text-xs text-[#475569] file:mr-3 file:rounded-lg file:border-0 file:bg-[#DBE7FB] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-[#1D4ED8]"
               />
             </label>
+            {filesImpor.length > 0 && (
+              <div className="mt-2 space-y-1 text-xs text-[#475569]">
+                <p>{filesImpor.length} file dipilih · {(totalUkuranImpor / (1024 * 1024)).toFixed(2)} MB total</p>
+                <ul className="max-h-20 list-inside list-disc overflow-y-auto text-[11px] text-[#64748B]">
+                  {filesImpor.map((file) => <li key={`${file.name}-${file.size}`}>{file.name}</li>)}
+                </ul>
+              </div>
+            )}
+            {batasUkuranImpor && (
+              <p role="alert" className="mt-2 rounded-lg bg-[#FEF2F2] p-2 text-xs text-[#B91C1C]">
+                Batas impor: maksimal {BATAS_IMPOR_NILAI.jumlahFile} file, {BATAS_IMPOR_NILAI.ukuranPerFile / (1024 * 1024)} MB per file, dan {BATAS_IMPOR_NILAI.ukuranTotal / (1024 * 1024)} MB total.
+              </p>
+            )}
             {galatImpor && <p role="alert" className="mt-3 rounded-lg bg-[#FEF2F2] p-3 text-xs text-[#B91C1C]">{galatImpor}</p>}
             {pratinjauImpor && (
               <div className="mt-4">
                 <div className="mb-2 flex items-center justify-between text-xs">
                   <b className="text-[#0F172A]">Pratinjau ({totalImportValid} valid · {pratinjauImpor.length - totalImportValid} galat)</b>
-                  <span className="text-[#64748B]">Nilai valid akan mengisi draf, belum tersimpan.</span>
                 </div>
+                <p className="mb-2 rounded-lg bg-[#FFFBEB] p-2 text-[11px] leading-relaxed text-[#92400E]">
+                  Nilai valid akan langsung disimpan untuk beberapa tugas dan mata kuliah. {totalNilaiDiganti > 0 ? `${totalNilaiDiganti} nilai berbeda akan mengganti nilai yang tersimpan.` : ""} Nilai yang kosong dilewati, dan baris galat tidak disimpan.
+                </p>
                 <div className="max-h-64 overflow-auto rounded-xl border border-[#E5E9F0]">
-                  <table className="w-full text-left text-xs">
+                  <table className="min-w-[900px] w-full text-left text-xs">
                     <thead className="sticky top-0 bg-[#EEF3FC] text-[10px] uppercase text-[#475569]">
-                      <tr><th className="px-3 py-2">Baris</th><th className="px-3 py-2">NIM</th><th className="px-3 py-2">Mahasiswa</th><th className="px-3 py-2">Nilai</th><th className="px-3 py-2">Status</th></tr>
+                      <tr><th className="px-3 py-2">File / MK</th><th className="px-3 py-2">Kelas / Tugas</th><th className="px-3 py-2">Baris</th><th className="px-3 py-2">NIM</th><th className="px-3 py-2">Mahasiswa</th><th className="px-3 py-2">Nilai</th><th className="px-3 py-2">Status</th></tr>
                     </thead>
                     <tbody>
                       {pratinjauImpor.map((baris) => (
-                        <tr key={baris.baris} className="border-t border-[#EDF0F4]">
+                        <tr key={`${baris.file}-${baris.tugasId}-${baris.baris}`} className="border-t border-[#EDF0F4]">
+                          <td className="px-3 py-2">{baris.file}<span className="block text-[10px] text-[#64748B]">{baris.mataKuliah}</span></td>
+                          <td className="px-3 py-2">{baris.kelas}<span className="block text-[10px] text-[#64748B]">{baris.tugas}</span></td>
                           <td className="px-3 py-2">{baris.baris}</td>
                           <td className="px-3 py-2 font-mono">{baris.nim || "–"}</td>
                           <td className="px-3 py-2">{baris.nama ?? "–"}</td>
                           <td className="px-3 py-2">{baris.nilai ?? "–"}</td>
-                          <td className={`px-3 py-2 ${baris.pesan ? "text-[#B91C1C]" : "font-semibold text-[#15803D]"}`}>{baris.pesan ?? "Valid"}</td>
+                          <td className={`px-3 py-2 ${baris.pesan ? "text-[#B91C1C]" : "font-semibold text-[#15803D]"}`}>
+                            {baris.pesan ?? (baris.nilaiSebelumnya !== null && baris.nilaiSebelumnya !== baris.nilai ? `Akan mengganti ${baris.nilaiSebelumnya}` : "Valid")}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -844,12 +938,12 @@ export function InputNilaiWorkspace({
               </div>
             )}
             <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button type="button" onClick={() => setDialogImpor(false)} className="h-10 rounded-xl border border-[#E5E9F0] px-4 text-xs font-semibold text-[#475569] hover:bg-[#F8FAFC]">Batal</button>
+              <button type="button" onClick={() => setDialogImpor(false)} disabled={isPending || isImporPending} className="h-10 rounded-xl border border-[#E5E9F0] px-4 text-xs font-semibold text-[#475569] hover:bg-[#F8FAFC] disabled:opacity-50">Batal</button>
               {pratinjauImpor ? (
-                <button type="button" onClick={terapkanImpor} disabled={totalImportValid === 0} className="h-10 rounded-xl bg-[#1D4ED8] px-4 text-xs font-semibold text-white disabled:opacity-50">Gunakan {totalImportValid} Nilai Valid</button>
+                <button type="button" onClick={terapkanImpor} disabled={totalImportValid === 0 || isPending} className="h-10 rounded-xl bg-[#1D4ED8] px-4 text-xs font-semibold text-white disabled:opacity-50">{isPending ? "Menyimpan..." : `Simpan ${totalImportValid} Nilai Valid`}</button>
               ) : (
-                <button type="button" onClick={analisisExcel} disabled={!fileImpor || isImporPending} className="h-10 rounded-xl bg-[#1D4ED8] px-4 text-xs font-semibold text-white disabled:opacity-50">
-                  {isImporPending ? "Membaca file..." : "Pratinjau Excel"}
+                <button type="button" onClick={analisisExcel} disabled={!filesImpor.length || batasUkuranImpor || isImporPending || isPending} className="h-10 rounded-xl bg-[#1D4ED8] px-4 text-xs font-semibold text-white disabled:opacity-50">
+                  {isImporPending ? "Membaca file..." : "Pratinjau File"}
                 </button>
               )}
             </div>

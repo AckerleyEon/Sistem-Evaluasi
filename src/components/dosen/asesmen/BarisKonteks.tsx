@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { Ikon } from "../Ikon";
@@ -16,24 +17,39 @@ function Tile({ ikon }: { ikon: "users" | "hierarki" | "clipboard" }) {
   );
 }
 
-function TombolDistribusikan({ aktif, alasan }: { aktif: boolean; alasan: string | null }) {
+function TombolDistribusikan({
+  aktif,
+  alasan,
+  onBukaKonfirmasi,
+  onTerkirim,
+}: {
+  aktif: boolean;
+  alasan: string | null;
+  onBukaKonfirmasi: () => void;
+  onTerkirim: () => void;
+}) {
   const { pending } = useFormStatus();
   const mati = !aktif || pending;
+
+  useEffect(() => {
+    if (pending) onTerkirim();
+  }, [pending, onTerkirim]);
+
   return (
-    <button
-      type="submit"
-      aria-disabled={mati}
-      title={alasan ?? undefined}
-      onClick={(e) => {
-        if (mati) e.preventDefault();
-      }}
-      className={`flex min-h-8.5 items-center gap-2 rounded-full px-6 text-[11px] font-bold text-white ${FOKUS} ${
-        mati ? "cursor-not-allowed bg-[#BFDBFE]" : "bg-[#2563EB] shadow-[0_6px_14px_rgba(37,99,235,.30)] hover:bg-[#1D4ED8]"
-      }`}
-    >
-      <Ikon nama="hierarki" ukuran={13} />
-      {pending ? "Mendistribusikan..." : "Distribusikan"}
-    </button>
+    <>
+      <button
+        type="button"
+        disabled={mati}
+        title={alasan ?? undefined}
+        onClick={onBukaKonfirmasi}
+        className={`flex min-h-8.5 items-center gap-2 rounded-full px-6 text-[11px] font-bold text-white ${FOKUS} ${
+          mati ? "cursor-not-allowed bg-[#BFDBFE]" : "bg-[#2563EB] shadow-[0_6px_14px_rgba(37,99,235,.30)] hover:bg-[#1D4ED8]"
+        }`}
+      >
+        <Ikon nama="hierarki" ukuran={13} />
+        {pending ? "Mendistribusikan..." : "Distribusikan"}
+      </button>
+    </>
   );
 }
 
@@ -43,6 +59,9 @@ export function BarisKonteks({
   data: DataAsesmen;
 }) {
   const router = useRouter();
+  const dialogDistribusi = useRef<HTMLDialogElement>(null);
+  const [konfirmasiDistribusi, setKonfirmasiDistribusi] = useState(false);
+  const tutupKonfirmasiDistribusi = useCallback(() => setKonfirmasiDistribusi(false), []);
   const aktif = data.tahunAjaran.status === "AKTIF";
   const { terpetakan, total } = data.distribusiSub;
   const dist = statusDistribusi(terpetakan, total, {
@@ -51,6 +70,15 @@ export function BarisKonteks({
     arsip: !aktif,
   });
   const warnaAngka = total === 0 ? "text-[#64748B]" : dist.lengkap ? "text-[#16A34A]" : "text-[#EA580C]";
+
+  useEffect(() => {
+    const dialog = dialogDistribusi.current;
+    if (!dialog || !konfirmasiDistribusi) return;
+    if (!dialog.open) dialog.showModal();
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, [konfirmasiDistribusi]);
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-6 lg:grid-cols-11">
@@ -107,14 +135,6 @@ export function BarisKonteks({
       {/* Distribusi Sub-CPMK */}
       <form
         action={finalisasiDistribusi}
-        onSubmit={(e) => {
-          if (!dist.tombolAktif) return;
-          const sisa = total - terpetakan;
-          const ok = window.confirm(
-            `Bagikan ${sisa} Sub-CPMK yang belum terhubung ke tugas secara merata (round-robin)? Pemetaan manual tidak diubah.`,
-          );
-          if (!ok) e.preventDefault();
-        }}
         className={`${KARTU} flex min-h-20 flex-col justify-between p-5 sm:col-span-3 lg:col-span-3`}
       >
         <input type="hidden" name="mataKuliahId" value={data.mataKuliah.id} />
@@ -130,8 +150,61 @@ export function BarisKonteks({
             </span>
             <span className="text-[14px] text-[#64748B]">Sub</span>
           </p>
-          <TombolDistribusikan aktif={dist.tombolAktif} alasan={dist.alasanNonaktif} />
+          <TombolDistribusikan
+            aktif={dist.tombolAktif}
+            alasan={dist.alasanNonaktif}
+            onBukaKonfirmasi={() => setKonfirmasiDistribusi(true)}
+            onTerkirim={tutupKonfirmasiDistribusi}
+          />
         </div>
+        {konfirmasiDistribusi && (
+          <dialog
+            ref={dialogDistribusi}
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="judul-konfirmasi-distribusi"
+            aria-describedby="deskripsi-konfirmasi-distribusi"
+            onCancel={(event) => {
+              event.preventDefault();
+              setKonfirmasiDistribusi(false);
+            }}
+            onClick={(event) => {
+              if (event.target === dialogDistribusi.current) setKonfirmasiDistribusi(false);
+            }}
+            className="m-auto w-[min(92vw,30rem)] rounded-2xl bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)]"
+          >
+            <div className="p-5">
+              <div className="flex items-start gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#EFF6FF] text-[#2563EB]">
+                  <Ikon nama="hierarki" ukuran={18} />
+                </span>
+                <div>
+                  <h2 id="judul-konfirmasi-distribusi" className="text-[15px] font-bold">
+                    Distribusikan Sub-CPMK?
+                  </h2>
+                  <p id="deskripsi-konfirmasi-distribusi" className="mt-1 text-[12px] leading-relaxed text-[#475569]">
+                    Bagikan {total - terpetakan} Sub-CPMK yang belum terhubung secara merata (round-robin) ke tugas di kelas {data.kelas.nama}. Pemetaan manual tidak diubah.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <footer className="flex justify-end gap-2 border-t border-[#E5E7EB] px-5 py-3">
+              <button
+                type="button"
+                onClick={() => setKonfirmasiDistribusi(false)}
+                className={`min-h-9 rounded-lg border border-[#E5E7EB] px-4 text-[12px] font-semibold text-[#334155] hover:bg-[#F8FAFC] ${FOKUS}`}
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className={`min-h-9 rounded-lg bg-[#2563EB] px-4 text-[12px] font-semibold text-white hover:bg-[#1D4ED8] ${FOKUS}`}
+              >
+                Distribusikan
+              </button>
+            </footer>
+          </dialog>
+        )}
       </form>
 
       {/* Total tugas pada lingkup kelas yang dipilih */}

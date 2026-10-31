@@ -27,6 +27,12 @@ enum StatusTahunAjaran {
   ARSIP
 }
 
+enum JenisAktivitasDosen {
+  NILAI
+  ASESMEN
+  DISTRIBUSI
+}
+
 model Pengaturan {
   kunci String @id
   nilai String
@@ -62,16 +68,18 @@ model TahunAjaran {
   status    StatusTahunAjaran @default(ARSIP)
   createdAt DateTime          @default(now())
 
-  cpmk           CPMK[]
-  subCPMK        SubCPMK[]
-  tugas          Tugas[]
-  nilai          Nilai[]
-  hasilSubCPMK   HasilSubCPMK[]
-  hasilCPMK      HasilCPMK[]
-  hasilCPL       HasilCPL[]
-  pendaftaran    PendaftaranMK[]
-  penugasanDosen PenugasanDosenMK[]
-  kelasMK        KelasMK[]
+  cpmk               CPMK[]
+  subCPMK            SubCPMK[]
+  tugas              Tugas[]
+  nilai              Nilai[]
+  hasilSubCPMK       HasilSubCPMK[]
+  hasilCPMK          HasilCPMK[]
+  hasilCPL           HasilCPL[]
+  hasilProfilLulusan HasilProfilLulusan[]
+  pendaftaran        PendaftaranMK[]
+  penugasanDosen     PenugasanDosenMK[]
+  kelasMK            KelasMK[]
+  aktivitasDosen     AktivitasDosen[]
 }
 
 model KelasMK {
@@ -103,15 +111,16 @@ model Dosen {
 }
 
 model Mahasiswa {
-  id           String          @id @default(cuid())
-  nim          String          @unique
-  nama         String
-  angkatan     Int
-  pendaftaran  PendaftaranMK[]
-  nilai        Nilai[]
-  hasilSubCPMK HasilSubCPMK[]
-  hasilCPMK    HasilCPMK[]
-  hasilCPL     HasilCPL[]
+  id                 String               @id @default(cuid())
+  nim                String               @unique
+  nama               String
+  angkatan           Int
+  pendaftaran        PendaftaranMK[]
+  nilai              Nilai[]
+  hasilSubCPMK       HasilSubCPMK[]
+  hasilCPMK          HasilCPMK[]
+  hasilCPL           HasilCPL[]
+  hasilProfilLulusan HasilProfilLulusan[]
 }
 
 model MataKuliah {
@@ -160,11 +169,32 @@ model PendaftaranMK {
 
 // CPL tetap global — representasi kurikulum, bukan data operasional tahunan.
 model CPL {
-  id                String          @id @default(cuid())
-  kode              String          @unique
+  id                String             @id @default(cuid())
+  kode              String             @unique
   deskripsi         String
   mataKuliahTerkait MataKuliahCpl[]
+  profilTerkait     ProfilLulusanCpl[]
   hasilCPL          HasilCPL[]
+}
+
+model ProfilLulusan {
+  id         String               @id @default(cuid())
+  kode       String               @unique
+  nama       String
+  deskripsi  String
+  cplTerkait ProfilLulusanCpl[]
+  hasil      HasilProfilLulusan[]
+  createdAt  DateTime             @default(now())
+}
+
+model ProfilLulusanCpl {
+  id              String        @id @default(cuid())
+  profilLulusanId String
+  cplId           String
+  profilLulusan   ProfilLulusan @relation(fields: [profilLulusanId], references: [id], onDelete: Cascade)
+  cpl             CPL           @relation(fields: [cplId], references: [id], onDelete: Cascade)
+
+  @@unique([profilLulusanId, cplId])
 }
 
 model MataKuliahCpl {
@@ -309,4 +339,34 @@ model HasilCPL {
   updatedAt     DateTime    @updatedAt
 
   @@unique([mahasiswaId, cplId, tahunAjaranId])
+}
+
+model HasilProfilLulusan {
+  id              String        @id @default(cuid())
+  mahasiswaId     String
+  profilLulusanId String
+  tahunAjaranId   String
+  nilai           Float
+  statusLengkap   Boolean       @default(true)
+  mahasiswa       Mahasiswa     @relation(fields: [mahasiswaId], references: [id], onDelete: Cascade)
+  profilLulusan   ProfilLulusan @relation(fields: [profilLulusanId], references: [id], onDelete: Cascade)
+  tahunAjaran     TahunAjaran   @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([mahasiswaId, profilLulusanId, tahunAjaranId])
+}
+
+model AktivitasDosen {
+  id            String              @id @default(cuid())
+  tahunAjaranId String
+  jenis         JenisAktivitasDosen
+  pelaku        String
+  mataKuliah    String
+  kelas         String?
+  aksi          String
+  detail        String
+  createdAt     DateTime            @default(now())
+  tahunAjaran   TahunAjaran         @relation(fields: [tahunAjaranId], references: [id], onDelete: Cascade)
+
+  @@index([tahunAjaranId, createdAt])
 }

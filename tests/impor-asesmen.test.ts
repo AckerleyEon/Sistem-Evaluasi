@@ -1,7 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import ExcelJS from "exceljs";
+import JSZip from "jszip";
 import {
+  KOLOM_ASESMEN,
   cariMataKuliahDariNamaFile,
+  normalisasiNamespaceWorkbookExcel,
   normalisasiKunciAsesmen,
   petakanKolomAsesmen,
 } from "../src/lib/asesmen-impor-util";
@@ -50,7 +54,44 @@ test("petakanKolomAsesmen menolak template tanpa kolom wajib", () => {
   assert.equal(petakanKolomAsesmen(["Kelas", "Nama Tugas", "Pertemuan", "Bobot"]), null);
 });
 
+test("petakanKolomAsesmen menerima judul kolom yang ditampilkan pada modal impor", () => {
+  const kolom = petakanKolomAsesmen([...KOLOM_ASESMEN]);
+  assert.ok(kolom);
+  assert.deepEqual(Object.fromEntries(kolom), {
+    kelas: 1,
+    nama: 2,
+    pertemuan: 3,
+    bobot: 4,
+    sub: 5,
+  });
+});
+
 test("normalisasiKunciAsesmen menyamakan kapitalisasi dan pemisah", () => {
   assert.equal(normalisasiKunciAsesmen("  Sistem-Digital "), "sistemdigital");
   assert.equal(normalisasiKunciAsesmen("Elektronika Analog"), "elektronikaanalog");
+});
+
+test("normalisasiNamespaceWorkbookExcel mendukung workbook dengan prefix namespace", async () => {
+  const workbook = new ExcelJS.Workbook();
+  workbook.addWorksheet("Asesmen").addRow([...KOLOM_ASESMEN]);
+  const zip = await JSZip.loadAsync(Buffer.from(await workbook.xlsx.writeBuffer()));
+  for (const [path, file] of Object.entries(zip.files)) {
+    if (file.dir || !path.endsWith(".xml")) continue;
+    const xml = await file.async("string");
+    if (!xml.includes('xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"')) continue;
+    const xmlDenganPrefix = xml
+      .replace(/<(\/?)([A-Za-z_][\w.-]*)(?=[\s/>])/g, "<$1x:$2")
+      .replace(
+        'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',
+        'xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main"',
+      );
+    zip.file(path, xmlDenganPrefix);
+  }
+
+  const bufferNormal = await normalisasiNamespaceWorkbookExcel(
+    await zip.generateAsync({ type: "nodebuffer" }),
+  );
+  const workbookTerbaca = new ExcelJS.Workbook();
+  await workbookTerbaca.xlsx.load(bufferNormal as unknown as ExcelJS.Buffer);
+  assert.deepEqual(workbookTerbaca.worksheets.map((sheet) => sheet.name), ["Asesmen"]);
 });

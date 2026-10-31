@@ -18,6 +18,7 @@ export interface SegmenPredikat {
 export interface BarisKesiapan {
   id: string;
   dosen: string;
+  pengampu: string[];
   inisial: string;
   mataKuliah: string;
   terisi: number;
@@ -31,17 +32,6 @@ export interface BarAsesmen {
   label: string;
   jumlah: number;
   aktif: boolean;
-}
-
-export interface EntriLog {
-  id: string;
-  jenis: "nilai" | "rps";
-  dosen: string;
-  inisial: string;
-  teks: string;
-  sorot: string;
-  waktu: string;
-  chip: { teks: string; nada: "biru" | "hijau" | "oranye" };
 }
 
 export interface KpiDashboard {
@@ -71,5 +61,4 @@ export interface DataDashboard {
   asesmen: BarAsesmen[];
   labelBulanAktif: string;
   puncakInput: { nama: string; pertemuanKe: number } | null;
-  log: EntriLog[];
 }

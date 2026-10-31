@@ -73,6 +73,16 @@ export type PendaftaranMK = Prisma.PendaftaranMKModel
  */
 export type CPL = Prisma.CPLModel
 /**
+ * Model ProfilLulusan
+ * 
+ */
+export type ProfilLulusan = Prisma.ProfilLulusanModel
+/**
+ * Model ProfilLulusanCpl
+ * 
+ */
+export type ProfilLulusanCpl = Prisma.ProfilLulusanCplModel
+/**
  * Model MataKuliahCpl
  * 
  */
@@ -122,3 +132,13 @@ export type HasilCPMK = Prisma.HasilCPMKModel
  * 
  */
 export type HasilCPL = Prisma.HasilCPLModel
+/**
+ * Model HasilProfilLulusan
+ * 
+ */
+export type HasilProfilLulusan = Prisma.HasilProfilLulusanModel
+/**
+ * Model AktivitasDosen
+ * 
+ */
+export type AktivitasDosen = Prisma.AktivitasDosenModel

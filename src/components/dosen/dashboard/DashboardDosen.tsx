@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import type { DashboardDosenCourse, DashboardDosenData } from "@/lib/dashboard-dosen";
 
@@ -56,11 +56,11 @@ function Kartu({
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: "topi" | "buku" | "badge" }) {
   return (
-    <section className="flex min-h-24 items-start justify-between rounded-[20px] border border-[#E8ECF3] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.04)] sm:p-5">
+    <section className="flex min-h-35 items-start justify-between rounded-[20px] border border-[#E8ECF3] bg-white p-4 shadow-[0_1px_3px_rgba(15,23,42,.04)] sm:p-5">
       <h2 className="max-w-[72%] text-[11px] font-medium leading-4 text-[#334155] sm:text-xs">{label}</h2>
       <div className="flex h-full flex-col items-end justify-between">
         <span className="text-[#2563EB]"><Ikon nama={icon} ukuran={17} /></span>
-        <strong className="text-[32px] font-bold leading-none tracking-tight text-[#2563EB] sm:text-[40px]">{value}</strong>
+        <strong className="text-[40px] font-bold leading-none tracking-tight text-[#2563EB] sm:text-[40px]">{value}</strong>
       </div>
     </section>
   );
@@ -78,7 +78,7 @@ function GrafikMahasiswa({
   const max = Math.max(1, ...courses.map((item) => item.jumlahMahasiswa));
   return (
     <div
-      className="relative flex h-[158px] items-end gap-3 overflow-x-auto px-1 pb-1 pt-5"
+      className="relative flex h-39.5 items-end gap-3 overflow-x-auto px-1 pb-1 pt-5"
       role="group"
       aria-label="Jumlah mahasiswa terdaftar per mata kuliah"
     >
@@ -89,7 +89,7 @@ function GrafikMahasiswa({
           onClick={() => onSelect(item.id)}
           title={`${item.nama} · ${item.jumlahMahasiswa} mahasiswa`}
           aria-pressed={selectedId === item.id}
-          className="group flex h-full min-w-[42px] flex-1 flex-col items-center justify-end gap-1 rounded-md px-0.5 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="group flex h-full min-w-10.5 flex-1 flex-col items-center justify-end gap-1 rounded-md px-0.5 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           <span className="text-[10px] font-semibold">{item.jumlahMahasiswa}</span>
           <span
@@ -123,7 +123,7 @@ function DonutBobot({ course }: { course: DashboardDosenCourse | null }) {
           role="img"
           aria-label={`Diagram bobot tugas mata kuliah ${course?.nama ?? ""}, total ${total}%`}
         >
-          <div className="grid h-[62px] w-[62px] place-items-center rounded-full bg-white text-center">
+          <div className="grid h-15.5 w-15.5 place-items-center rounded-full bg-white text-center">
             <span><b className="block text-[14px] leading-4 text-[#111827]">{total}%</b><small className="text-[9px] text-[#64748B]">Total</small></span>
           </div>
         </div>
@@ -173,7 +173,7 @@ function PilDots({
             const arah = event.key === "ArrowRight" ? 1 : -1;
             onSelect(courses[(index + arah + courses.length) % courses.length].id);
           }}
-          className={`h-1.5 rounded-full transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${activeId === course.id ? "w-5 bg-[#2563EB]" : "w-1.5 bg-[#D7DEE9] hover:bg-[#94A3B8]"}`}
+          className={`h-1.5 rounded-full transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2563EB] ${activeId === course.id ? "w-5 bg-[#2563EB]" : "w-1.5 bg-[#D7DEE9] hover:bg-[#94A3B8]"}`}
         />
       ))}
     </div>
@@ -187,12 +187,12 @@ function Sebaran({ courses }: { courses: DashboardDosenCourse[] }) {
         <h2 className="max-w-48 text-[15px] font-bold leading-5 text-[#111827]">Sebaran CPMK &amp; Sub-CPMK</h2>
         <span className="text-[#2563EB]"><Ikon nama="hierarki" /></span>
       </div>
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pb-3 [scrollbar-width:thin]">
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pb-3 scrollbar-thin">
         {courses.map((course) => (
           <Link
             key={course.id}
             href={`/dosen/komponen-penilaian/${course.id}`}
-            className="flex min-h-14 items-center justify-between gap-2 rounded-xl bg-[#F3F7FF] p-2.5 transition-shadow hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2563EB]"
+            className="flex min-h-14 items-center justify-between gap-2 rounded-xl bg-[#F3F7FF] p-2.5 transition-shadow hover:shadow-sm focus-visible:outline-2 focus-visible:outline-[#2563EB]"
           >
             <span className="min-w-0 flex-1 text-[11px] font-medium leading-4 text-[#172033]" title={course.nama}>{course.nama}</span>
             <span className="flex shrink-0 flex-col items-end gap-1">
@@ -207,17 +207,57 @@ function Sebaran({ courses }: { courses: DashboardDosenCourse[] }) {
         ))}
         {courses.length === 0 && <p className="py-8 text-center text-xs text-[#64748B]">Belum ada sebaran CPMK.</p>}
       </div>
-      {courses.length > 4 && <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-white to-transparent" aria-hidden="true" />}
+      {courses.length > 4 && <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-white to-transparent" aria-hidden="true" />}
     </section>
   );
 }
 
 export function DashboardDosen({ data }: { data: DashboardDosenData | null }) {
   const [activeCourseId, setActiveCourseId] = useState<string | null>(data?.mataKuliah[0]?.id ?? null);
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const suppressSwipeClickUntil = useRef(0);
   const courses = data?.mataKuliah ?? [];
   const activeCourse = courses.find((item) => item.id === activeCourseId) ?? courses[0] ?? null;
   function pilihMK(id: string) {
     setActiveCourseId(id);
+  }
+
+  function mulaiGeserMK(event: React.TouchEvent<HTMLDivElement>) {
+    if (event.touches.length !== 1 || courses.length < 2) {
+      swipeStart.current = null;
+      return;
+    }
+    if (event.target instanceof Element && event.target.closest("button, select, input")) {
+      swipeStart.current = null;
+      return;
+    }
+    const touch = event.touches[0];
+    swipeStart.current = { x: touch.clientX, y: touch.clientY };
+  }
+
+  function akhirGeserMK(event: React.TouchEvent<HTMLDivElement>) {
+    const awal = swipeStart.current;
+    swipeStart.current = null;
+    if (!awal || courses.length < 2 || event.changedTouches.length !== 1) return;
+
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - awal.x;
+    const deltaY = touch.clientY - awal.y;
+    if (Math.abs(deltaX) < 48 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25) return;
+
+    const indexAktif = courses.findIndex((course) => course.id === activeCourse?.id);
+    if (indexAktif < 0) return;
+    const arah = deltaX < 0 ? 1 : -1;
+    pilihMK(courses[(indexAktif + arah + courses.length) % courses.length].id);
+    suppressSwipeClickUntil.current = Date.now() + 500;
+    event.preventDefault();
+  }
+
+  function cegahKlikSetelahGeser(event: React.MouseEvent<HTMLDivElement>) {
+    if (Date.now() >= suppressSwipeClickUntil.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressSwipeClickUntil.current = 0;
   }
 
   if (!data) {
@@ -251,7 +291,7 @@ export function DashboardDosen({ data }: { data: DashboardDosenData | null }) {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(240px,.75fr)]">
-            <section className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-[#2F6FEB] to-[#4F8BF5] p-4 text-white shadow-[0_5px_14px_rgba(37,99,235,.18)] sm:p-5">
+            <section className="relative overflow-hidden rounded-[20px] bg-linear-to-br from-[#2F6FEB] to-[#4F8BF5] p-4 text-white shadow-[0_5px_14px_rgba(37,99,235,.18)] sm:p-5">
               <div className="pointer-events-none absolute -right-8 -top-12 h-36 w-36 rounded-full bg-white/10 blur-2xl" aria-hidden="true" />
               <div className="relative flex items-start justify-between gap-2">
                 <div>
@@ -262,13 +302,25 @@ export function DashboardDosen({ data }: { data: DashboardDosenData | null }) {
               </div>
               <GrafikMahasiswa courses={courses} selectedId={activeCourse?.id ?? null} onSelect={pilihMK} />
             </section>
-
-            <Kartu title="Bobot Tugas">
-              <DonutBobot course={activeCourse} />
-              <PilDots courses={courses} activeId={activeCourse?.id ?? null} onSelect={pilihMK} label="Pilih mata kuliah untuk bobot tugas" />
-            </Kartu>
+            <div
+              className="min-w-0 touch-pan-y"
+              onTouchStart={mulaiGeserMK}
+              onTouchEnd={akhirGeserMK}
+              onClickCapture={cegahKlikSetelahGeser}
+            >
+              <Kartu title="Bobot Tugas">
+                <DonutBobot course={activeCourse} />
+                <PilDots courses={courses} activeId={activeCourse?.id ?? null} onSelect={pilihMK} label="Pilih mata kuliah untuk bobot tugas" />
+              </Kartu>
+            </div>
           </div>
 
+          <div
+            className="min-w-0 touch-pan-y xl:flex xl:min-h-0 xl:flex-1 xl:flex-col"
+            onTouchStart={mulaiGeserMK}
+            onTouchEnd={akhirGeserMK}
+            onClickCapture={cegahKlikSetelahGeser}
+          >
           <Kartu title="Data tiap Tugas" subtitle="Progres pengumpulan & penilaian mahasiswa" className="xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <span className="text-[10px] text-[#64748B]">Nilai yang sudah masuk dibanding peserta tugas</span>
@@ -292,7 +344,7 @@ export function DashboardDosen({ data }: { data: DashboardDosenData | null }) {
                     <Link
                       key={task.id}
                       href={`/dosen/input-nilai/${activeCourse.id}?${params.toString()}`}
-                      className="grid grid-cols-[52px_minmax(0,1fr)_100px] items-center gap-2 rounded-lg text-[10px] transition-colors hover:bg-[#F8FAFC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#2563EB] sm:grid-cols-[58px_minmax(0,1fr)_130px]"
+                      className="grid grid-cols-[52px_minmax(0,1fr)_100px] items-center gap-2 rounded-lg text-[10px] transition-colors hover:bg-[#F8FAFC] focus-visible:outline-2 focus-visible:outline-[#2563EB] sm:grid-cols-[58px_minmax(0,1fr)_130px]"
                     >
                       <span className="truncate font-medium text-[#172033]" title={task.nama}>Tugas {index + 1}</span>
                       <span
@@ -315,6 +367,7 @@ export function DashboardDosen({ data }: { data: DashboardDosenData | null }) {
             )}
             <PilDots courses={courses} activeId={activeCourse?.id ?? null} onSelect={pilihMK} label="Pilih mata kuliah untuk progres tugas" />
           </Kartu>
+          </div>
 
         </div>
 

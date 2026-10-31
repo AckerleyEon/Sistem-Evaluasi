@@ -4,6 +4,7 @@ import { rataBerbobot, type HasilHitung } from "../src/lib/perhitungan/rumus";
 import { hitungSubCPMK } from "../src/lib/perhitungan/hitungSubCPMK";
 import { hitungCPMK } from "../src/lib/perhitungan/hitungCPMK";
 import { hitungCPL } from "../src/lib/perhitungan/hitungCPL";
+import { hitungProfilLulusan } from "../src/lib/perhitungan/hitungProfilLulusan";
 
 const dekat = (a: number, b: number) => assert.ok(Math.abs(a - b) < 1e-9, `${a} != ${b}`);
 
@@ -101,4 +102,26 @@ test("hitungCPL: dibobot per CPMK, lengkap hanya jika semua CPMK lengkap", () =>
     { nilai: 60, bobot: 70, statusLengkap: false },
   ])!;
   assert.equal(sebagian.statusLengkap, false);
+});
+
+test("hitungProfilLulusan: rata-rata sederhana dari nilai CPL terpetakan", () => {
+  const hasil = hitungProfilLulusan([
+    { nilai: 80, statusLengkap: true },
+    { nilai: 60, statusLengkap: true },
+  ], 2)!;
+  dekat(hasil.nilai, 70);
+  assert.equal(hasil.statusLengkap, true);
+});
+
+test("hitungProfilLulusan: menghitung CPL tersedia dan menandai hasil parsial tidak lengkap", () => {
+  const hasil = hitungProfilLulusan([
+    { nilai: 80, statusLengkap: true },
+  ], 2)!;
+  dekat(hasil.nilai, 80);
+  assert.equal(hasil.statusLengkap, false);
+});
+
+test("hitungProfilLulusan: tanpa CPL atau tanpa hasil menghasilkan null", () => {
+  assert.equal(hitungProfilLulusan([], 2), null);
+  assert.equal(hitungProfilLulusan([{ nilai: 80, statusLengkap: true }], 0), null);
 });

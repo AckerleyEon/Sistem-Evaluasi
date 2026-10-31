@@ -108,7 +108,7 @@ export function BatasBawahCPL({ passingGrade, histogram }: { passingGrade: numbe
           type="button"
           onClick={terapkan}
           disabled={!diubah || pending}
-          className="flex min-h-[32px] items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[12px] font-bold text-[#1D4ED8] transition disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          className="flex min-h-8 items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[12px] font-bold text-[#1D4ED8] transition disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
           <Ikon nama="simpan" ukuran={14} />
           {pending ? "Menyimpan..." : "Terapkan"}

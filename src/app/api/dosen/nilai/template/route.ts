@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
 import { cekAksesMK } from "@/lib/otorisasi";
+import { buatNamaFileNilai } from "@/lib/nilai-impor-util";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -113,13 +114,11 @@ export async function GET(request: Request) {
   metadata.state = "hidden";
 
   const buffer = await workbook.xlsx.writeBuffer();
-  const namaFile = `template-nilai-${tugas.mataKuliah.kode}-${tugas.nama}`
-    .replace(/[^a-zA-Z0-9-]+/g, "-")
-    .replace(/^-|-$/g, "");
+  const namaFile = buatNamaFileNilai(tugas.mataKuliah.kode, tugas.mataKuliah.nama);
   return new NextResponse(buffer, {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="${namaFile}.xlsx"`,
+      "Content-Disposition": `attachment; filename="${namaFile}"`,
       "Cache-Control": "no-store",
     },
   });

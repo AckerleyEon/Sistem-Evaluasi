@@ -6,7 +6,6 @@ import { DonutPredikat } from "@/components/admin/dashboard/DonutPredikat";
 import { KesiapanDosen } from "@/components/admin/dashboard/KesiapanDosen";
 import { BatasBawahCPL } from "@/components/admin/dashboard/BatasBawahCPL";
 import { InputAsesmen } from "@/components/admin/dashboard/InputAsesmen";
-import { LogAktivitas } from "@/components/admin/dashboard/LogAktivitas";
 
 export const dynamic = "force-dynamic";
 
@@ -77,18 +76,18 @@ export default async function DashboardAdminPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <GrafikCapaianAngkatan data={data.angkatan} />
-          <DonutPredikat
-            segmen={data.predikat}
-            total={data.totalSampel}
-            persenLulus={data.persenLulus}
-            jumlahRemedial={data.jumlahRemedial}
-          />
-
-          <KesiapanDosen baris={data.kesiapan} tahunAjaranId={data.tahunAjaran.id} />
-          <BatasBawahCPL passingGrade={data.passingGrade} histogram={data.histogram} />
-          <InputAsesmen data={data.asesmen} labelBulan={data.labelBulanAktif} puncak={data.puncakInput} />
-          <LogAktivitas entri={data.log} />
+        <GrafikCapaianAngkatan data={data.angkatan} />
+        <DonutPredikat
+          segmen={data.predikat}
+          total={data.totalSampel}
+          persenLulus={data.persenLulus}
+          jumlahRemedial={data.jumlahRemedial}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:items-stretch">
+        <KesiapanDosen baris={data.kesiapan} tahunAjaranId={data.tahunAjaran.id} />
+        <BatasBawahCPL passingGrade={data.passingGrade} histogram={data.histogram} />
+        <InputAsesmen data={data.asesmen} labelBulan={data.labelBulanAktif} puncak={data.puncakInput} />
       </div>
     </div>
   );

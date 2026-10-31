@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { imporAsesmenExcel } from "@/lib/actions/impor-asesmen";
+import { BATAS_IMPOR_ASESMEN, KOLOM_ASESMEN } from "@/lib/asesmen-impor-util";
 import { Ikon } from "../Ikon";
 import { FOKUS } from "./KartuUI";
 
@@ -24,7 +25,11 @@ export function ModalImporAsesmen({
   const [sedangImpor, setSedangImpor] = useState(false);
   const [galat, setGalat] = useState<string | null>(null);
   const ukuranTotal = files.reduce((total, file) => total + file.size, 0);
-  const batasUkuran = files.length > 20 || ukuranTotal > 20 * 1024 * 1024 || files.some((file) => file.size > 5 * 1024 * 1024);
+
+  const batasUkuran =
+    files.length > BATAS_IMPOR_ASESMEN.jumlahFile ||
+    ukuranTotal > BATAS_IMPOR_ASESMEN.ukuranTotal ||
+    files.some((file) => file.size > BATAS_IMPOR_ASESMEN.ukuranPerFile);
 
   useEffect(() => {
     const elemen = dialog.current;
@@ -81,7 +86,7 @@ export function ModalImporAsesmen({
       onClick={(e) => {
         if (e.target === dialog.current) tutup();
       }}
-      className="m-auto max-h-[90vh] w-[520px] max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex max-sm:mb-0 max-sm:mt-auto max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none"
+      className="m-auto max-h-[90vh] w-130 max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex max-sm:mb-0 max-sm:mt-auto max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none"
     >
       <header className="flex items-start gap-3 border-b border-[#E5E7EB] px-5 pb-3 pt-4">
         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[#2563EB] text-white">
@@ -108,7 +113,7 @@ export function ModalImporAsesmen({
       <div className="space-y-3 px-5 py-4">
         <a
           href={`/api/dosen/asesmen/template?${query.toString()}`}
-          className={`flex min-h-[40px] items-center justify-center gap-2 rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-4 text-[12px] font-bold text-[#1D4ED8] hover:bg-[#DBEAFE] ${FOKUS}`}
+          className={`flex min-h-10 items-center justify-center gap-2 rounded-full border border-[#BFDBFE] bg-[#EFF6FF] px-4 text-[12px] font-bold text-[#1D4ED8] hover:bg-[#DBEAFE] ${FOKUS}`}
         >
           <Ikon nama="unduh" ukuran={14} />
           Unduh Template {namaMK}
@@ -126,7 +131,7 @@ export function ModalImporAsesmen({
               setFiles(Array.from(e.currentTarget.files ?? []));
               setGalat(null);
             }}
-            className="block w-full text-[12px] file:mr-3 file:min-h-[36px] file:rounded-[10px] file:border-0 file:bg-[#EEF3FD] file:px-4 file:text-[12px] file:font-semibold file:text-[#111827]"
+            className="block w-full text-[12px] file:mr-3 file:min-h-9 file:rounded-[10px] file:border-0 file:bg-[#EEF3FD] file:px-4 file:text-[12px] file:font-semibold file:text-[#111827]"
           />
         </label>
         {files.length > 0 && (
@@ -147,30 +152,31 @@ export function ModalImporAsesmen({
         )}
         <div className="space-y-1.5 rounded-lg bg-[#F8FAFC] p-3 text-[11px] text-[#475569]">
           <p>Nama file: <b>KODEMK_NAMAMK_asesmen.xlsx</b></p>
+          <p>Isi lembar <b>Asesmen</b> (atau lembar pertama) mulai baris kedua, satu baris untuk satu tugas.</p>
           <p>Kolom Excel:</p>
           <div className="overflow-x-auto rounded border border-[#E2E8F0] bg-white">
             <table className="min-w-full text-left">
               <thead className="bg-[#EFF6FF] text-[#1E40AF]">
                 <tr>
-                  {["Kelas", "Nama Tugas", "Pertemuan", "Bobot", "Kode Sub-CPMK"].map((kolom) => (
+                  {KOLOM_ASESMEN.map((kolom) => (
                     <th key={kolom} className="whitespace-nowrap px-2 py-1 font-semibold">{kolom}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  {["A", "Kuis 1", "3", "20", "SUB-ELKA-1"].map((nilai) => (
+                  {["A", "Kuis 1", "3", "20", "SUB-ELKA-1, SUB-ELKA-2"].map((nilai) => (
                     <td key={nilai} className="whitespace-nowrap px-2 py-1">{nilai}</td>
                   ))}
                 </tr>
               </tbody>
             </table>
           </div>
-          <p>Setiap baris harus berisi kelas. Nama kelas harus sesuai daftar di template.</p>
+          <p>Setiap baris wajib berisi kelas, pertemuan 1–16, bobot bulat 1–99, dan kode Sub-CPMK (pisahkan beberapa kode dengan koma). Maksimal 100 tugas per file.</p>
         </div>
         {batasUkuran && (
           <p role="alert" className="rounded-lg bg-[#FFF7ED] px-3 py-2 text-[11px] text-[#C2410C]">
-            Batas impor: maksimal 20 file, 5 MB per file, dan 20 MB total.
+            Batas impor: maksimal {BATAS_IMPOR_ASESMEN.jumlahFile} file, {BATAS_IMPOR_ASESMEN.ukuranPerFile / (1024 * 1024)} MB per file, dan {BATAS_IMPOR_ASESMEN.ukuranTotal / (1024 * 1024)} MB total.
           </p>
         )}
         {galat && (
@@ -185,7 +191,7 @@ export function ModalImporAsesmen({
           type="button"
           onClick={tutup}
           disabled={sedangImpor}
-          className={`min-h-[34px] min-w-[100px] rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] disabled:opacity-50 ${FOKUS}`}
+          className={`min-h-8.5 min-w-25 rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] disabled:opacity-50 ${FOKUS}`}
         >
           Batal
         </button>
@@ -193,7 +199,7 @@ export function ModalImporAsesmen({
           type="button"
           onClick={impor}
           disabled={sedangImpor || batasUkuran}
-          className={`flex min-h-[34px] items-center gap-1.5 rounded-full bg-[#2563EB] px-4 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] hover:bg-[#1D4ED8] disabled:opacity-60 ${FOKUS}`}
+          className={`flex min-h-8.5 items-center gap-1.5 rounded-full bg-[#2563EB] px-4 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] hover:bg-[#1D4ED8] disabled:opacity-60 ${FOKUS}`}
         >
           <Ikon nama="unggah" ukuran={14} />
           {sedangImpor ? "Mengimpor..." : `Impor ${files.length || ""} File`}

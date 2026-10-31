@@ -3,7 +3,6 @@ import type {
   BarAsesmen,
   BarisKesiapan,
   DataDashboard,
-  EntriLog,
   NadaStatus,
   PredikatKey,
   SegmenPredikat,
@@ -48,17 +47,6 @@ function namaDosen(d: { nama: string; gelar: string | null }) {
   return d.gelar ? `${d.nama}, ${d.gelar}` : d.nama;
 }
 
-function waktuRelatif(tanggal: Date, sekarang: number) {
-  const menit = Math.max(0, Math.floor((sekarang - tanggal.getTime()) / 60000));
-  if (menit < 1) return "baru saja";
-  if (menit < 60) return `${menit}m lalu`;
-  const jam = Math.floor(menit / 60);
-  if (jam < 24) return `${jam}j lalu`;
-  const hari = Math.floor(jam / 24);
-  if (hari < 30) return `${hari}h lalu`;
-  return tanggal.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
-}
-
 const rata = (angka: number[]) => (angka.length ? angka.reduce((a, b) => a + b, 0) / angka.length : 0);
 
 export async function ambilDashboard(taId?: string): Promise<DataDashboard | null> {
@@ -70,7 +58,7 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
   if (!ta) return null;
 
   const where = { tahunAjaranId: ta.id };
-  const [totalCPL, totalDosenAkun, mahasiswaPerAngkatan, mataKuliahMaster, hasilCPLSemuaTA, penugasan, pendaftaran, tugas, nilai, distribusi, pengaturan] =
+  const [totalCPL, totalDosenAkun, mahasiswaPerAngkatan, mataKuliahMaster, hasilCPLSemuaTA, penugasan, kelasPengampu, pendaftaran, tugas, nilai, pengaturan] =
     await Promise.all([
       prisma.cPL.count(),
       prisma.dosen.count(),
@@ -83,28 +71,38 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
         where,
         include: { dosen: true, mataKuliah: true },
       }),
-      prisma.pendaftaranMK.findMany({ where, select: { mahasiswaId: true, mataKuliahId: true } }),
+      prisma.kelasMK.findMany({
+        where,
+        select: {
+          id: true,
+          nama: true,
+          mataKuliahId: true,
+          dosenId: true,
+          dosen: { select: { nama: true, gelar: true } },
+          mataKuliah: { select: { id: true, nama: true } },
+        },
+      }),
+      prisma.pendaftaranMK.findMany({
+        where,
+        select: { mahasiswaId: true, mataKuliahId: true, kelasId: true },
+      }),
       prisma.tugas.findMany({
         where,
-        select: { id: true, nama: true, pertemuanKe: true, mataKuliahId: true, mataKuliah: { select: { nama: true } } },
+        select: { id: true, nama: true, pertemuanKe: true, mataKuliahId: true, kelasId: true, mataKuliah: { select: { nama: true } } },
       }),
       prisma.nilai.findMany({ where, select: { mahasiswaId: true, tugasId: true, skor: true, updatedAt: true } }),
-      prisma.distribusiSubCPMK.findMany({
-        where: { tugas: { tahunAjaranId: ta.id } },
-        orderBy: { createdAt: "desc" },
-        take: 200,
-        select: { createdAt: true, tugas: { select: { mataKuliahId: true } } },
-      }),
       prisma.pengaturan.findUnique({ where: { kunci: KUNCI_PASSING_GRADE } }),
     ]);
 
-  const sekarang = Date.now();
   const passingGrade = Math.min(100, Math.max(50, Math.round(Number(pengaturan?.nilai)) || PASSING_GRADE_DEFAULT));
   const hasilCPL = hasilCPLSemuaTA.filter((hasil) => hasil.tahunAjaranId === ta.id);
 
   // ---- KPI ----
   const mahasiswaAktif = new Set(pendaftaran.map((p) => p.mahasiswaId));
-  const dosenAktif = new Set(penugasan.map((p) => p.dosenId));
+  const dosenAktif = new Set([
+    ...penugasan.map((p) => p.dosenId),
+    ...kelasPengampu.map((item) => item.dosenId),
+  ]);
   const kpi = {
     totalCPL,
     rataCPL: hasilCPL.length ? Math.round(rata(hasilCPL.map((h) => h.nilai))) : null,
@@ -152,38 +150,64 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
     : null;
 
   // ---- Kesiapan input dosen ----
-  const tugasPerMK = new Map<string, string[]>();
-  for (const t of tugas) tugasPerMK.set(t.mataKuliahId, [...(tugasPerMK.get(t.mataKuliahId) ?? []), t.id]);
-  const terdaftarPerMK = new Map<string, Set<string>>();
+  const tugasPerKelas = new Map<string, string[]>();
+  const terdaftarPerMK = new Map<string, { mahasiswaId: string; kelasId: string }[]>();
+  const dosenPerMK = new Map<string, Map<string, string>>();
+  const dosenIdsPerMK = new Map<string, Set<string>>();
+  const mataKuliahPerMK = new Map<string, { nama: string; dosenIds: Set<string> }>();
+
+  for (const p of penugasan) {
+    const mk = mataKuliahPerMK.get(p.mataKuliahId) ?? { nama: p.mataKuliah.nama, dosenIds: new Set<string>() };
+    mk.dosenIds.add(p.dosenId);
+    mataKuliahPerMK.set(p.mataKuliahId, mk);
+    const pengampu = dosenPerMK.get(p.mataKuliahId) ?? new Map<string, string>();
+    pengampu.set(p.dosenId, namaDosen(p.dosen));
+    dosenPerMK.set(p.mataKuliahId, pengampu);
+  }
+  for (const kelas of kelasPengampu) {
+    const mk = mataKuliahPerMK.get(kelas.mataKuliahId) ?? { nama: kelas.mataKuliah.nama, dosenIds: new Set<string>() };
+    mk.dosenIds.add(kelas.dosenId);
+    mataKuliahPerMK.set(kelas.mataKuliahId, mk);
+    const pengampu = dosenPerMK.get(kelas.mataKuliahId) ?? new Map<string, string>();
+    pengampu.set(kelas.dosenId, namaDosen(kelas.dosen));
+    dosenPerMK.set(kelas.mataKuliahId, pengampu);
+  }
   for (const p of pendaftaran) {
-    const s = terdaftarPerMK.get(p.mataKuliahId) ?? new Set<string>();
-    s.add(p.mahasiswaId);
+    const s = terdaftarPerMK.get(p.mataKuliahId) ?? [];
+    s.push({ mahasiswaId: p.mahasiswaId, kelasId: p.kelasId });
     terdaftarPerMK.set(p.mataKuliahId, s);
+  }
+  for (const t of tugas) {
+    const kunci = `${t.mataKuliahId}:${t.kelasId}`;
+    tugasPerKelas.set(kunci, [...(tugasPerKelas.get(kunci) ?? []), t.id]);
   }
   const nilaiPerMhsTugas = new Set(nilai.map((n) => `${n.mahasiswaId}|${n.tugasId}`));
 
-  const kesiapanSemua: BarisKesiapan[] = penugasan.map((p) => {
-    const idTugas = tugasPerMK.get(p.mataKuliahId) ?? [];
-    const terdaftar = [...(terdaftarPerMK.get(p.mataKuliahId) ?? [])];
-    const terisi = idTugas.length
-      ? terdaftar.filter((m) => idTugas.every((t) => nilaiPerMhsTugas.has(`${m}|${t}`))).length
-      : 0;
+  const kesiapanSemua: BarisKesiapan[] = [...mataKuliahPerMK.entries()].map(([mataKuliahId, mk]) => {
+    const terdaftar = terdaftarPerMK.get(mataKuliahId) ?? [];
+    const terisi = terdaftar.filter((mahasiswa) => {
+      const idTugas = tugasPerKelas.get(`${mataKuliahId}:${mahasiswa.kelasId}`) ?? [];
+      return idTugas.length > 0 && idTugas.every((idTugas) => nilaiPerMhsTugas.has(`${mahasiswa.mahasiswaId}|${idTugas}`));
+    }).length;
     const persen = terdaftar.length ? Math.round((terisi / terdaftar.length) * 100) : 0;
-    const nama = namaDosen(p.dosen);
+    const pengampu = [...(dosenPerMK.get(mataKuliahId)?.values() ?? [])].sort((a, b) => a.localeCompare(b, "id"));
+    const dosenIds = mk.dosenIds;
+    dosenIdsPerMK.set(mataKuliahId, dosenIds);
     return {
-      id: p.id,
-      dosen: nama,
-      inisial: inisial(p.dosen.nama),
-      mataKuliah: p.mataKuliah.nama,
+      id: mataKuliahId,
+      dosen: pengampu.join(", "),
+      pengampu,
+      inisial: pengampu.length === 1 ? inisial(pengampu[0]) : "MK",
+      mataKuliah: mk.nama,
       terisi,
       total: terdaftar.length,
       persen,
       ...statusKesiapan(persen),
     };
   });
-  kesiapanSemua.sort((a, b) => b.persen - a.persen);
+  kesiapanSemua.sort((a, b) => a.persen - b.persen || a.mataKuliah.localeCompare(b.mataKuliah, "id"));
   const jumlahDosenPerluPengingat = new Set(
-    penugasan.filter((_, i) => kesiapanSemua.find((k) => k.id === penugasan[i].id)!.persen < 100).map((p) => p.dosenId),
+    kesiapanSemua.filter((item) => item.persen < 100).flatMap((item) => [...(dosenIdsPerMK.get(item.id) ?? [])]),
   ).size;
 
   // ---- Input asesmen per bulan (5 bulan, berakhir di bulan input terakhir) ----
@@ -211,59 +235,6 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
   const puncak = idPuncak ? tugasById.get(idPuncak) : undefined;
   const puncakInput = puncak ? { nama: puncak.nama, pertemuanKe: puncak.pertemuanKe } : null;
 
-  // ---- Log aktivitas (diturunkan dari timestamp Nilai & DistribusiSubCPMK) ----
-  const penugasanPerMK = new Map(penugasan.map((p) => [p.mataKuliahId, p]));
-  const log: EntriLog[] = [];
-
-  for (const [idTugas, info] of perTugas) {
-    const t = tugasById.get(idTugas);
-    if (!t) continue;
-    const p = penugasanPerMK.get(t.mataKuliahId);
-    const total = terdaftarPerMK.get(t.mataKuliahId)?.size ?? 0;
-    log.push({
-      id: `n-${idTugas}`,
-      jenis: "nilai",
-      dosen: p ? namaDosen(p.dosen) : "Dosen pengampu",
-      inisial: p ? inisial(p.dosen.nama) : "DP",
-      teks: `Input nilai ${t.nama} untuk`,
-      sorot: `${t.mataKuliah.nama} (${total} Mhs)`,
-      waktu: waktuRelatif(info.terbaru, sekarang),
-      chip: { teks: `${info.jumlah}/${total} Data Masuk`, nada: "hijau" },
-      // dipakai untuk pengurutan, dibuang di bawah
-      ...({ _t: info.terbaru.getTime() } as object),
-    });
-  }
-
-  const perMKDistribusi = new Map<string, { jumlah: number; terbaru: Date }>();
-  for (const d of distribusi) {
-    const cur = perMKDistribusi.get(d.tugas.mataKuliahId);
-    perMKDistribusi.set(d.tugas.mataKuliahId, {
-      jumlah: (cur?.jumlah ?? 0) + 1,
-      terbaru: !cur || d.createdAt > cur.terbaru ? d.createdAt : cur.terbaru,
-    });
-  }
-  for (const [idMK, info] of perMKDistribusi) {
-    const p = penugasanPerMK.get(idMK);
-    if (!p) continue;
-    log.push({
-      id: `r-${idMK}`,
-      jenis: "rps",
-      dosen: namaDosen(p.dosen),
-      inisial: inisial(p.dosen.nama),
-      teks: "Memperbarui pemetaan CPMK & Sub-CPMK pada",
-      sorot: `${p.mataKuliah.nama} (${p.mataKuliah.kode})`,
-      waktu: waktuRelatif(info.terbaru, sekarang),
-      chip: { teks: "Konfigurasi CPMK → Sub-CPMK", nada: "biru" },
-      ...({ _t: info.terbaru.getTime() } as object),
-    });
-  }
-  log.sort((a, b) => ((b as unknown as { _t: number })._t) - ((a as unknown as { _t: number })._t));
-  const logBersih = log.slice(0, 12).map((e) => {
-    const { _t, ...sisa } = e as EntriLog & { _t?: number };
-    void _t;
-    return sisa as EntriLog;
-  });
-
   return {
     tahunAjaran: ta,
     daftarTahunAjaran: semuaTA.map((t) => ({ id: t.id, label: t.label })),
@@ -275,11 +246,10 @@ export async function ambilDashboard(taId?: string): Promise<DataDashboard | nul
     persenLulus,
     passingGrade,
     histogram,
-    kesiapan: kesiapanSemua.slice(0, 5),
+    kesiapan: kesiapanSemua,
     jumlahDosenPerluPengingat,
     asesmen,
     labelBulanAktif,
     puncakInput,
-    log: logBersih,
   };
 }

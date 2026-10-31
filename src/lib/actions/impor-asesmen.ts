@@ -9,15 +9,13 @@ import { hitungUlangMataKuliah } from "@/lib/perhitungan/hitungUlangMataKuliah";
 import { auth } from "@/auth";
 import { getTahunAjaranAktif, getTahunAjaranDosen } from "@/lib/tahun-ajaran";
 import {
+  BATAS_IMPOR_ASESMEN,
   cariMataKuliahDariNamaFile,
+  normalisasiNamespaceWorkbookExcel,
   normalisasiKunciAsesmen,
   petakanKolomAsesmen,
   type KolomAsesmen,
 } from "@/lib/asesmen-impor-util";
-
-const MAKS_UKURAN_FILE = 5 * 1024 * 1024;
-const MAKS_UKURAN_TOTAL = 20 * 1024 * 1024;
-const MAKS_FILE = 20;
 
 function teksSel(value: ExcelJS.CellValue): string {
   if (value === null || value === undefined) return "";
@@ -70,15 +68,17 @@ export async function imporAsesmenExcel(
   if (files.length === 0 || files.some((file) => !(file instanceof File) || file.size === 0)) {
     return { ok: false, pesan: "Pilih minimal satu file Excel (.xlsx) yang sudah diisi." };
   }
-  if (files.length > MAKS_FILE) return { ok: false, pesan: `Maksimal ${MAKS_FILE} file untuk satu kali impor.` };
+  if (files.length > BATAS_IMPOR_ASESMEN.jumlahFile) {
+    return { ok: false, pesan: `Maksimal ${BATAS_IMPOR_ASESMEN.jumlahFile} file untuk satu kali impor.` };
+  }
   const fileList = files.filter((file): file is File => file instanceof File);
   if (fileList.some((file) => !file.name.toLowerCase().endsWith(".xlsx"))) {
     return { ok: false, pesan: "Semua file harus berformat .xlsx." };
   }
-  if (fileList.some((file) => file.size > MAKS_UKURAN_FILE)) {
+  if (fileList.some((file) => file.size > BATAS_IMPOR_ASESMEN.ukuranPerFile)) {
     return { ok: false, pesan: "Ukuran setiap file maksimal 5 MB." };
   }
-  if (fileList.reduce((total, file) => total + file.size, 0) > MAKS_UKURAN_TOTAL) {
+  if (fileList.reduce((total, file) => total + file.size, 0) > BATAS_IMPOR_ASESMEN.ukuranTotal) {
     return { ok: false, pesan: "Ukuran total file maksimal 20 MB." };
   }
 
@@ -104,10 +104,30 @@ export async function imporAsesmenExcel(
     }
 
     const workbook = new ExcelJS.Workbook();
+    const isiFile = await file.arrayBuffer();
+    const signatureZip = new Uint8Array(isiFile, 0, Math.min(4, isiFile.byteLength));
+    if (
+      signatureZip[0] !== 0x50 ||
+      signatureZip[1] !== 0x4b ||
+      ![0x03, 0x05, 0x07].includes(signatureZip[2]) ||
+      ![0x04, 0x06, 0x08].includes(signatureZip[3])
+    ) {
+      return {
+        ok: false,
+        pesan: `${file.name}: isi file bukan workbook .xlsx biasa (berkas terenkripsi atau format Excel lain). Buka file di Excel lalu simpan ulang sebagai "Excel Workbook (*.xlsx)".`,
+      };
+    }
+
     try {
-      await workbook.xlsx.load(Buffer.from(await file.arrayBuffer()) as unknown as ExcelJS.Buffer);
-    } catch {
-      return { ok: false, pesan: `${file.name}: file tidak bisa dibaca. Pastikan file .xlsx valid.` };
+      const bufferNormal = await normalisasiNamespaceWorkbookExcel(Buffer.from(isiFile));
+      await workbook.xlsx.load(bufferNormal as unknown as ExcelJS.Buffer);
+    } catch (error) {
+      console.error(`Gagal membaca workbook asesmen "${file.name}".`, error);
+      const detail = error instanceof Error ? error.message : "kesalahan parser tidak diketahui";
+      return {
+        ok: false,
+        pesan: `${file.name}: workbook tidak dapat diproses oleh pembaca Excel (${detail}). Buka lalu simpan ulang sebagai "Excel Workbook (*.xlsx)".`,
+      };
     }
 
     const metadata = workbook.getWorksheet("_metadata");
@@ -117,8 +137,8 @@ export async function imporAsesmenExcel(
       return { ok: false, pesan: `${file.name}: isi template tidak sesuai dengan mata kuliah pada nama file.` };
     }
 
-    const worksheet = workbook.getWorksheet("Asesmen");
-    if (!worksheet) return { ok: false, pesan: `${file.name}: lembar Asesmen tidak ditemukan.` };
+    const worksheet = workbook.getWorksheet("Asesmen") ?? workbook.worksheets[0];
+    if (!worksheet) return { ok: false, pesan: `${file.name}: lembar Asesmen atau lembar pertama tidak ditemukan.` };
 
     const header: string[] = [];
     worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell, index) => {

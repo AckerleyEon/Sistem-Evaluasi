@@ -167,6 +167,7 @@ export type CPLWhereInput = {
   kode?: Prisma.StringFilter<"CPL"> | string
   deskripsi?: Prisma.StringFilter<"CPL"> | string
   mataKuliahTerkait?: Prisma.MataKuliahCplListRelationFilter
+  profilTerkait?: Prisma.ProfilLulusanCplListRelationFilter
   hasilCPL?: Prisma.HasilCPLListRelationFilter
 }
 
@@ -175,6 +176,7 @@ export type CPLOrderByWithRelationInput = {
   kode?: Prisma.SortOrder
   deskripsi?: Prisma.SortOrder
   mataKuliahTerkait?: Prisma.MataKuliahCplOrderByRelationAggregateInput
+  profilTerkait?: Prisma.ProfilLulusanCplOrderByRelationAggregateInput
   hasilCPL?: Prisma.HasilCPLOrderByRelationAggregateInput
 }
 
@@ -186,6 +188,7 @@ export type CPLWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.CPLWhereInput | Prisma.CPLWhereInput[]
   deskripsi?: Prisma.StringFilter<"CPL"> | string
   mataKuliahTerkait?: Prisma.MataKuliahCplListRelationFilter
+  profilTerkait?: Prisma.ProfilLulusanCplListRelationFilter
   hasilCPL?: Prisma.HasilCPLListRelationFilter
 }, "id" | "kode">
 
@@ -212,6 +215,7 @@ export type CPLCreateInput = {
   kode: string
   deskripsi: string
   mataKuliahTerkait?: Prisma.MataKuliahCplCreateNestedManyWithoutCplInput
+  profilTerkait?: Prisma.ProfilLulusanCplCreateNestedManyWithoutCplInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutCplInput
 }
 
@@ -220,6 +224,7 @@ export type CPLUncheckedCreateInput = {
   kode: string
   deskripsi: string
   mataKuliahTerkait?: Prisma.MataKuliahCplUncheckedCreateNestedManyWithoutCplInput
+  profilTerkait?: Prisma.ProfilLulusanCplUncheckedCreateNestedManyWithoutCplInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutCplInput
 }
 
@@ -228,6 +233,7 @@ export type CPLUpdateInput = {
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahTerkait?: Prisma.MataKuliahCplUpdateManyWithoutCplNestedInput
+  profilTerkait?: Prisma.ProfilLulusanCplUpdateManyWithoutCplNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutCplNestedInput
 }
 
@@ -236,6 +242,7 @@ export type CPLUncheckedUpdateInput = {
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahTerkait?: Prisma.MataKuliahCplUncheckedUpdateManyWithoutCplNestedInput
+  profilTerkait?: Prisma.ProfilLulusanCplUncheckedUpdateManyWithoutCplNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutCplNestedInput
 }
 
@@ -280,6 +287,20 @@ export type CPLScalarRelationFilter = {
   isNot?: Prisma.CPLWhereInput
 }
 
+export type CPLCreateNestedOneWithoutProfilTerkaitInput = {
+  create?: Prisma.XOR<Prisma.CPLCreateWithoutProfilTerkaitInput, Prisma.CPLUncheckedCreateWithoutProfilTerkaitInput>
+  connectOrCreate?: Prisma.CPLCreateOrConnectWithoutProfilTerkaitInput
+  connect?: Prisma.CPLWhereUniqueInput
+}
+
+export type CPLUpdateOneRequiredWithoutProfilTerkaitNestedInput = {
+  create?: Prisma.XOR<Prisma.CPLCreateWithoutProfilTerkaitInput, Prisma.CPLUncheckedCreateWithoutProfilTerkaitInput>
+  connectOrCreate?: Prisma.CPLCreateOrConnectWithoutProfilTerkaitInput
+  upsert?: Prisma.CPLUpsertWithoutProfilTerkaitInput
+  connect?: Prisma.CPLWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CPLUpdateToOneWithWhereWithoutProfilTerkaitInput, Prisma.CPLUpdateWithoutProfilTerkaitInput>, Prisma.CPLUncheckedUpdateWithoutProfilTerkaitInput>
+}
+
 export type CPLCreateNestedOneWithoutMataKuliahTerkaitInput = {
   create?: Prisma.XOR<Prisma.CPLCreateWithoutMataKuliahTerkaitInput, Prisma.CPLUncheckedCreateWithoutMataKuliahTerkaitInput>
   connectOrCreate?: Prisma.CPLCreateOrConnectWithoutMataKuliahTerkaitInput
@@ -308,10 +329,59 @@ export type CPLUpdateOneRequiredWithoutHasilCPLNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CPLUpdateToOneWithWhereWithoutHasilCPLInput, Prisma.CPLUpdateWithoutHasilCPLInput>, Prisma.CPLUncheckedUpdateWithoutHasilCPLInput>
 }
 
+export type CPLCreateWithoutProfilTerkaitInput = {
+  id?: string
+  kode: string
+  deskripsi: string
+  mataKuliahTerkait?: Prisma.MataKuliahCplCreateNestedManyWithoutCplInput
+  hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutCplInput
+}
+
+export type CPLUncheckedCreateWithoutProfilTerkaitInput = {
+  id?: string
+  kode: string
+  deskripsi: string
+  mataKuliahTerkait?: Prisma.MataKuliahCplUncheckedCreateNestedManyWithoutCplInput
+  hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutCplInput
+}
+
+export type CPLCreateOrConnectWithoutProfilTerkaitInput = {
+  where: Prisma.CPLWhereUniqueInput
+  create: Prisma.XOR<Prisma.CPLCreateWithoutProfilTerkaitInput, Prisma.CPLUncheckedCreateWithoutProfilTerkaitInput>
+}
+
+export type CPLUpsertWithoutProfilTerkaitInput = {
+  update: Prisma.XOR<Prisma.CPLUpdateWithoutProfilTerkaitInput, Prisma.CPLUncheckedUpdateWithoutProfilTerkaitInput>
+  create: Prisma.XOR<Prisma.CPLCreateWithoutProfilTerkaitInput, Prisma.CPLUncheckedCreateWithoutProfilTerkaitInput>
+  where?: Prisma.CPLWhereInput
+}
+
+export type CPLUpdateToOneWithWhereWithoutProfilTerkaitInput = {
+  where?: Prisma.CPLWhereInput
+  data: Prisma.XOR<Prisma.CPLUpdateWithoutProfilTerkaitInput, Prisma.CPLUncheckedUpdateWithoutProfilTerkaitInput>
+}
+
+export type CPLUpdateWithoutProfilTerkaitInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kode?: Prisma.StringFieldUpdateOperationsInput | string
+  deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahTerkait?: Prisma.MataKuliahCplUpdateManyWithoutCplNestedInput
+  hasilCPL?: Prisma.HasilCPLUpdateManyWithoutCplNestedInput
+}
+
+export type CPLUncheckedUpdateWithoutProfilTerkaitInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  kode?: Prisma.StringFieldUpdateOperationsInput | string
+  deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  mataKuliahTerkait?: Prisma.MataKuliahCplUncheckedUpdateManyWithoutCplNestedInput
+  hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutCplNestedInput
+}
+
 export type CPLCreateWithoutMataKuliahTerkaitInput = {
   id?: string
   kode: string
   deskripsi: string
+  profilTerkait?: Prisma.ProfilLulusanCplCreateNestedManyWithoutCplInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutCplInput
 }
 
@@ -319,6 +389,7 @@ export type CPLUncheckedCreateWithoutMataKuliahTerkaitInput = {
   id?: string
   kode: string
   deskripsi: string
+  profilTerkait?: Prisma.ProfilLulusanCplUncheckedCreateNestedManyWithoutCplInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutCplInput
 }
 
@@ -342,6 +413,7 @@ export type CPLUpdateWithoutMataKuliahTerkaitInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  profilTerkait?: Prisma.ProfilLulusanCplUpdateManyWithoutCplNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutCplNestedInput
 }
 
@@ -349,6 +421,7 @@ export type CPLUncheckedUpdateWithoutMataKuliahTerkaitInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
+  profilTerkait?: Prisma.ProfilLulusanCplUncheckedUpdateManyWithoutCplNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutCplNestedInput
 }
 
@@ -357,6 +430,7 @@ export type CPLCreateWithoutHasilCPLInput = {
   kode: string
   deskripsi: string
   mataKuliahTerkait?: Prisma.MataKuliahCplCreateNestedManyWithoutCplInput
+  profilTerkait?: Prisma.ProfilLulusanCplCreateNestedManyWithoutCplInput
 }
 
 export type CPLUncheckedCreateWithoutHasilCPLInput = {
@@ -364,6 +438,7 @@ export type CPLUncheckedCreateWithoutHasilCPLInput = {
   kode: string
   deskripsi: string
   mataKuliahTerkait?: Prisma.MataKuliahCplUncheckedCreateNestedManyWithoutCplInput
+  profilTerkait?: Prisma.ProfilLulusanCplUncheckedCreateNestedManyWithoutCplInput
 }
 
 export type CPLCreateOrConnectWithoutHasilCPLInput = {
@@ -387,6 +462,7 @@ export type CPLUpdateWithoutHasilCPLInput = {
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahTerkait?: Prisma.MataKuliahCplUpdateManyWithoutCplNestedInput
+  profilTerkait?: Prisma.ProfilLulusanCplUpdateManyWithoutCplNestedInput
 }
 
 export type CPLUncheckedUpdateWithoutHasilCPLInput = {
@@ -394,6 +470,7 @@ export type CPLUncheckedUpdateWithoutHasilCPLInput = {
   kode?: Prisma.StringFieldUpdateOperationsInput | string
   deskripsi?: Prisma.StringFieldUpdateOperationsInput | string
   mataKuliahTerkait?: Prisma.MataKuliahCplUncheckedUpdateManyWithoutCplNestedInput
+  profilTerkait?: Prisma.ProfilLulusanCplUncheckedUpdateManyWithoutCplNestedInput
 }
 
 
@@ -403,11 +480,13 @@ export type CPLUncheckedUpdateWithoutHasilCPLInput = {
 
 export type CPLCountOutputType = {
   mataKuliahTerkait: number
+  profilTerkait: number
   hasilCPL: number
 }
 
 export type CPLCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mataKuliahTerkait?: boolean | CPLCountOutputTypeCountMataKuliahTerkaitArgs
+  profilTerkait?: boolean | CPLCountOutputTypeCountProfilTerkaitArgs
   hasilCPL?: boolean | CPLCountOutputTypeCountHasilCPLArgs
 }
 
@@ -431,6 +510,13 @@ export type CPLCountOutputTypeCountMataKuliahTerkaitArgs<ExtArgs extends runtime
 /**
  * CPLCountOutputType without action
  */
+export type CPLCountOutputTypeCountProfilTerkaitArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProfilLulusanCplWhereInput
+}
+
+/**
+ * CPLCountOutputType without action
+ */
 export type CPLCountOutputTypeCountHasilCPLArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.HasilCPLWhereInput
 }
@@ -441,6 +527,7 @@ export type CPLSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   kode?: boolean
   deskripsi?: boolean
   mataKuliahTerkait?: boolean | Prisma.CPL$mataKuliahTerkaitArgs<ExtArgs>
+  profilTerkait?: boolean | Prisma.CPL$profilTerkaitArgs<ExtArgs>
   hasilCPL?: boolean | Prisma.CPL$hasilCPLArgs<ExtArgs>
   _count?: boolean | Prisma.CPLCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["cPL"]>
@@ -466,6 +553,7 @@ export type CPLSelectScalar = {
 export type CPLOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "kode" | "deskripsi", ExtArgs["result"]["cPL"]>
 export type CPLInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mataKuliahTerkait?: boolean | Prisma.CPL$mataKuliahTerkaitArgs<ExtArgs>
+  profilTerkait?: boolean | Prisma.CPL$profilTerkaitArgs<ExtArgs>
   hasilCPL?: boolean | Prisma.CPL$hasilCPLArgs<ExtArgs>
   _count?: boolean | Prisma.CPLCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -476,6 +564,7 @@ export type $CPLPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   name: "CPL"
   objects: {
     mataKuliahTerkait: Prisma.$MataKuliahCplPayload<ExtArgs>[]
+    profilTerkait: Prisma.$ProfilLulusanCplPayload<ExtArgs>[]
     hasilCPL: Prisma.$HasilCPLPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -877,6 +966,7 @@ readonly fields: CPLFieldRefs;
 export interface Prisma__CPLClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   mataKuliahTerkait<T extends Prisma.CPL$mataKuliahTerkaitArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CPL$mataKuliahTerkaitArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MataKuliahCplPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  profilTerkait<T extends Prisma.CPL$profilTerkaitArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CPL$profilTerkaitArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProfilLulusanCplPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hasilCPL<T extends Prisma.CPL$hasilCPLArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CPL$hasilCPLArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilCPLPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1324,6 +1414,30 @@ export type CPL$mataKuliahTerkaitArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.MataKuliahCplScalarFieldEnum | Prisma.MataKuliahCplScalarFieldEnum[]
+}
+
+/**
+ * CPL.profilTerkait
+ */
+export type CPL$profilTerkaitArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProfilLulusanCpl
+   */
+  select?: Prisma.ProfilLulusanCplSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProfilLulusanCpl
+   */
+  omit?: Prisma.ProfilLulusanCplOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProfilLulusanCplInclude<ExtArgs> | null
+  where?: Prisma.ProfilLulusanCplWhereInput
+  orderBy?: Prisma.ProfilLulusanCplOrderByWithRelationInput | Prisma.ProfilLulusanCplOrderByWithRelationInput[]
+  cursor?: Prisma.ProfilLulusanCplWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProfilLulusanCplScalarFieldEnum | Prisma.ProfilLulusanCplScalarFieldEnum[]
 }
 
 /**

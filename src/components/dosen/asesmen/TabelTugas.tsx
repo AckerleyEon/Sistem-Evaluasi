@@ -40,6 +40,7 @@ export function TabelTugas({
   namaMK,
   namaKelas,
   onHapus,
+  onHapusSemua,
   sedangHapus,
   readOnly = false,
 }: {
@@ -57,6 +58,7 @@ export function TabelTugas({
   namaMK: string;
   namaKelas: string | null;
   onHapus: (t: TugasRow) => void;
+  onHapusSemua: () => void;
   sedangHapus: boolean;
   readOnly?: boolean;
 }) {
@@ -97,6 +99,17 @@ export function TabelTugas({
               </select>
               <Ikon nama="urut" ukuran={14} />
             </label>
+            {!readOnly && totalSemua > 0 && (
+              <button
+                type="button"
+                onClick={onHapusSemua}
+                disabled={sedangHapus}
+                className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg border border-[#FECACA] bg-white px-3 text-[11px] font-semibold text-[#B91C1C] transition hover:bg-[#FEF2F2] disabled:cursor-not-allowed disabled:opacity-50 ${FOKUS}`}
+              >
+                <Ikon nama="hapus" ukuran={14} />
+                {sedangHapus ? "Menghapus..." : "Hapus Semua Tugas"}
+              </button>
+            )}
           </div>
         }
       />

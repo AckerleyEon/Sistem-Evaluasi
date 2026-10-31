@@ -408,6 +408,8 @@ export const ModelName = {
   PenugasanDosenMK: 'PenugasanDosenMK',
   PendaftaranMK: 'PendaftaranMK',
   CPL: 'CPL',
+  ProfilLulusan: 'ProfilLulusan',
+  ProfilLulusanCpl: 'ProfilLulusanCpl',
   MataKuliahCpl: 'MataKuliahCpl',
   CPMK: 'CPMK',
   SubCPMK: 'SubCPMK',
@@ -417,7 +419,9 @@ export const ModelName = {
   Nilai: 'Nilai',
   HasilSubCPMK: 'HasilSubCPMK',
   HasilCPMK: 'HasilCPMK',
-  HasilCPL: 'HasilCPL'
+  HasilCPL: 'HasilCPL',
+  HasilProfilLulusan: 'HasilProfilLulusan',
+  AktivitasDosen: 'AktivitasDosen'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -433,7 +437,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "pengaturan" | "user" | "permintaanResetSandi" | "tahunAjaran" | "kelasMK" | "dosen" | "mahasiswa" | "mataKuliah" | "penugasanDosenMK" | "pendaftaranMK" | "cPL" | "mataKuliahCpl" | "cPMK" | "subCPMK" | "cpmkSub" | "tugas" | "distribusiSubCPMK" | "nilai" | "hasilSubCPMK" | "hasilCPMK" | "hasilCPL"
+    modelProps: "pengaturan" | "user" | "permintaanResetSandi" | "tahunAjaran" | "kelasMK" | "dosen" | "mahasiswa" | "mataKuliah" | "penugasanDosenMK" | "pendaftaranMK" | "cPL" | "profilLulusan" | "profilLulusanCpl" | "mataKuliahCpl" | "cPMK" | "subCPMK" | "cpmkSub" | "tugas" | "distribusiSubCPMK" | "nilai" | "hasilSubCPMK" | "hasilCPMK" | "hasilCPL" | "hasilProfilLulusan" | "aktivitasDosen"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1251,6 +1255,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ProfilLulusan: {
+      payload: Prisma.$ProfilLulusanPayload<ExtArgs>
+      fields: Prisma.ProfilLulusanFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProfilLulusanFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProfilLulusanFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>
+        }
+        findFirst: {
+          args: Prisma.ProfilLulusanFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProfilLulusanFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>
+        }
+        findMany: {
+          args: Prisma.ProfilLulusanFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>[]
+        }
+        create: {
+          args: Prisma.ProfilLulusanCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>
+        }
+        createMany: {
+          args: Prisma.ProfilLulusanCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProfilLulusanCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>[]
+        }
+        delete: {
+          args: Prisma.ProfilLulusanDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>
+        }
+        update: {
+          args: Prisma.ProfilLulusanUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProfilLulusanDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProfilLulusanUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProfilLulusanUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProfilLulusanUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanPayload>
+        }
+        aggregate: {
+          args: Prisma.ProfilLulusanAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProfilLulusan>
+        }
+        groupBy: {
+          args: Prisma.ProfilLulusanGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProfilLulusanGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProfilLulusanCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProfilLulusanCountAggregateOutputType> | number
+        }
+      }
+    }
+    ProfilLulusanCpl: {
+      payload: Prisma.$ProfilLulusanCplPayload<ExtArgs>
+      fields: Prisma.ProfilLulusanCplFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProfilLulusanCplFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProfilLulusanCplFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>
+        }
+        findFirst: {
+          args: Prisma.ProfilLulusanCplFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProfilLulusanCplFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>
+        }
+        findMany: {
+          args: Prisma.ProfilLulusanCplFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>[]
+        }
+        create: {
+          args: Prisma.ProfilLulusanCplCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>
+        }
+        createMany: {
+          args: Prisma.ProfilLulusanCplCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProfilLulusanCplCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>[]
+        }
+        delete: {
+          args: Prisma.ProfilLulusanCplDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>
+        }
+        update: {
+          args: Prisma.ProfilLulusanCplUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProfilLulusanCplDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProfilLulusanCplUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProfilLulusanCplUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProfilLulusanCplUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProfilLulusanCplPayload>
+        }
+        aggregate: {
+          args: Prisma.ProfilLulusanCplAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProfilLulusanCpl>
+        }
+        groupBy: {
+          args: Prisma.ProfilLulusanCplGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProfilLulusanCplGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProfilLulusanCplCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProfilLulusanCplCountAggregateOutputType> | number
+        }
+      }
+    }
     MataKuliahCpl: {
       payload: Prisma.$MataKuliahCplPayload<ExtArgs>
       fields: Prisma.MataKuliahCplFieldRefs
@@ -1991,6 +2143,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HasilProfilLulusan: {
+      payload: Prisma.$HasilProfilLulusanPayload<ExtArgs>
+      fields: Prisma.HasilProfilLulusanFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HasilProfilLulusanFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HasilProfilLulusanFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>
+        }
+        findFirst: {
+          args: Prisma.HasilProfilLulusanFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HasilProfilLulusanFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>
+        }
+        findMany: {
+          args: Prisma.HasilProfilLulusanFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>[]
+        }
+        create: {
+          args: Prisma.HasilProfilLulusanCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>
+        }
+        createMany: {
+          args: Prisma.HasilProfilLulusanCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HasilProfilLulusanCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>[]
+        }
+        delete: {
+          args: Prisma.HasilProfilLulusanDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>
+        }
+        update: {
+          args: Prisma.HasilProfilLulusanUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>
+        }
+        deleteMany: {
+          args: Prisma.HasilProfilLulusanDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HasilProfilLulusanUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HasilProfilLulusanUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>[]
+        }
+        upsert: {
+          args: Prisma.HasilProfilLulusanUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HasilProfilLulusanPayload>
+        }
+        aggregate: {
+          args: Prisma.HasilProfilLulusanAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHasilProfilLulusan>
+        }
+        groupBy: {
+          args: Prisma.HasilProfilLulusanGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HasilProfilLulusanGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HasilProfilLulusanCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HasilProfilLulusanCountAggregateOutputType> | number
+        }
+      }
+    }
+    AktivitasDosen: {
+      payload: Prisma.$AktivitasDosenPayload<ExtArgs>
+      fields: Prisma.AktivitasDosenFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AktivitasDosenFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AktivitasDosenFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>
+        }
+        findFirst: {
+          args: Prisma.AktivitasDosenFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AktivitasDosenFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>
+        }
+        findMany: {
+          args: Prisma.AktivitasDosenFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>[]
+        }
+        create: {
+          args: Prisma.AktivitasDosenCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>
+        }
+        createMany: {
+          args: Prisma.AktivitasDosenCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AktivitasDosenCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>[]
+        }
+        delete: {
+          args: Prisma.AktivitasDosenDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>
+        }
+        update: {
+          args: Prisma.AktivitasDosenUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>
+        }
+        deleteMany: {
+          args: Prisma.AktivitasDosenDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AktivitasDosenUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AktivitasDosenUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>[]
+        }
+        upsert: {
+          args: Prisma.AktivitasDosenUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AktivitasDosenPayload>
+        }
+        aggregate: {
+          args: Prisma.AktivitasDosenAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAktivitasDosen>
+        }
+        groupBy: {
+          args: Prisma.AktivitasDosenGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AktivitasDosenGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AktivitasDosenCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AktivitasDosenCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2151,6 +2451,26 @@ export const CPLScalarFieldEnum = {
 export type CPLScalarFieldEnum = (typeof CPLScalarFieldEnum)[keyof typeof CPLScalarFieldEnum]
 
 
+export const ProfilLulusanScalarFieldEnum = {
+  id: 'id',
+  kode: 'kode',
+  nama: 'nama',
+  deskripsi: 'deskripsi',
+  createdAt: 'createdAt'
+} as const
+
+export type ProfilLulusanScalarFieldEnum = (typeof ProfilLulusanScalarFieldEnum)[keyof typeof ProfilLulusanScalarFieldEnum]
+
+
+export const ProfilLulusanCplScalarFieldEnum = {
+  id: 'id',
+  profilLulusanId: 'profilLulusanId',
+  cplId: 'cplId'
+} as const
+
+export type ProfilLulusanCplScalarFieldEnum = (typeof ProfilLulusanCplScalarFieldEnum)[keyof typeof ProfilLulusanCplScalarFieldEnum]
+
+
 export const MataKuliahCplScalarFieldEnum = {
   id: 'id',
   mataKuliahId: 'mataKuliahId',
@@ -2268,6 +2588,34 @@ export const HasilCPLScalarFieldEnum = {
 } as const
 
 export type HasilCPLScalarFieldEnum = (typeof HasilCPLScalarFieldEnum)[keyof typeof HasilCPLScalarFieldEnum]
+
+
+export const HasilProfilLulusanScalarFieldEnum = {
+  id: 'id',
+  mahasiswaId: 'mahasiswaId',
+  profilLulusanId: 'profilLulusanId',
+  tahunAjaranId: 'tahunAjaranId',
+  nilai: 'nilai',
+  statusLengkap: 'statusLengkap',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HasilProfilLulusanScalarFieldEnum = (typeof HasilProfilLulusanScalarFieldEnum)[keyof typeof HasilProfilLulusanScalarFieldEnum]
+
+
+export const AktivitasDosenScalarFieldEnum = {
+  id: 'id',
+  tahunAjaranId: 'tahunAjaranId',
+  jenis: 'jenis',
+  pelaku: 'pelaku',
+  mataKuliah: 'mataKuliah',
+  kelas: 'kelas',
+  aksi: 'aksi',
+  detail: 'detail',
+  createdAt: 'createdAt'
+} as const
+
+export type AktivitasDosenScalarFieldEnum = (typeof AktivitasDosenScalarFieldEnum)[keyof typeof AktivitasDosenScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2416,6 +2764,20 @@ export type ListEnumSumberDistribusiFieldRefInput<$PrismaModel> = FieldRefInputT
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'JenisAktivitasDosen'
+ */
+export type EnumJenisAktivitasDosenFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisAktivitasDosen'>
+    
+
+
+/**
+ * Reference to a field of type 'JenisAktivitasDosen[]'
+ */
+export type ListEnumJenisAktivitasDosenFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisAktivitasDosen[]'>
     
 
 /**
@@ -2580,6 +2942,8 @@ export type GlobalOmitConfig = {
   penugasanDosenMK?: Prisma.PenugasanDosenMKOmit
   pendaftaranMK?: Prisma.PendaftaranMKOmit
   cPL?: Prisma.CPLOmit
+  profilLulusan?: Prisma.ProfilLulusanOmit
+  profilLulusanCpl?: Prisma.ProfilLulusanCplOmit
   mataKuliahCpl?: Prisma.MataKuliahCplOmit
   cPMK?: Prisma.CPMKOmit
   subCPMK?: Prisma.SubCPMKOmit
@@ -2590,6 +2954,8 @@ export type GlobalOmitConfig = {
   hasilSubCPMK?: Prisma.HasilSubCPMKOmit
   hasilCPMK?: Prisma.HasilCPMKOmit
   hasilCPL?: Prisma.HasilCPLOmit
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanOmit
+  aktivitasDosen?: Prisma.AktivitasDosenOmit
 }
 
 /* Types for Logging */

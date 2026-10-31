@@ -62,6 +62,8 @@ export const ModelName = {
   PenugasanDosenMK: 'PenugasanDosenMK',
   PendaftaranMK: 'PendaftaranMK',
   CPL: 'CPL',
+  ProfilLulusan: 'ProfilLulusan',
+  ProfilLulusanCpl: 'ProfilLulusanCpl',
   MataKuliahCpl: 'MataKuliahCpl',
   CPMK: 'CPMK',
   SubCPMK: 'SubCPMK',
@@ -71,7 +73,9 @@ export const ModelName = {
   Nilai: 'Nilai',
   HasilSubCPMK: 'HasilSubCPMK',
   HasilCPMK: 'HasilCPMK',
-  HasilCPL: 'HasilCPL'
+  HasilCPL: 'HasilCPL',
+  HasilProfilLulusan: 'HasilProfilLulusan',
+  AktivitasDosen: 'AktivitasDosen'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -211,6 +215,26 @@ export const CPLScalarFieldEnum = {
 export type CPLScalarFieldEnum = (typeof CPLScalarFieldEnum)[keyof typeof CPLScalarFieldEnum]
 
 
+export const ProfilLulusanScalarFieldEnum = {
+  id: 'id',
+  kode: 'kode',
+  nama: 'nama',
+  deskripsi: 'deskripsi',
+  createdAt: 'createdAt'
+} as const
+
+export type ProfilLulusanScalarFieldEnum = (typeof ProfilLulusanScalarFieldEnum)[keyof typeof ProfilLulusanScalarFieldEnum]
+
+
+export const ProfilLulusanCplScalarFieldEnum = {
+  id: 'id',
+  profilLulusanId: 'profilLulusanId',
+  cplId: 'cplId'
+} as const
+
+export type ProfilLulusanCplScalarFieldEnum = (typeof ProfilLulusanCplScalarFieldEnum)[keyof typeof ProfilLulusanCplScalarFieldEnum]
+
+
 export const MataKuliahCplScalarFieldEnum = {
   id: 'id',
   mataKuliahId: 'mataKuliahId',
@@ -328,6 +352,34 @@ export const HasilCPLScalarFieldEnum = {
 } as const
 
 export type HasilCPLScalarFieldEnum = (typeof HasilCPLScalarFieldEnum)[keyof typeof HasilCPLScalarFieldEnum]
+
+
+export const HasilProfilLulusanScalarFieldEnum = {
+  id: 'id',
+  mahasiswaId: 'mahasiswaId',
+  profilLulusanId: 'profilLulusanId',
+  tahunAjaranId: 'tahunAjaranId',
+  nilai: 'nilai',
+  statusLengkap: 'statusLengkap',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HasilProfilLulusanScalarFieldEnum = (typeof HasilProfilLulusanScalarFieldEnum)[keyof typeof HasilProfilLulusanScalarFieldEnum]
+
+
+export const AktivitasDosenScalarFieldEnum = {
+  id: 'id',
+  tahunAjaranId: 'tahunAjaranId',
+  jenis: 'jenis',
+  pelaku: 'pelaku',
+  mataKuliah: 'mataKuliah',
+  kelas: 'kelas',
+  aksi: 'aksi',
+  detail: 'detail',
+  createdAt: 'createdAt'
+} as const
+
+export type AktivitasDosenScalarFieldEnum = (typeof AktivitasDosenScalarFieldEnum)[keyof typeof AktivitasDosenScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -181,9 +181,11 @@ export type TahunAjaranWhereInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKListRelationFilter
   hasilCPMK?: Prisma.HasilCPMKListRelationFilter
   hasilCPL?: Prisma.HasilCPLListRelationFilter
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanListRelationFilter
   pendaftaran?: Prisma.PendaftaranMKListRelationFilter
   penugasanDosen?: Prisma.PenugasanDosenMKListRelationFilter
   kelasMK?: Prisma.KelasMKListRelationFilter
+  aktivitasDosen?: Prisma.AktivitasDosenListRelationFilter
 }
 
 export type TahunAjaranOrderByWithRelationInput = {
@@ -198,9 +200,11 @@ export type TahunAjaranOrderByWithRelationInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKOrderByRelationAggregateInput
   hasilCPMK?: Prisma.HasilCPMKOrderByRelationAggregateInput
   hasilCPL?: Prisma.HasilCPLOrderByRelationAggregateInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanOrderByRelationAggregateInput
   pendaftaran?: Prisma.PendaftaranMKOrderByRelationAggregateInput
   penugasanDosen?: Prisma.PenugasanDosenMKOrderByRelationAggregateInput
   kelasMK?: Prisma.KelasMKOrderByRelationAggregateInput
+  aktivitasDosen?: Prisma.AktivitasDosenOrderByRelationAggregateInput
 }
 
 export type TahunAjaranWhereUniqueInput = Prisma.AtLeast<{
@@ -218,9 +222,11 @@ export type TahunAjaranWhereUniqueInput = Prisma.AtLeast<{
   hasilSubCPMK?: Prisma.HasilSubCPMKListRelationFilter
   hasilCPMK?: Prisma.HasilCPMKListRelationFilter
   hasilCPL?: Prisma.HasilCPLListRelationFilter
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanListRelationFilter
   pendaftaran?: Prisma.PendaftaranMKListRelationFilter
   penugasanDosen?: Prisma.PenugasanDosenMKListRelationFilter
   kelasMK?: Prisma.KelasMKListRelationFilter
+  aktivitasDosen?: Prisma.AktivitasDosenListRelationFilter
 }, "id" | "label">
 
 export type TahunAjaranOrderByWithAggregationInput = {
@@ -255,9 +261,11 @@ export type TahunAjaranCreateInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateInput = {
@@ -272,9 +280,11 @@ export type TahunAjaranUncheckedCreateInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUpdateInput = {
@@ -289,9 +299,11 @@ export type TahunAjaranUpdateInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateInput = {
@@ -306,9 +318,11 @@ export type TahunAjaranUncheckedUpdateInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateManyInput = {
@@ -502,6 +516,34 @@ export type TahunAjaranUpdateOneRequiredWithoutHasilCPLNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TahunAjaranUpdateToOneWithWhereWithoutHasilCPLInput, Prisma.TahunAjaranUpdateWithoutHasilCPLInput>, Prisma.TahunAjaranUncheckedUpdateWithoutHasilCPLInput>
 }
 
+export type TahunAjaranCreateNestedOneWithoutHasilProfilLulusanInput = {
+  create?: Prisma.XOR<Prisma.TahunAjaranCreateWithoutHasilProfilLulusanInput, Prisma.TahunAjaranUncheckedCreateWithoutHasilProfilLulusanInput>
+  connectOrCreate?: Prisma.TahunAjaranCreateOrConnectWithoutHasilProfilLulusanInput
+  connect?: Prisma.TahunAjaranWhereUniqueInput
+}
+
+export type TahunAjaranUpdateOneRequiredWithoutHasilProfilLulusanNestedInput = {
+  create?: Prisma.XOR<Prisma.TahunAjaranCreateWithoutHasilProfilLulusanInput, Prisma.TahunAjaranUncheckedCreateWithoutHasilProfilLulusanInput>
+  connectOrCreate?: Prisma.TahunAjaranCreateOrConnectWithoutHasilProfilLulusanInput
+  upsert?: Prisma.TahunAjaranUpsertWithoutHasilProfilLulusanInput
+  connect?: Prisma.TahunAjaranWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TahunAjaranUpdateToOneWithWhereWithoutHasilProfilLulusanInput, Prisma.TahunAjaranUpdateWithoutHasilProfilLulusanInput>, Prisma.TahunAjaranUncheckedUpdateWithoutHasilProfilLulusanInput>
+}
+
+export type TahunAjaranCreateNestedOneWithoutAktivitasDosenInput = {
+  create?: Prisma.XOR<Prisma.TahunAjaranCreateWithoutAktivitasDosenInput, Prisma.TahunAjaranUncheckedCreateWithoutAktivitasDosenInput>
+  connectOrCreate?: Prisma.TahunAjaranCreateOrConnectWithoutAktivitasDosenInput
+  connect?: Prisma.TahunAjaranWhereUniqueInput
+}
+
+export type TahunAjaranUpdateOneRequiredWithoutAktivitasDosenNestedInput = {
+  create?: Prisma.XOR<Prisma.TahunAjaranCreateWithoutAktivitasDosenInput, Prisma.TahunAjaranUncheckedCreateWithoutAktivitasDosenInput>
+  connectOrCreate?: Prisma.TahunAjaranCreateOrConnectWithoutAktivitasDosenInput
+  upsert?: Prisma.TahunAjaranUpsertWithoutAktivitasDosenInput
+  connect?: Prisma.TahunAjaranWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TahunAjaranUpdateToOneWithWhereWithoutAktivitasDosenInput, Prisma.TahunAjaranUpdateWithoutAktivitasDosenInput>, Prisma.TahunAjaranUncheckedUpdateWithoutAktivitasDosenInput>
+}
+
 export type TahunAjaranCreateWithoutKelasMKInput = {
   id?: string
   label: string
@@ -514,8 +556,10 @@ export type TahunAjaranCreateWithoutKelasMKInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutKelasMKInput = {
@@ -530,8 +574,10 @@ export type TahunAjaranUncheckedCreateWithoutKelasMKInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutKelasMKInput = {
@@ -562,8 +608,10 @@ export type TahunAjaranUpdateWithoutKelasMKInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutKelasMKInput = {
@@ -578,8 +626,10 @@ export type TahunAjaranUncheckedUpdateWithoutKelasMKInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutPenugasanDosenInput = {
@@ -594,8 +644,10 @@ export type TahunAjaranCreateWithoutPenugasanDosenInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutPenugasanDosenInput = {
@@ -610,8 +662,10 @@ export type TahunAjaranUncheckedCreateWithoutPenugasanDosenInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutPenugasanDosenInput = {
@@ -642,8 +696,10 @@ export type TahunAjaranUpdateWithoutPenugasanDosenInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutPenugasanDosenInput = {
@@ -658,8 +714,10 @@ export type TahunAjaranUncheckedUpdateWithoutPenugasanDosenInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutPendaftaranInput = {
@@ -674,8 +732,10 @@ export type TahunAjaranCreateWithoutPendaftaranInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutPendaftaranInput = {
@@ -690,8 +750,10 @@ export type TahunAjaranUncheckedCreateWithoutPendaftaranInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutPendaftaranInput = {
@@ -722,8 +784,10 @@ export type TahunAjaranUpdateWithoutPendaftaranInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutPendaftaranInput = {
@@ -738,8 +802,10 @@ export type TahunAjaranUncheckedUpdateWithoutPendaftaranInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutCpmkInput = {
@@ -753,9 +819,11 @@ export type TahunAjaranCreateWithoutCpmkInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutCpmkInput = {
@@ -769,9 +837,11 @@ export type TahunAjaranUncheckedCreateWithoutCpmkInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutCpmkInput = {
@@ -801,9 +871,11 @@ export type TahunAjaranUpdateWithoutCpmkInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutCpmkInput = {
@@ -817,9 +889,11 @@ export type TahunAjaranUncheckedUpdateWithoutCpmkInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutSubCPMKInput = {
@@ -833,9 +907,11 @@ export type TahunAjaranCreateWithoutSubCPMKInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutSubCPMKInput = {
@@ -849,9 +925,11 @@ export type TahunAjaranUncheckedCreateWithoutSubCPMKInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutSubCPMKInput = {
@@ -881,9 +959,11 @@ export type TahunAjaranUpdateWithoutSubCPMKInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutSubCPMKInput = {
@@ -897,9 +977,11 @@ export type TahunAjaranUncheckedUpdateWithoutSubCPMKInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutTugasInput = {
@@ -913,9 +995,11 @@ export type TahunAjaranCreateWithoutTugasInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutTugasInput = {
@@ -929,9 +1013,11 @@ export type TahunAjaranUncheckedCreateWithoutTugasInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutTugasInput = {
@@ -961,9 +1047,11 @@ export type TahunAjaranUpdateWithoutTugasInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutTugasInput = {
@@ -977,9 +1065,11 @@ export type TahunAjaranUncheckedUpdateWithoutTugasInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutNilaiInput = {
@@ -993,9 +1083,11 @@ export type TahunAjaranCreateWithoutNilaiInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutNilaiInput = {
@@ -1009,9 +1101,11 @@ export type TahunAjaranUncheckedCreateWithoutNilaiInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutNilaiInput = {
@@ -1041,9 +1135,11 @@ export type TahunAjaranUpdateWithoutNilaiInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutNilaiInput = {
@@ -1057,9 +1153,11 @@ export type TahunAjaranUncheckedUpdateWithoutNilaiInput = {
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutHasilSubCPMKInput = {
@@ -1073,9 +1171,11 @@ export type TahunAjaranCreateWithoutHasilSubCPMKInput = {
   nilai?: Prisma.NilaiCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutHasilSubCPMKInput = {
@@ -1089,9 +1189,11 @@ export type TahunAjaranUncheckedCreateWithoutHasilSubCPMKInput = {
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutHasilSubCPMKInput = {
@@ -1121,9 +1223,11 @@ export type TahunAjaranUpdateWithoutHasilSubCPMKInput = {
   nilai?: Prisma.NilaiUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutHasilSubCPMKInput = {
@@ -1137,9 +1241,11 @@ export type TahunAjaranUncheckedUpdateWithoutHasilSubCPMKInput = {
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutHasilCPMKInput = {
@@ -1153,9 +1259,11 @@ export type TahunAjaranCreateWithoutHasilCPMKInput = {
   nilai?: Prisma.NilaiCreateNestedManyWithoutTahunAjaranInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutHasilCPMKInput = {
@@ -1169,9 +1277,11 @@ export type TahunAjaranUncheckedCreateWithoutHasilCPMKInput = {
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutHasilCPMKInput = {
@@ -1201,9 +1311,11 @@ export type TahunAjaranUpdateWithoutHasilCPMKInput = {
   nilai?: Prisma.NilaiUpdateManyWithoutTahunAjaranNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutHasilCPMKInput = {
@@ -1217,9 +1329,11 @@ export type TahunAjaranUncheckedUpdateWithoutHasilCPMKInput = {
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranCreateWithoutHasilCPLInput = {
@@ -1233,9 +1347,11 @@ export type TahunAjaranCreateWithoutHasilCPLInput = {
   nilai?: Prisma.NilaiCreateNestedManyWithoutTahunAjaranInput
   hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranUncheckedCreateWithoutHasilCPLInput = {
@@ -1249,9 +1365,11 @@ export type TahunAjaranUncheckedCreateWithoutHasilCPLInput = {
   nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
   kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
 }
 
 export type TahunAjaranCreateOrConnectWithoutHasilCPLInput = {
@@ -1281,9 +1399,11 @@ export type TahunAjaranUpdateWithoutHasilCPLInput = {
   nilai?: Prisma.NilaiUpdateManyWithoutTahunAjaranNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
 }
 
 export type TahunAjaranUncheckedUpdateWithoutHasilCPLInput = {
@@ -1297,6 +1417,184 @@ export type TahunAjaranUncheckedUpdateWithoutHasilCPLInput = {
   nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
+}
+
+export type TahunAjaranCreateWithoutHasilProfilLulusanInput = {
+  id?: string
+  label: string
+  status?: $Enums.StatusTahunAjaran
+  createdAt?: Date | string
+  cpmk?: Prisma.CPMKCreateNestedManyWithoutTahunAjaranInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutTahunAjaranInput
+  tugas?: Prisma.TugasCreateNestedManyWithoutTahunAjaranInput
+  nilai?: Prisma.NilaiCreateNestedManyWithoutTahunAjaranInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
+  hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
+  hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
+  penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
+  kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenCreateNestedManyWithoutTahunAjaranInput
+}
+
+export type TahunAjaranUncheckedCreateWithoutHasilProfilLulusanInput = {
+  id?: string
+  label: string
+  status?: $Enums.StatusTahunAjaran
+  createdAt?: Date | string
+  cpmk?: Prisma.CPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  tugas?: Prisma.TugasUncheckedCreateNestedManyWithoutTahunAjaranInput
+  nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedCreateNestedManyWithoutTahunAjaranInput
+}
+
+export type TahunAjaranCreateOrConnectWithoutHasilProfilLulusanInput = {
+  where: Prisma.TahunAjaranWhereUniqueInput
+  create: Prisma.XOR<Prisma.TahunAjaranCreateWithoutHasilProfilLulusanInput, Prisma.TahunAjaranUncheckedCreateWithoutHasilProfilLulusanInput>
+}
+
+export type TahunAjaranUpsertWithoutHasilProfilLulusanInput = {
+  update: Prisma.XOR<Prisma.TahunAjaranUpdateWithoutHasilProfilLulusanInput, Prisma.TahunAjaranUncheckedUpdateWithoutHasilProfilLulusanInput>
+  create: Prisma.XOR<Prisma.TahunAjaranCreateWithoutHasilProfilLulusanInput, Prisma.TahunAjaranUncheckedCreateWithoutHasilProfilLulusanInput>
+  where?: Prisma.TahunAjaranWhereInput
+}
+
+export type TahunAjaranUpdateToOneWithWhereWithoutHasilProfilLulusanInput = {
+  where?: Prisma.TahunAjaranWhereInput
+  data: Prisma.XOR<Prisma.TahunAjaranUpdateWithoutHasilProfilLulusanInput, Prisma.TahunAjaranUncheckedUpdateWithoutHasilProfilLulusanInput>
+}
+
+export type TahunAjaranUpdateWithoutHasilProfilLulusanInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  label?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumStatusTahunAjaranFieldUpdateOperationsInput | $Enums.StatusTahunAjaran
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cpmk?: Prisma.CPMKUpdateManyWithoutTahunAjaranNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutTahunAjaranNestedInput
+  tugas?: Prisma.TugasUpdateManyWithoutTahunAjaranNestedInput
+  nilai?: Prisma.NilaiUpdateManyWithoutTahunAjaranNestedInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
+  hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
+  hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
+  penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
+  kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUpdateManyWithoutTahunAjaranNestedInput
+}
+
+export type TahunAjaranUncheckedUpdateWithoutHasilProfilLulusanInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  label?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumStatusTahunAjaranFieldUpdateOperationsInput | $Enums.StatusTahunAjaran
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cpmk?: Prisma.CPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  tugas?: Prisma.TugasUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  aktivitasDosen?: Prisma.AktivitasDosenUncheckedUpdateManyWithoutTahunAjaranNestedInput
+}
+
+export type TahunAjaranCreateWithoutAktivitasDosenInput = {
+  id?: string
+  label: string
+  status?: $Enums.StatusTahunAjaran
+  createdAt?: Date | string
+  cpmk?: Prisma.CPMKCreateNestedManyWithoutTahunAjaranInput
+  subCPMK?: Prisma.SubCPMKCreateNestedManyWithoutTahunAjaranInput
+  tugas?: Prisma.TugasCreateNestedManyWithoutTahunAjaranInput
+  nilai?: Prisma.NilaiCreateNestedManyWithoutTahunAjaranInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKCreateNestedManyWithoutTahunAjaranInput
+  hasilCPMK?: Prisma.HasilCPMKCreateNestedManyWithoutTahunAjaranInput
+  hasilCPL?: Prisma.HasilCPLCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanCreateNestedManyWithoutTahunAjaranInput
+  pendaftaran?: Prisma.PendaftaranMKCreateNestedManyWithoutTahunAjaranInput
+  penugasanDosen?: Prisma.PenugasanDosenMKCreateNestedManyWithoutTahunAjaranInput
+  kelasMK?: Prisma.KelasMKCreateNestedManyWithoutTahunAjaranInput
+}
+
+export type TahunAjaranUncheckedCreateWithoutAktivitasDosenInput = {
+  id?: string
+  label: string
+  status?: $Enums.StatusTahunAjaran
+  createdAt?: Date | string
+  cpmk?: Prisma.CPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  subCPMK?: Prisma.SubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  tugas?: Prisma.TugasUncheckedCreateNestedManyWithoutTahunAjaranInput
+  nilai?: Prisma.NilaiUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilCPMK?: Prisma.HasilCPMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilCPL?: Prisma.HasilCPLUncheckedCreateNestedManyWithoutTahunAjaranInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedCreateNestedManyWithoutTahunAjaranInput
+  pendaftaran?: Prisma.PendaftaranMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  penugasanDosen?: Prisma.PenugasanDosenMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+  kelasMK?: Prisma.KelasMKUncheckedCreateNestedManyWithoutTahunAjaranInput
+}
+
+export type TahunAjaranCreateOrConnectWithoutAktivitasDosenInput = {
+  where: Prisma.TahunAjaranWhereUniqueInput
+  create: Prisma.XOR<Prisma.TahunAjaranCreateWithoutAktivitasDosenInput, Prisma.TahunAjaranUncheckedCreateWithoutAktivitasDosenInput>
+}
+
+export type TahunAjaranUpsertWithoutAktivitasDosenInput = {
+  update: Prisma.XOR<Prisma.TahunAjaranUpdateWithoutAktivitasDosenInput, Prisma.TahunAjaranUncheckedUpdateWithoutAktivitasDosenInput>
+  create: Prisma.XOR<Prisma.TahunAjaranCreateWithoutAktivitasDosenInput, Prisma.TahunAjaranUncheckedCreateWithoutAktivitasDosenInput>
+  where?: Prisma.TahunAjaranWhereInput
+}
+
+export type TahunAjaranUpdateToOneWithWhereWithoutAktivitasDosenInput = {
+  where?: Prisma.TahunAjaranWhereInput
+  data: Prisma.XOR<Prisma.TahunAjaranUpdateWithoutAktivitasDosenInput, Prisma.TahunAjaranUncheckedUpdateWithoutAktivitasDosenInput>
+}
+
+export type TahunAjaranUpdateWithoutAktivitasDosenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  label?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumStatusTahunAjaranFieldUpdateOperationsInput | $Enums.StatusTahunAjaran
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cpmk?: Prisma.CPMKUpdateManyWithoutTahunAjaranNestedInput
+  subCPMK?: Prisma.SubCPMKUpdateManyWithoutTahunAjaranNestedInput
+  tugas?: Prisma.TugasUpdateManyWithoutTahunAjaranNestedInput
+  nilai?: Prisma.NilaiUpdateManyWithoutTahunAjaranNestedInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUpdateManyWithoutTahunAjaranNestedInput
+  hasilCPMK?: Prisma.HasilCPMKUpdateManyWithoutTahunAjaranNestedInput
+  hasilCPL?: Prisma.HasilCPLUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUpdateManyWithoutTahunAjaranNestedInput
+  pendaftaran?: Prisma.PendaftaranMKUpdateManyWithoutTahunAjaranNestedInput
+  penugasanDosen?: Prisma.PenugasanDosenMKUpdateManyWithoutTahunAjaranNestedInput
+  kelasMK?: Prisma.KelasMKUpdateManyWithoutTahunAjaranNestedInput
+}
+
+export type TahunAjaranUncheckedUpdateWithoutAktivitasDosenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  label?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumStatusTahunAjaranFieldUpdateOperationsInput | $Enums.StatusTahunAjaran
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  cpmk?: Prisma.CPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  subCPMK?: Prisma.SubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  tugas?: Prisma.TugasUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  nilai?: Prisma.NilaiUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilSubCPMK?: Prisma.HasilSubCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilCPMK?: Prisma.HasilCPMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilCPL?: Prisma.HasilCPLUncheckedUpdateManyWithoutTahunAjaranNestedInput
+  hasilProfilLulusan?: Prisma.HasilProfilLulusanUncheckedUpdateManyWithoutTahunAjaranNestedInput
   pendaftaran?: Prisma.PendaftaranMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   penugasanDosen?: Prisma.PenugasanDosenMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
   kelasMK?: Prisma.KelasMKUncheckedUpdateManyWithoutTahunAjaranNestedInput
@@ -1315,9 +1613,11 @@ export type TahunAjaranCountOutputType = {
   hasilSubCPMK: number
   hasilCPMK: number
   hasilCPL: number
+  hasilProfilLulusan: number
   pendaftaran: number
   penugasanDosen: number
   kelasMK: number
+  aktivitasDosen: number
 }
 
 export type TahunAjaranCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1328,9 +1628,11 @@ export type TahunAjaranCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   hasilSubCPMK?: boolean | TahunAjaranCountOutputTypeCountHasilSubCPMKArgs
   hasilCPMK?: boolean | TahunAjaranCountOutputTypeCountHasilCPMKArgs
   hasilCPL?: boolean | TahunAjaranCountOutputTypeCountHasilCPLArgs
+  hasilProfilLulusan?: boolean | TahunAjaranCountOutputTypeCountHasilProfilLulusanArgs
   pendaftaran?: boolean | TahunAjaranCountOutputTypeCountPendaftaranArgs
   penugasanDosen?: boolean | TahunAjaranCountOutputTypeCountPenugasanDosenArgs
   kelasMK?: boolean | TahunAjaranCountOutputTypeCountKelasMKArgs
+  aktivitasDosen?: boolean | TahunAjaranCountOutputTypeCountAktivitasDosenArgs
 }
 
 /**
@@ -1395,6 +1697,13 @@ export type TahunAjaranCountOutputTypeCountHasilCPLArgs<ExtArgs extends runtime.
 /**
  * TahunAjaranCountOutputType without action
  */
+export type TahunAjaranCountOutputTypeCountHasilProfilLulusanArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.HasilProfilLulusanWhereInput
+}
+
+/**
+ * TahunAjaranCountOutputType without action
+ */
 export type TahunAjaranCountOutputTypeCountPendaftaranArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.PendaftaranMKWhereInput
 }
@@ -1413,6 +1722,13 @@ export type TahunAjaranCountOutputTypeCountKelasMKArgs<ExtArgs extends runtime.T
   where?: Prisma.KelasMKWhereInput
 }
 
+/**
+ * TahunAjaranCountOutputType without action
+ */
+export type TahunAjaranCountOutputTypeCountAktivitasDosenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AktivitasDosenWhereInput
+}
+
 
 export type TahunAjaranSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1426,9 +1742,11 @@ export type TahunAjaranSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   hasilSubCPMK?: boolean | Prisma.TahunAjaran$hasilSubCPMKArgs<ExtArgs>
   hasilCPMK?: boolean | Prisma.TahunAjaran$hasilCPMKArgs<ExtArgs>
   hasilCPL?: boolean | Prisma.TahunAjaran$hasilCPLArgs<ExtArgs>
+  hasilProfilLulusan?: boolean | Prisma.TahunAjaran$hasilProfilLulusanArgs<ExtArgs>
   pendaftaran?: boolean | Prisma.TahunAjaran$pendaftaranArgs<ExtArgs>
   penugasanDosen?: boolean | Prisma.TahunAjaran$penugasanDosenArgs<ExtArgs>
   kelasMK?: boolean | Prisma.TahunAjaran$kelasMKArgs<ExtArgs>
+  aktivitasDosen?: boolean | Prisma.TahunAjaran$aktivitasDosenArgs<ExtArgs>
   _count?: boolean | Prisma.TahunAjaranCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tahunAjaran"]>
 
@@ -1462,9 +1780,11 @@ export type TahunAjaranInclude<ExtArgs extends runtime.Types.Extensions.Internal
   hasilSubCPMK?: boolean | Prisma.TahunAjaran$hasilSubCPMKArgs<ExtArgs>
   hasilCPMK?: boolean | Prisma.TahunAjaran$hasilCPMKArgs<ExtArgs>
   hasilCPL?: boolean | Prisma.TahunAjaran$hasilCPLArgs<ExtArgs>
+  hasilProfilLulusan?: boolean | Prisma.TahunAjaran$hasilProfilLulusanArgs<ExtArgs>
   pendaftaran?: boolean | Prisma.TahunAjaran$pendaftaranArgs<ExtArgs>
   penugasanDosen?: boolean | Prisma.TahunAjaran$penugasanDosenArgs<ExtArgs>
   kelasMK?: boolean | Prisma.TahunAjaran$kelasMKArgs<ExtArgs>
+  aktivitasDosen?: boolean | Prisma.TahunAjaran$aktivitasDosenArgs<ExtArgs>
   _count?: boolean | Prisma.TahunAjaranCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TahunAjaranIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1480,9 +1800,11 @@ export type $TahunAjaranPayload<ExtArgs extends runtime.Types.Extensions.Interna
     hasilSubCPMK: Prisma.$HasilSubCPMKPayload<ExtArgs>[]
     hasilCPMK: Prisma.$HasilCPMKPayload<ExtArgs>[]
     hasilCPL: Prisma.$HasilCPLPayload<ExtArgs>[]
+    hasilProfilLulusan: Prisma.$HasilProfilLulusanPayload<ExtArgs>[]
     pendaftaran: Prisma.$PendaftaranMKPayload<ExtArgs>[]
     penugasanDosen: Prisma.$PenugasanDosenMKPayload<ExtArgs>[]
     kelasMK: Prisma.$KelasMKPayload<ExtArgs>[]
+    aktivitasDosen: Prisma.$AktivitasDosenPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1890,9 +2212,11 @@ export interface Prisma__TahunAjaranClient<T, Null = never, ExtArgs extends runt
   hasilSubCPMK<T extends Prisma.TahunAjaran$hasilSubCPMKArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaran$hasilSubCPMKArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilSubCPMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hasilCPMK<T extends Prisma.TahunAjaran$hasilCPMKArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaran$hasilCPMKArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilCPMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hasilCPL<T extends Prisma.TahunAjaran$hasilCPLArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaran$hasilCPLArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilCPLPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  hasilProfilLulusan<T extends Prisma.TahunAjaran$hasilProfilLulusanArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaran$hasilProfilLulusanArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HasilProfilLulusanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pendaftaran<T extends Prisma.TahunAjaran$pendaftaranArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaran$pendaftaranArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PendaftaranMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   penugasanDosen<T extends Prisma.TahunAjaran$penugasanDosenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaran$penugasanDosenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PenugasanDosenMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   kelasMK<T extends Prisma.TahunAjaran$kelasMKArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaran$kelasMKArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KelasMKPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  aktivitasDosen<T extends Prisma.TahunAjaran$aktivitasDosenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TahunAjaran$aktivitasDosenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AktivitasDosenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2487,6 +2811,30 @@ export type TahunAjaran$hasilCPLArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 /**
+ * TahunAjaran.hasilProfilLulusan
+ */
+export type TahunAjaran$hasilProfilLulusanArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the HasilProfilLulusan
+   */
+  select?: Prisma.HasilProfilLulusanSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the HasilProfilLulusan
+   */
+  omit?: Prisma.HasilProfilLulusanOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.HasilProfilLulusanInclude<ExtArgs> | null
+  where?: Prisma.HasilProfilLulusanWhereInput
+  orderBy?: Prisma.HasilProfilLulusanOrderByWithRelationInput | Prisma.HasilProfilLulusanOrderByWithRelationInput[]
+  cursor?: Prisma.HasilProfilLulusanWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.HasilProfilLulusanScalarFieldEnum | Prisma.HasilProfilLulusanScalarFieldEnum[]
+}
+
+/**
  * TahunAjaran.pendaftaran
  */
 export type TahunAjaran$pendaftaranArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2556,6 +2904,30 @@ export type TahunAjaran$kelasMKArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.KelasMKScalarFieldEnum | Prisma.KelasMKScalarFieldEnum[]
+}
+
+/**
+ * TahunAjaran.aktivitasDosen
+ */
+export type TahunAjaran$aktivitasDosenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AktivitasDosen
+   */
+  select?: Prisma.AktivitasDosenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AktivitasDosen
+   */
+  omit?: Prisma.AktivitasDosenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AktivitasDosenInclude<ExtArgs> | null
+  where?: Prisma.AktivitasDosenWhereInput
+  orderBy?: Prisma.AktivitasDosenOrderByWithRelationInput | Prisma.AktivitasDosenOrderByWithRelationInput[]
+  cursor?: Prisma.AktivitasDosenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AktivitasDosenScalarFieldEnum | Prisma.AktivitasDosenScalarFieldEnum[]
 }
 
 /**

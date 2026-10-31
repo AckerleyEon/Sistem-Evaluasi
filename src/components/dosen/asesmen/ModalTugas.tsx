@@ -125,7 +125,7 @@ const [bobotTeks, setBobotTeks] = useState(
       onClick={(e) => {
         if (e.target === dialog.current) tutup();
       }}
-      className="m-auto max-h-[90vh] w-[490px] max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex max-sm:mb-0 max-sm:mt-auto max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none"
+      className="m-auto max-h-[90vh] w-122.5 max-w-[92vw] flex-col overflow-hidden rounded-[20px] bg-white p-0 text-[#0F172A] shadow-[0_24px_60px_rgba(15,23,42,.25)] backdrop:bg-[rgba(15,23,42,.45)] open:flex max-sm:mb-0 max-sm:mt-auto max-sm:w-full max-sm:max-w-full max-sm:rounded-b-none"
     >
       <header className="border-b border-[#E5E7EB] px-5 pb-3 pt-4">
         <div className="flex items-center gap-2.5">
@@ -170,7 +170,7 @@ const [bobotTeks, setBobotTeks] = useState(
         <div className="grid grid-cols-[92px_minmax(0,1fr)] gap-3">
           <label className="block">
             <span className="mb-1 block text-[12px] font-semibold text-[#334155]">Asesmen ke :</span>
-            <span className="flex min-h-[38px] items-center gap-1.5 rounded-[10px] border border-[#E5E7EB] px-2 focus-within:border-[#60A5FA]">
+            <span className="flex min-h-9.5 items-center gap-1.5 rounded-[10px] border border-[#E5E7EB] px-2 focus-within:border-[#60A5FA]">
               <Ikon nama="kalender" ukuran={14} className="shrink-0 text-[#64748B]" />
               <input
                 type="number"
@@ -195,7 +195,7 @@ const [bobotTeks, setBobotTeks] = useState(
               aria-describedby={sentuh && judulKosong ? "galat-judul" : undefined}
               onBlur={() => setSentuh(true)}
               placeholder="Contoh: Analisis Resonansi RLC Seri & Paralel"
-              className={`min-h-[38px] w-full rounded-[10px] border px-3 text-[13px] outline-none focus:border-[#60A5FA] ${
+              className={`min-h-9.5 w-full rounded-[10px] border px-3 text-[13px] outline-none focus:border-[#60A5FA] ${
                 sentuh && judulKosong ? "border-[#DC2626]" : "border-[#E5E7EB]"
               }`}
             />
@@ -336,7 +336,7 @@ const [bobotTeks, setBobotTeks] = useState(
                       aria-checked={terpilih}
                       aria-label={`Pilih semua Sub-CPMK ${c.kode}`}
                       onClick={() => toggleCpmk(idx)}
-                      className={`mt-0.5 grid h-[18px] w-[18px] shrink-0 place-items-center rounded border ${FOKUS} ${
+                      className={`mt-0.5 grid h-4.5 w-4.5 shrink-0 place-items-center rounded border ${FOKUS} ${
                         terpilih ? "border-[#2563EB] bg-[#2563EB] text-white" : "border-[#94A3B8] bg-white"
                       }`}
                     >
@@ -364,7 +364,7 @@ const [bobotTeks, setBobotTeks] = useState(
                               aria-pressed={on}
                               title={s.deskripsi}
                               onClick={() => toggleSub(s.id)}
-                              className={`min-h-[26px] max-w-full truncate rounded-md border px-2 text-[11px] ${FOKUS} ${
+                              className={`min-h-6.5 max-w-full truncate rounded-md border px-2 text-[11px] ${FOKUS} ${
                                 on
                                   ? "border-[#2563EB] bg-[#EFF6FF] font-semibold text-[#1D4ED8]"
                                   : "border-[#E5E7EB] text-[#334155] hover:bg-[#F8FAFC]"
@@ -400,7 +400,7 @@ const [bobotTeks, setBobotTeks] = useState(
           <button
             type="button"
             onClick={tutup}
-            className={`min-h-[34px] min-w-[100px] rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] ${FOKUS}`}
+            className={`min-h-8.5 min-w-25 rounded-full border border-[#E5E7EB] px-4 text-[12px] font-semibold hover:bg-[#F8FAFC] ${FOKUS}`}
           >
             Batal
           </button>
@@ -408,7 +408,7 @@ const [bobotTeks, setBobotTeks] = useState(
             type="button"
             onClick={simpan}
             disabled={!bisaSimpan}
-            className={`flex min-h-[34px] items-center gap-1.5 rounded-full bg-[#2563EB] px-4 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] hover:bg-[#1D4ED8] ${FOKUS} ${
+            className={`flex min-h-8.5 items-center gap-1.5 rounded-full bg-[#2563EB] px-4 text-[12px] font-bold text-white shadow-[0_6px_14px_rgba(37,99,235,.30)] hover:bg-[#1D4ED8] ${FOKUS} ${
               bisaSimpan ? "" : "cursor-not-allowed opacity-50"
             }`}
           >

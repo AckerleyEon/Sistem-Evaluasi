@@ -12,6 +12,7 @@ const MENU = [
   { href: "/admin/data-master/cpl", label: "Data Master CPL", icon: "shield" },
   { href: "/admin/data-master/mata-kuliah", label: "MK & Mahasiswa", icon: "book" },
   { href: "/admin/data-master/cpmk", label: "CPMK & Sub-CPMK", icon: "link" },
+  { href: "/admin/laporan", label: "Laporan", icon: "chart" },
 ] as const;
 
 function NavIcon({ name }: { name: (typeof MENU)[number]["icon"] }) {
@@ -27,6 +28,8 @@ function NavIcon({ name }: { name: (typeof MENU)[number]["icon"] }) {
         return <svg {...common}><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5V5.5Z" /><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20" /></svg>;
     case "link":
         return <svg {...common}><path d="M9 15l6-6" /><path d="M8 7l1.5-1.5a4 4 0 0 1 5.7 5.7L14 12" /><path d="M16 17l-1.5 1.5a4 4 0 0 1-5.7-5.7L10 12" /></svg>;
+    case "chart":
+        return <svg {...common}><path d="M4 19V5M4 19h16" /><path d="M8 15v-4M12 15V7M16 15v-6" /></svg>;
   }
 }
 

@@ -6,14 +6,16 @@ const globalForPrisma = globalThis as unknown as {
     prismaSchemaVersion: string | undefined;
 };
 
-const prismaSchemaVersion = "20261022140000_cpl_mata_kuliah_dosen_alias";
+const prismaSchemaVersion = "20261101010000_log_aktivitas_dosen";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const cachedPrisma = globalForPrisma.prisma;
 
 export const prisma =
     cachedPrisma &&
     globalForPrisma.prismaSchemaVersion === prismaSchemaVersion &&
-    typeof cachedPrisma.pengaturan?.findUnique === "function"
+    typeof cachedPrisma.pengaturan?.findUnique === "function" &&
+    typeof cachedPrisma.profilLulusan?.findMany === "function" &&
+    typeof cachedPrisma.aktivitasDosen?.findMany === "function"
         ? cachedPrisma
         : new PrismaClient({ adapter });
 
