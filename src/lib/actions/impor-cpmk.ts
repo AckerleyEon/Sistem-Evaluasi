@@ -5,16 +5,19 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hitungUlangMataKuliah } from "@/lib/perhitungan/hitungUlangMataKuliah";
+import { normalisasiNamespaceWorkbookExcel } from "@/lib/asesmen-impor-util";
 import {
+  BATAS_IMPOR_CPMK,
+  cariMataKuliahDariNamaFileCPMK,
   normalisasiKodeMK,
+  petakanKolomPemetaanCPMK,
   saringBarisBergalat,
   validasiBarisCPMK,
   type BarisCPMKExcel,
   type DataImporCPMK,
+  type KolomPemetaanCPMK,
 } from "@/lib/impor-cpmk";
 
-const MAKS_BARIS = 5000;
-const MAKS_UKURAN = 5 * 1024 * 1024;
 const HEADER = [
   "kodemk",
   "namamatakuliah",
@@ -26,7 +29,7 @@ const HEADER = [
   "deskripsisubcpmk",
 ] as const;
 
-type Galat = { baris: number; pesan: string };
+type Galat = { baris: number; pesan: string; sumber?: string };
 type Ringkasan = {
   mataKuliah: number;
   cpmk: number;
@@ -78,60 +81,102 @@ function normalisasiHeader(value: string) {
 }
 
 async function bacaFile(formData: FormData): Promise<{ ok: true; baris: BarisCPMKExcel[] } | { ok: false; error: string }> {
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Pilih file Excel (.xlsx) terlebih dahulu." };
-  if (!file.name.toLowerCase().endsWith(".xlsx")) return { ok: false, error: "Format file harus .xlsx." };
-  if (file.size > MAKS_UKURAN) return { ok: false, error: "Ukuran file maksimal 5 MB." };
-
-  const workbook = new ExcelJS.Workbook();
-  try {
-    await workbook.xlsx.load(Buffer.from(await file.arrayBuffer()) as unknown as ExcelJS.Buffer);
-  } catch {
-    return { ok: false, error: "File tidak bisa dibaca. Pastikan file .xlsx valid." };
+  const entries = formData.getAll("files");
+  const files = (entries.length ? entries : [formData.get("file")]).filter(
+    (file): file is File => file instanceof File,
+  );
+  if (!files.length || files.length !== (entries.length || (formData.get("file") ? 1 : 0)) || files.some((file) => file.size === 0)) {
+    return { ok: false, error: "Pilih minimal satu file Excel (.xlsx) yang sudah diisi." };
+  }
+  if (files.length > BATAS_IMPOR_CPMK.jumlahFile) return { ok: false, error: `Maksimal ${BATAS_IMPOR_CPMK.jumlahFile} file untuk satu kali impor.` };
+  if (files.some((file) => !file.name.toLowerCase().endsWith(".xlsx"))) {
+    return { ok: false, error: "Semua file harus berformat .xlsx." };
+  }
+  if (files.some((file) => file.size > BATAS_IMPOR_CPMK.ukuranPerFile)) return { ok: false, error: "Ukuran setiap file maksimal 20 MB." };
+  if (files.reduce((total, file) => total + file.size, 0) > BATAS_IMPOR_CPMK.ukuranTotal) {
+    return { ok: false, error: "Ukuran total file maksimal 1 GB." };
   }
 
-  const worksheet = workbook.worksheets[0];
-  if (!worksheet) return { ok: false, error: "File tidak memiliki lembar kerja." };
-  const kolom = new Map<string, number>();
-  worksheet.getRow(1).eachCell((cell, index) => {
-    const nama = normalisasiHeader(teksSel(cell.value));
-    const posisi = HEADER.indexOf(nama as (typeof HEADER)[number]);
-    if (posisi >= 0) kolom.set(HEADER[posisi], index);
-  });
-  const hilang = HEADER.filter((header) => !kolom.has(header));
-  if (hilang.length) {
-    return {
-      ok: false,
-      error: `Header wajib belum lengkap: ${hilang.join(", ")}. Gunakan template impor CPMK & Sub-CPMK.`,
-    };
-  }
+  const daftarMK = await prisma.mataKuliah.findMany({ select: { kode: true, nama: true } });
+  const hasil: BarisCPMKExcel[] = [];
+  const kolomPemetaan: KolomPemetaanCPMK[] = [
+    "kodeCPMK",
+    "bobotCPMK",
+    "deskripsiCPMK",
+    "kodeSubCPMK",
+    "bobotSubCPMK",
+    "deskripsiSubCPMK",
+  ];
 
-  const baris: BarisCPMKExcel[] = [];
-  const nilaiMerged = Array.from({ length: 5 }, () => "");
-  worksheet.eachRow((row, nomor) => {
-    if (nomor === 1) return;
-    const nilai = HEADER.map((header) => teksSel(row.getCell(kolom.get(header)!).value).replace(/\s+/g, " ").trim());
-    if (nilai.every((cell) => !cell)) return;
-    for (let i = 0; i < nilaiMerged.length; i++) {
-      if (nilai[i]) nilaiMerged[i] = nilai[i];
-      else nilai[i] = nilaiMerged[i];
+  for (const file of files) {
+    const workbook = new ExcelJS.Workbook();
+    try {
+      const bufferNormal = await normalisasiNamespaceWorkbookExcel(Buffer.from(await file.arrayBuffer()));
+      await workbook.xlsx.load(bufferNormal as unknown as ExcelJS.Buffer);
+    } catch {
+      return { ok: false, error: `${file.name}: file tidak bisa dibaca. Pastikan file .xlsx valid.` };
     }
-    baris.push({
-      baris: nomor,
-      kodeMK: nilai[0],
-      namaMK: nilai[1],
-      kodeCPMK: nilai[2],
-      bobotCPMK: nilai[3],
-      deskripsiCPMK: nilai[4],
-      kodeSubCPMK: nilai[5],
-      bobotSubCPMK: nilai[6],
-      deskripsiSubCPMK: nilai[7],
-    });
-  });
 
-  if (baris.length === 0) return { ok: false, error: "Tidak ada data CPMK atau Sub-CPMK pada file." };
-  if (baris.length > MAKS_BARIS) return { ok: false, error: `Maksimal ${MAKS_BARIS} baris data per impor.` };
-  return { ok: true, baris };
+    const worksheet = workbook.getWorksheet("Data Import") ?? workbook.worksheets[0];
+    if (!worksheet) return { ok: false, error: `${file.name}: file tidak memiliki lembar kerja.` };
+    const header: string[] = [];
+    worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell, index) => {
+      header[index - 1] = teksSel(cell.value);
+    });
+    const kolomLama = new Map<string, number>();
+    header.forEach((judul, index) => {
+      const posisi = HEADER.indexOf(normalisasiHeader(judul) as (typeof HEADER)[number]);
+      if (posisi >= 0) kolomLama.set(HEADER[posisi], index + 1);
+    });
+    const formatLama = HEADER.every((nama) => kolomLama.has(nama));
+    const kolomBaru = petakanKolomPemetaanCPMK(header);
+    if (!formatLama && !kolomBaru) {
+      return {
+        ok: false,
+        error: `${file.name}: header tidak sesuai. Gunakan template CPMK & Sub-CPMK atau sheet Data Import pada file pemetaan.`,
+      };
+    }
+
+    const mkFile = formatLama ? undefined : cariMataKuliahDariNamaFileCPMK(file.name, daftarMK);
+    if (!formatLama && !mkFile) {
+      return { ok: false, error: `${file.name}: nama file harus memuat kode dan nama mata kuliah, diakhiri _Pemetaan.xlsx.` };
+    }
+
+    const nilaiMerged = Array.from({ length: 5 }, () => "");
+    worksheet.eachRow((row, nomor) => {
+      if (nomor === 1) return;
+      const nilai = formatLama
+        ? HEADER.map((nama) => teksSel(row.getCell(kolomLama.get(nama)!).value).replace(/\s+/g, " ").trim())
+        : [
+            mkFile!.kode,
+            mkFile!.nama,
+            ...kolomPemetaan.map((nama) => teksSel(row.getCell(kolomBaru!.get(nama)!).value).replace(/\s+/g, " ").trim()),
+          ];
+      if (nilai.every((cell) => !cell)) return;
+      for (let index = 0; index < nilaiMerged.length; index += 1) {
+        if (nilai[index]) nilaiMerged[index] = nilai[index];
+        else nilai[index] = nilaiMerged[index];
+      }
+      hasil.push({
+        baris: nomor,
+        sumber: file.name,
+        kodeMK: nilai[0],
+        namaMK: nilai[1],
+        kodeCPMK: nilai[2],
+        bobotCPMK: nilai[3],
+        deskripsiCPMK: nilai[4],
+        kodeSubCPMK: nilai[5],
+        bobotSubCPMK: nilai[6],
+        deskripsiSubCPMK: nilai[7],
+      });
+    });
+    if (hasil.length > BATAS_IMPOR_CPMK.jumlahBaris) {
+      return { ok: false, error: `Maksimal ${BATAS_IMPOR_CPMK.jumlahBaris} baris data untuk sekali impor.` };
+    }
+  }
+
+  if (hasil.length === 0) return { ok: false, error: "Tidak ada data CPMK atau Sub-CPMK pada file yang dipilih." };
+  return { ok: true, baris: hasil };
 }
 
 async function analisisData(data: DataImporCPMK): Promise<AnalisisInternal | { error: string }> {
@@ -141,14 +186,14 @@ async function analisisData(data: DataImporCPMK): Promise<AnalisisInternal | { e
   const galat = [...data.galat];
   const tambahGalatBarisCPMK = (cpmk: (typeof data.mataKuliah)[number]["cpmk"][number], pesan: string) => {
     const barisTerkait = cpmk.sub.map((sub) => sub.baris);
-    for (const baris of barisTerkait.length ? barisTerkait : [cpmk.baris]) {
-      galat.push({ baris, pesan });
+    for (const sub of barisTerkait.length ? cpmk.sub : [cpmk]) {
+      galat.push({ baris: sub.baris, sumber: sub.sumber, pesan });
     }
   };
   const tambahGalatMK = (mk: (typeof data.mataKuliah)[number], pesan: string) => {
-    const barisTerkait = mk.cpmk.flatMap((cpmk) => cpmk.sub.map((sub) => sub.baris));
-    for (const baris of barisTerkait.length ? barisTerkait : [mk.baris]) {
-      galat.push({ baris, pesan });
+    const barisTerkait = mk.cpmk.flatMap((cpmk) => cpmk.sub);
+    for (const row of barisTerkait.length ? barisTerkait : [mk]) {
+      galat.push({ baris: row.baris, sumber: row.sumber, pesan });
     }
   };
   const mkDatabase = await prisma.mataKuliah.findMany({ select: { id: true, kode: true, nama: true } });
@@ -272,7 +317,7 @@ async function analisisData(data: DataImporCPMK): Promise<AnalisisInternal | { e
     tahunAjaranId: ta.id,
     jumlahBaris: data.jumlahBaris,
     jumlahBarisValid: dataValid.jumlahBaris,
-    jumlahGalat: new Set(galat.map((item) => item.baris)).size,
+    jumlahGalat: new Set(galat.map((item) => `${item.sumber ?? ""}:${item.baris}`)).size,
     galat,
     ringkasan,
     data,
@@ -422,4 +467,35 @@ export async function terapkanImporCPMK(
     ok: true,
     pesan: `Impor selesai: ${dataImpor.mataKuliah.reduce((total, mk) => total + mk.cpmk.length, 0)} CPMK, ${new Set(dataImpor.mataKuliah.flatMap((mk) => mk.cpmk.flatMap((cpmk) => cpmk.sub.map((sub) => `${normalisasiKodeMK(mk.kode)}|${sub.kode}`)))).size} Sub-CPMK, dan ${dataImpor.jumlahPemetaan} pemetaan valid diproses. ${hasil.jumlahGalat} baris bergalat dilewati.`,
   };
+}
+
+export async function hapusSemuaCPMKSubCPMK(
+  mataKuliahId: string,
+): Promise<{ error?: string; jumlahCPMK?: number; jumlahSubCPMK?: number }> {
+  await pastikanAdmin();
+  if (typeof mataKuliahId !== "string" || !mataKuliahId.trim()) {
+    return { error: "Mata kuliah tidak valid." };
+  }
+  const ta = await prisma.tahunAjaran.findFirst({ where: { status: "AKTIF" }, select: { id: true } });
+  if (!ta) return { error: "Belum ada Tahun Ajaran aktif." };
+  const mataKuliah = await prisma.mataKuliah.findUnique({
+    where: { id: mataKuliahId },
+    select: { id: true },
+  });
+  if (!mataKuliah) return { error: "Mata kuliah tidak ditemukan." };
+
+  const hasil = await prisma.$transaction(async (tx) => {
+    const cpmk = await tx.cPMK.deleteMany({ where: { mataKuliahId, tahunAjaranId: ta.id } });
+    const subCpmk = await tx.subCPMK.deleteMany({ where: { mataKuliahId, tahunAjaranId: ta.id } });
+    return { jumlahCPMK: cpmk.count, jumlahSubCPMK: subCpmk.count };
+  });
+  if (hasil.jumlahCPMK > 0 || hasil.jumlahSubCPMK > 0) {
+    await hitungUlangMataKuliah(mataKuliahId, ta.id);
+  }
+
+  revalidatePath("/admin/data-master/cpmk");
+  revalidatePath("/admin");
+  revalidatePath("/admin/laporan");
+  revalidatePath("/dosen");
+  return hasil;
 }

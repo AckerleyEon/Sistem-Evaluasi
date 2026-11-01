@@ -14,6 +14,7 @@ import {
   normalisasiNamespaceWorkbookExcel,
   normalisasiKunciAsesmen,
   petakanKolomAsesmen,
+  saringBarisAsesmenBaru,
   type KolomAsesmen,
 } from "@/lib/asesmen-impor-util";
 
@@ -266,20 +267,27 @@ export async function imporAsesmenExcel(
 
   if (semuaBaris.length > 500) return { ok: false, pesan: "Maksimal 500 tugas dalam satu kali impor." };
 
+  let jumlahDilewati = 0;
   for (const item of grup.values()) {
+    item.tugasLama = await prisma.tugas.findMany({
+      where: { mataKuliahId: item.mataKuliahId, tahunAjaranId: item.tahunAjaranId, kelasId: item.kelasId },
+      select: { id: true, bobot: true, nama: true },
+    });
+    const hasilSaring = saringBarisAsesmenBaru(
+      item.baris,
+      item.tugasLama.map((tugas) => tugas.nama),
+    );
+    item.baris = hasilSaring.barisBaru;
+    jumlahDilewati += hasilSaring.jumlahDilewati;
+
     const namaTerpakai = new Set<string>();
     for (const row of item.baris) {
       const kunciNama = normalisasiKunciAsesmen(row.nama);
       if (namaTerpakai.has(kunciNama)) return { ok: false, pesan: `${row.file}: nama tugas "${row.nama}" duplikat pada kelas yang sama.` };
       namaTerpakai.add(kunciNama);
     }
-    item.tugasLama = await prisma.tugas.findMany({
-      where: { mataKuliahId: item.mataKuliahId, tahunAjaranId: item.tahunAjaranId, kelasId: item.kelasId },
-      select: { id: true, bobot: true, nama: true },
-    });
-    if (item.tugasLama.some((tugas) => namaTerpakai.has(normalisasiKunciAsesmen(tugas.nama)))) {
-      return { ok: false, pesan: "Nama tugas sudah digunakan pada mata kuliah/kelas ini. Gunakan nama yang berbeda." };
-    }
+    if (item.baris.length === 0) continue;
+
     const bobotImpor = item.baris.reduce((jumlah, row) => jumlah + row.bobot, 0);
     if (item.tugasLama.length === 0 && bobotImpor !== 100) {
       return { ok: false, pesan: `Total bobot tugas baru pada kelas harus 100% (saat ini ${bobotImpor}%).` };
@@ -289,44 +297,51 @@ export async function imporAsesmenExcel(
     }
   }
 
-  await prisma.$transaction(async (tx) => {
-    for (const item of grup.values()) {
-      const bobotImpor = item.baris.reduce((jumlah, row) => jumlah + row.bobot, 0);
-      const bobotLamaBaru = item.tugasLama.length > 0
-        ? bagiProporsional(item.tugasLama.map((tugas) => bobotKePersen(tugas.bobot)), 100 - bobotImpor)
-        : [];
-      for (const [indeks, tugas] of item.tugasLama.entries()) {
-        await tx.tugas.update({
-          where: { id: tugas.id },
-          data: { bobot: bobotLamaBaru[indeks] / 100 },
-        });
+  const jumlahDiimpor = [...grup.values()].reduce((jumlah, item) => jumlah + item.baris.length, 0);
+  if (jumlahDiimpor > 0) {
+    await prisma.$transaction(async (tx) => {
+      for (const item of grup.values()) {
+        if (item.baris.length === 0) continue;
+        const bobotImpor = item.baris.reduce((jumlah, row) => jumlah + row.bobot, 0);
+        const bobotLamaBaru = item.tugasLama.length > 0
+          ? bagiProporsional(item.tugasLama.map((tugas) => bobotKePersen(tugas.bobot)), 100 - bobotImpor)
+          : [];
+        for (const [indeks, tugas] of item.tugasLama.entries()) {
+          await tx.tugas.update({
+            where: { id: tugas.id },
+            data: { bobot: bobotLamaBaru[indeks] / 100 },
+          });
+        }
+        for (const row of item.baris) {
+          const tugas = await tx.tugas.create({
+            data: {
+              nama: row.nama,
+              pertemuanKe: row.pertemuan,
+              bobot: row.bobot / 100,
+              mataKuliahId: item.mataKuliahId,
+              tahunAjaranId: item.tahunAjaranId,
+              kelasId: item.kelasId,
+            },
+            select: { id: true },
+          });
+          await tx.distribusiSubCPMK.createMany({
+            data: row.subIds.map((subCpmkId) => ({ subCpmkId, tugasId: tugas.id, sumber: "MANUAL" as const })),
+          });
+        }
       }
-      for (const row of item.baris) {
-        const tugas = await tx.tugas.create({
-          data: {
-            nama: row.nama,
-            pertemuanKe: row.pertemuan,
-            bobot: row.bobot / 100,
-            mataKuliahId: item.mataKuliahId,
-            tahunAjaranId: item.tahunAjaranId,
-            kelasId: item.kelasId,
-          },
-          select: { id: true },
-        });
-        await tx.distribusiSubCPMK.createMany({
-          data: row.subIds.map((subCpmkId) => ({ subCpmkId, tugasId: tugas.id, sumber: "MANUAL" as const })),
-        });
-      }
-    }
-  });
+    });
+  }
 
-  for (const [mataKuliahId, tahunAjaranId] of targetTahun) {
-    await hitungUlangMataKuliah(mataKuliahId, tahunAjaranId);
+  const mataKuliahBerubah = new Set(
+    [...grup.values()].filter((item) => item.baris.length > 0).map((item) => item.mataKuliahId),
+  );
+  for (const mataKuliahId of mataKuliahBerubah) {
+    await hitungUlangMataKuliah(mataKuliahId, targetTahun.get(mataKuliahId)!);
     revalidatePath(`/dosen/komponen-penilaian/${mataKuliahId}`);
   }
   return {
     ok: true,
-    pesan: `${semuaBaris.length} tugas dari ${fileList.length} file berhasil diimpor ke ${targetTahun.size} mata kuliah.`,
-    jumlah: semuaBaris.length,
+    pesan: `${jumlahDiimpor} tugas baru berhasil diimpor dari ${fileList.length} file. ${jumlahDilewati} tugas yang sudah ada dilewati.`,
+    jumlah: jumlahDiimpor,
   };
 }

@@ -1,5 +1,6 @@
 export type BarisCPMKExcel = {
   baris: number;
+  sumber?: string;
   kodeMK: string;
   namaMK: string;
   kodeCPMK: string;
@@ -15,6 +16,7 @@ export type SubCPMKImpor = {
   deskripsi: string;
   bobot: number;
   baris: number;
+  sumber?: string;
 };
 
 export type CPMKImpor = {
@@ -22,6 +24,7 @@ export type CPMKImpor = {
   deskripsi: string;
   bobot: number;
   baris: number;
+  sumber?: string;
   sub: SubCPMKImpor[];
 };
 
@@ -29,10 +32,11 @@ export type MataKuliahImpor = {
   kode: string;
   nama: string;
   baris: number;
+  sumber?: string;
   cpmk: CPMKImpor[];
 };
 
-export type GalatImporCPMK = { baris: number; pesan: string };
+export type GalatImporCPMK = { baris: number; pesan: string; sumber?: string };
 
 export type DataImporCPMK = {
   mataKuliah: MataKuliahImpor[];
@@ -42,10 +46,60 @@ export type DataImporCPMK = {
   barisSumber: BarisCPMKExcel[];
 };
 
+export type KolomPemetaanCPMK =
+  | "kodeCPMK"
+  | "bobotCPMK"
+  | "deskripsiCPMK"
+  | "kodeSubCPMK"
+  | "bobotSubCPMK"
+  | "deskripsiSubCPMK";
+
+export const BATAS_IMPOR_CPMK = {
+  jumlahFile: 300,
+  ukuranPerFile: 20 * 1024 * 1024,
+  ukuranTotal: 1024 * 1024 * 1024,
+  jumlahBaris: 5000,
+} as const;
+
 const rapikan = (value: string) => value.replace(/\s+/g, " ").trim();
 
 export function normalisasiKodeMK(value: string) {
   return rapikan(value).replace(/\s/g, "").toUpperCase();
+}
+
+export function cariMataKuliahDariNamaFileCPMK<T extends { kode: string; nama: string }>(
+  namaFile: string,
+  mataKuliah: T[],
+): T | undefined {
+  if (!namaFile.toLowerCase().endsWith(".xlsx")) return undefined;
+  const dasar = namaFile.replace(/\.xlsx$/i, "").replace(/_(pemetaan)$/i, "");
+  const normalisasi = (nilai: string) =>
+    nilai.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("id").replace(/[^a-z0-9]/g, "");
+  const identitas = normalisasi(dasar);
+  const cocok = mataKuliah.filter((item) => normalisasi(`${item.kode}_${item.nama}`) === identitas);
+  return cocok.length === 1 ? cocok[0] : undefined;
+}
+
+export function petakanKolomPemetaanCPMK(header: string[]): Map<KolomPemetaanCPMK, number> | null {
+  const wajib: KolomPemetaanCPMK[] = [
+    "kodeCPMK",
+    "bobotCPMK",
+    "deskripsiCPMK",
+    "kodeSubCPMK",
+    "bobotSubCPMK",
+    "deskripsiSubCPMK",
+  ];
+  const kolom = new Map<KolomPemetaanCPMK, number>();
+  header.forEach((judul, index) => {
+    const nama = judul.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (nama === "kodecpmk") kolom.set("kodeCPMK", index + 1);
+    if (nama === "bobotcpmk") kolom.set("bobotCPMK", index + 1);
+    if (nama === "deskripsicpmk") kolom.set("deskripsiCPMK", index + 1);
+    if (nama === "kodesubcpmk") kolom.set("kodeSubCPMK", index + 1);
+    if (nama === "bobotsubcpmk") kolom.set("bobotSubCPMK", index + 1);
+    if (nama === "deskripsisubcpmk") kolom.set("deskripsiSubCPMK", index + 1);
+  });
+  return wajib.every((nama) => kolom.has(nama)) ? kolom : null;
 }
 
 export function bacaBobotPersen(value: string): number | null {
@@ -64,10 +118,11 @@ export function validasiBarisCPMK(baris: BarisCPMKExcel[]): DataImporCPMK {
   const galat: GalatImporCPMK[] = [];
   const mkMap = new Map<string, MataKuliahImpor>();
   const cpmkMap = new Map<string, CPMKImpor>();
-  const subMap = new Map<string, { deskripsi: string; baris: number }>();
+  const subMap = new Map<string, { deskripsi: string; baris: number; sumber?: string }>();
   const barisPemetaan = new Set<string>();
 
-  const tambahGalat = (barisKe: number, pesan: string) => galat.push({ baris: barisKe, pesan });
+  const tambahGalat = (row: Pick<BarisCPMKExcel, "baris" | "sumber">, pesan: string) =>
+    galat.push({ baris: row.baris, sumber: row.sumber, pesan });
 
   for (const row of baris) {
     const kodeMK = rapikan(row.kodeMK);
@@ -79,13 +134,13 @@ export function validasiBarisCPMK(baris: BarisCPMKExcel[]): DataImporCPMK {
     const bobotCPMK = bacaBobotPersen(row.bobotCPMK);
     const bobotSubCPMK = bacaBobotPersen(row.bobotSubCPMK);
 
-    if (!kodeMK || !namaMK) tambahGalat(row.baris, "Kode dan nama mata kuliah wajib diisi.");
-    if (!/^CPMK-\d{1,3}$/i.test(kodeCPMK)) tambahGalat(row.baris, "Kode CPMK harus berformat CPMK-1, CPMK-2, dan seterusnya.");
-    if (!/^Sub-CPMK-\d{1,3}$/i.test(kodeSubCPMK)) tambahGalat(row.baris, "Kode Sub-CPMK harus berformat Sub-CPMK-1, Sub-CPMK-2, dan seterusnya.");
-    if (bobotCPMK === null) tambahGalat(row.baris, "Bobot CPMK harus 1–100, atau pecahan 0–1 (misalnya 0,25).");
-    if (bobotSubCPMK === null) tambahGalat(row.baris, "Bobot Sub-CPMK harus 1–100, atau pecahan 0–1 (misalnya 0,50).");
-    if (deskripsiCPMK.length < 10 || deskripsiCPMK.length > 500) tambahGalat(row.baris, "Deskripsi CPMK harus 10–500 karakter.");
-    if (deskripsiSubCPMK.length < 10 || deskripsiSubCPMK.length > 500) tambahGalat(row.baris, "Deskripsi Sub-CPMK harus 10–500 karakter.");
+    if (!kodeMK || !namaMK) tambahGalat(row, "Kode dan nama mata kuliah wajib diisi.");
+    if (!/^CPMK-\d{1,3}$/i.test(kodeCPMK)) tambahGalat(row, "Kode CPMK harus berformat CPMK-1, CPMK-2, dan seterusnya.");
+    if (!/^Sub-CPMK-\d{1,3}$/i.test(kodeSubCPMK)) tambahGalat(row, "Kode Sub-CPMK harus berformat Sub-CPMK-1, Sub-CPMK-2, dan seterusnya.");
+    if (bobotCPMK === null) tambahGalat(row, "Bobot CPMK harus 1–100, atau pecahan 0–1 (misalnya 0,25).");
+    if (bobotSubCPMK === null) tambahGalat(row, "Bobot Sub-CPMK harus 1–100, atau pecahan 0–1 (misalnya 0,50).");
+    if (deskripsiCPMK.length < 10 || deskripsiCPMK.length > 500) tambahGalat(row, "Deskripsi CPMK harus 10–500 karakter.");
+    if (deskripsiSubCPMK.length < 10 || deskripsiSubCPMK.length > 500) tambahGalat(row, "Deskripsi Sub-CPMK harus 10–500 karakter.");
     if (
       !kodeMK ||
       !namaMK ||
@@ -106,35 +161,35 @@ export function validasiBarisCPMK(baris: BarisCPMKExcel[]): DataImporCPMK {
     const subKey = `${mkKey}|${kodeSubCPMK}`;
     const pemetaanKey = `${cpmkKey}|${kodeSubCPMK}`;
     if (barisPemetaan.has(pemetaanKey)) {
-      tambahGalat(row.baris, `${kodeCPMK} sudah memetakan ${kodeSubCPMK} di mata kuliah ini.`);
+      tambahGalat(row, `${kodeCPMK} sudah memetakan ${kodeSubCPMK} di mata kuliah ini.`);
       continue;
     }
     barisPemetaan.add(pemetaanKey);
 
     let mk = mkMap.get(mkKey);
     if (!mk) {
-      mk = { kode: kodeMK, nama: namaMK, baris: row.baris, cpmk: [] };
+      mk = { kode: kodeMK, nama: namaMK, baris: row.baris, sumber: row.sumber, cpmk: [] };
       mkMap.set(mkKey, mk);
     } else if (mk.nama.toLowerCase() !== namaMK.toLowerCase()) {
-      tambahGalat(row.baris, `Nama mata kuliah berbeda dari baris ${mk.baris} untuk kode ${kodeMK}.`);
+      tambahGalat(row, `Nama mata kuliah berbeda dari baris ${mk.baris} untuk kode ${kodeMK}.`);
     }
 
     let cpmk = cpmkMap.get(cpmkKey);
     if (!cpmk) {
-      cpmk = { kode: kodeCPMK, deskripsi: deskripsiCPMK, bobot: bobotCPMK, baris: row.baris, sub: [] };
+      cpmk = { kode: kodeCPMK, deskripsi: deskripsiCPMK, bobot: bobotCPMK, baris: row.baris, sumber: row.sumber, sub: [] };
       cpmkMap.set(cpmkKey, cpmk);
       mk.cpmk.push(cpmk);
     } else if (cpmk.deskripsi !== deskripsiCPMK || cpmk.bobot !== bobotCPMK) {
-      tambahGalat(row.baris, `${kodeCPMK} memiliki deskripsi atau bobot yang berbeda dari baris ${cpmk.baris}.`);
+      tambahGalat(row, `${kodeCPMK} memiliki deskripsi atau bobot yang berbeda dari baris ${cpmk.baris}.`);
     }
 
     const subTerdaftar = subMap.get(subKey);
     if (!subTerdaftar) {
-      subMap.set(subKey, { deskripsi: deskripsiSubCPMK, baris: row.baris });
+      subMap.set(subKey, { deskripsi: deskripsiSubCPMK, baris: row.baris, sumber: row.sumber });
     } else if (subTerdaftar.deskripsi !== deskripsiSubCPMK) {
-      tambahGalat(row.baris, `${kodeSubCPMK} memiliki deskripsi berbeda dari baris ${subTerdaftar.baris} dalam mata kuliah yang sama.`);
+      tambahGalat(row, `${kodeSubCPMK} memiliki deskripsi berbeda dari baris ${subTerdaftar.baris} dalam mata kuliah yang sama.`);
     }
-    cpmk.sub.push({ kode: kodeSubCPMK, deskripsi: deskripsiSubCPMK, bobot: bobotSubCPMK, baris: row.baris });
+    cpmk.sub.push({ kode: kodeSubCPMK, deskripsi: deskripsiSubCPMK, bobot: bobotSubCPMK, baris: row.baris, sumber: row.sumber });
   }
 
   for (const mk of mkMap.values()) {
@@ -142,7 +197,7 @@ export function validasiBarisCPMK(baris: BarisCPMKExcel[]): DataImporCPMK {
     if (totalBobotCPMK > 100) {
       for (const cpmk of mk.cpmk) {
         for (const sub of cpmk.sub) {
-          tambahGalat(sub.baris, `Total bobot CPMK untuk ${mk.kode} adalah ${totalBobotCPMK}%; maksimal 100%.`);
+          tambahGalat(sub, `Total bobot CPMK untuk ${mk.kode} adalah ${totalBobotCPMK}%; maksimal 100%.`);
         }
       }
     }
@@ -150,7 +205,7 @@ export function validasiBarisCPMK(baris: BarisCPMKExcel[]): DataImporCPMK {
       const totalBobotSub = cpmk.sub.reduce((total, sub) => total + sub.bobot, 0);
       if (totalBobotSub > 100) {
         for (const sub of cpmk.sub) {
-          tambahGalat(sub.baris, `Total bobot Sub-CPMK untuk ${mk.kode} / ${cpmk.kode} adalah ${totalBobotSub}%; maksimal 100%.`);
+          tambahGalat(sub, `Total bobot Sub-CPMK untuk ${mk.kode} / ${cpmk.kode} adalah ${totalBobotSub}%; maksimal 100%.`);
         }
       }
     }
@@ -166,6 +221,8 @@ export function validasiBarisCPMK(baris: BarisCPMKExcel[]): DataImporCPMK {
 }
 
 export function saringBarisBergalat(data: DataImporCPMK, galat: GalatImporCPMK[]): DataImporCPMK {
-  const nomorBarisGalat = new Set(galat.map((item) => item.baris));
-  return validasiBarisCPMK(data.barisSumber.filter((item) => !nomorBarisGalat.has(item.baris)));
+  const kunciBarisGalat = new Set(galat.map((item) => `${item.sumber ?? ""}:${item.baris}`));
+  return validasiBarisCPMK(
+    data.barisSumber.filter((item) => !kunciBarisGalat.has(`${item.sumber ?? ""}:${item.baris}`)),
+  );
 }

@@ -3,13 +3,14 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { analisisImporCPMK, terapkanImporCPMK } from "@/lib/actions/impor-cpmk";
+import { BATAS_IMPOR_CPMK } from "@/lib/impor-cpmk";
 
 type AnalisisImpor = {
   tahunAjaran: string;
   jumlahBaris: number;
   jumlahBarisValid: number;
   jumlahGalat: number;
-  galat: { baris: number; pesan: string }[];
+  galat: { baris: number; pesan: string; sumber?: string }[];
   ringkasan: {
     mataKuliah: number;
     cpmk: number;
@@ -28,22 +29,27 @@ type AnalisisImpor = {
 export function ModalImporCPMK({ onTutup }: { onTutup: () => void }) {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [analisis, setAnalisis] = useState<AnalisisImpor | null>(null);
   const [error, setError] = useState("");
   const [selesai, setSelesai] = useState("");
   const [loading, mulai] = useTransition();
+  const totalUkuran = files.reduce((total, file) => total + file.size, 0);
+  const batasUkuran =
+    files.length > BATAS_IMPOR_CPMK.jumlahFile ||
+    totalUkuran > BATAS_IMPOR_CPMK.ukuranTotal ||
+    files.some((file) => file.size > BATAS_IMPOR_CPMK.ukuranPerFile);
 
   async function periksaFile() {
     setError("");
     setSelesai("");
     setAnalisis(null);
-    if (!file) {
-      setError("Pilih file Excel yang akan diimpor.");
+    if (!files.length) {
+      setError("Pilih minimal satu file Excel yang akan diimpor.");
       return;
     }
     const formData = new FormData();
-    formData.set("file", file);
+    for (const file of files) formData.append("files", file);
     mulai(async () => {
       const hasil = await analisisImporCPMK(formData);
       if (!hasil.ok) {
@@ -55,10 +61,10 @@ export function ModalImporCPMK({ onTutup }: { onTutup: () => void }) {
   }
 
   async function terapkan() {
-    if (!file || !analisis || analisis.jumlahGalat > 0) return;
+    if (!files.length || !analisis || analisis.jumlahBarisValid === 0) return;
     setError("");
     const formData = new FormData();
-    formData.set("file", file);
+    for (const file of files) formData.append("files", file);
     mulai(async () => {
       const hasil = await terapkanImporCPMK(formData);
       if (!hasil.ok) {
@@ -90,8 +96,8 @@ export function ModalImporCPMK({ onTutup }: { onTutup: () => void }) {
               Impor CPMK &amp; Sub-CPMK dari Excel
             </h2>
             <p className="mt-1 text-[13px] text-[#6B7280]">
-              Unggah lembar dengan kolom Kode MK, Nama Mata Kuliah, Kode CPMK, Bobot CPMK, Deskripsi CPMK,
-              Kode Sub CPMK, Bobot Sub CPMK, dan Deskripsi Sub-CPMK.
+              Pilih beberapa file sekaligus, satu file per mata kuliah. File pemetaan dapat memakai sheet Data Import
+              dengan nama KODEMK_NAMA-MK_Pemetaan.xlsx; template impor lama tetap didukung.
             </p>
             <a
               href="/template-impor-cpmk-subcpmk.xlsx"
@@ -124,24 +130,42 @@ export function ModalImporCPMK({ onTutup }: { onTutup: () => void }) {
             ref={inputRef}
             type="file"
             accept=".xlsx"
+            multiple
             onChange={(event) => {
-              setFile(event.target.files?.[0] ?? null);
+              setFiles(Array.from(event.target.files ?? []));
               setAnalisis(null);
               setError("");
               setSelesai("");
             }}
-            aria-label="Pilih file Excel CPMK dan Sub-CPMK"
+            disabled={loading}
+            aria-label="Pilih beberapa file Excel CPMK dan Sub-CPMK"
             className="block min-w-0 flex-1 text-sm text-[#111827] file:mr-3 file:h-10 file:rounded-[10px] file:border-0 file:bg-[#EEF3FD] file:px-4 file:text-sm file:font-semibold file:text-[#111827]"
           />
           <button
             type="button"
             onClick={periksaFile}
-            disabled={loading}
+            disabled={loading || !files.length || batasUkuran}
             className="h-10 rounded-[10px] bg-[#2F6BE8] px-4 text-sm font-semibold text-white disabled:opacity-50"
           >
             {loading ? "Memeriksa…" : "Periksa file"}
           </button>
         </div>
+        {files.length > 0 && (
+          <div className="mt-2 rounded-lg border border-[#E8EAEE] text-xs text-[#475569]">
+            <div className="flex justify-between bg-[#F8FAFC] px-3 py-2 font-semibold">
+              <span>{files.length} file dipilih</span>
+              <span>{(totalUkuran / (1024 * 1024)).toFixed(2)} MB</span>
+            </div>
+            <ul className="max-h-24 divide-y divide-[#E8EAEE] overflow-y-auto">
+              {files.map((file) => <li key={`${file.name}-${file.size}`} className="truncate px-3 py-1.5">{file.name}</li>)}
+            </ul>
+          </div>
+        )}
+        {batasUkuran && (
+          <p role="alert" className="mt-2 rounded-lg bg-[#FFF7ED] px-3 py-2 text-xs text-[#C2410C]">
+            Batas impor: maksimal {BATAS_IMPOR_CPMK.jumlahFile} file, {BATAS_IMPOR_CPMK.ukuranPerFile / (1024 * 1024)} MB per file, dan {BATAS_IMPOR_CPMK.ukuranTotal / (1024 * 1024 * 1024)} GB total.
+          </p>
+        )}
 
         {error && (
           <p role="alert" className="mt-3 rounded-lg bg-[#FEE2E2] px-3 py-2 text-sm text-[#DC2626]">
@@ -176,13 +200,15 @@ export function ModalImporCPMK({ onTutup }: { onTutup: () => void }) {
                 <table className="w-full text-left text-xs">
                   <thead className="sticky top-0 bg-[#F8FAFC] text-[#6B7280]">
                     <tr>
+                      <th className="px-3 py-2 font-semibold">File</th>
                       <th className="px-3 py-2 font-semibold">Baris</th>
                       <th className="px-3 py-2 font-semibold">Masalah</th>
                     </tr>
                   </thead>
                   <tbody>
                     {analisis.galat.map((item, index) => (
-                      <tr key={`${item.baris}-${index}`} className="border-t border-[#F1F3F5] align-top">
+                      <tr key={`${item.sumber}-${item.baris}-${index}`} className="border-t border-[#F1F3F5] align-top">
+                        <td className="max-w-64 break-all px-3 py-2">{item.sumber ?? "-"}</td>
                         <td className="whitespace-nowrap px-3 py-2">{item.baris}</td>
                         <td className="px-3 py-2 text-[#B91C1C]">{item.pesan}</td>
                       </tr>
@@ -197,7 +223,7 @@ export function ModalImporCPMK({ onTutup }: { onTutup: () => void }) {
               </div>
             )}
             <p className="mt-2 text-xs text-[#6B7280]">
-              {analisis.jumlahBarisValid} dari {analisis.jumlahBaris} baris akan diimpor. Baris bergalat tidak dieksekusi;
+              {analisis.jumlahBarisValid} dari {analisis.jumlahBaris} baris valid akan diimpor. Baris bergalat dilewati;
               pemetaan tersimpan yang tidak dicantumkan tetap dipertahankan.
             </p>
           </>

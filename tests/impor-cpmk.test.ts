@@ -1,8 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  BATAS_IMPOR_CPMK,
   bacaBobotPersen,
+  cariMataKuliahDariNamaFileCPMK,
   normalisasiKodeMK,
+  petakanKolomPemetaanCPMK,
   saringBarisBergalat,
   validasiBarisCPMK,
   type BarisCPMKExcel,
@@ -33,6 +36,41 @@ test("bacaBobotPersen menerima bobot pecahan dan persen bulat", () => {
 
 test("normalisasiKodeMK mengabaikan perbedaan spasi", () => {
   assert.equal(normalisasiKodeMK(" teo  201 "), "TEO201");
+});
+
+test("batas impor CPMK mendukung 300 file, 20 MB per file, dan 1 GB total", () => {
+  assert.equal(BATAS_IMPOR_CPMK.jumlahFile, 300);
+  assert.equal(BATAS_IMPOR_CPMK.ukuranPerFile, 20 * 1024 * 1024);
+  assert.equal(BATAS_IMPOR_CPMK.ukuranTotal, 1024 * 1024 * 1024);
+});
+
+test("cariMataKuliahDariNamaFileCPMK mengenali nama file pemetaan terpisah", () => {
+  const mataKuliah = [{ id: "mk-1", kode: "TEM 711", nama: "Akuisisi Data dan Pengolahan Sinyal" }];
+  assert.equal(
+    cariMataKuliahDariNamaFileCPMK("TEM 711_Akuisisi Data dan Pengolahan Sinyal_Pemetaan.xlsx", mataKuliah)?.id,
+    "mk-1",
+  );
+  assert.equal(cariMataKuliahDariNamaFileCPMK("TEM 712_Nama Lain_Pemetaan.xlsx", mataKuliah), undefined);
+});
+
+test("petakanKolomPemetaanCPMK mengenali header sheet Data Import", () => {
+  const kolom = petakanKolomPemetaanCPMK([
+    "Kode CPMK",
+    "Bobot CPMK",
+    "Deskripsi CPMK",
+    "Kode Sub CPMK",
+    "Bobot Sub CPMK",
+    "Deskripsi Sub-CPMK",
+  ]);
+  assert.ok(kolom);
+  assert.deepEqual(Object.fromEntries(kolom), {
+    kodeCPMK: 1,
+    bobotCPMK: 2,
+    deskripsiCPMK: 3,
+    kodeSubCPMK: 4,
+    bobotSubCPMK: 5,
+    deskripsiSubCPMK: 6,
+  });
 });
 
 test("validasiBarisCPMK mengelompokkan hierarki dan mempertahankan bobot tautan", () => {
@@ -105,6 +143,17 @@ test("saringBarisBergalat mempertahankan dan mengelompokkan hanya baris valid", 
   assert.equal(valid.jumlahPemetaan, 1);
   assert.equal(valid.galat.length, 0);
   assert.deepEqual(valid.mataKuliah[0].cpmk.map((cpmk) => cpmk.kode), ["CPMK-1"]);
+});
+
+test("saringBarisBergalat membedakan nomor baris yang sama dari file berbeda", () => {
+  const semua = validasiBarisCPMK([
+    baris({ sumber: "mk-a_Pemetaan.xlsx" }),
+    baris({ sumber: "mk-b_Pemetaan.xlsx", kodeCPMK: "format-salah" }),
+  ]);
+  const valid = saringBarisBergalat(semua, semua.galat);
+
+  assert.equal(valid.jumlahBaris, 1);
+  assert.equal(valid.barisSumber[0].sumber, "mk-a_Pemetaan.xlsx");
 });
 
 test("saringBarisBergalat melewati seluruh kelompok yang total bobotnya melampaui batas", () => {

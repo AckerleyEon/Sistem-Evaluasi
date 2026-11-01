@@ -8,6 +8,7 @@ import {
   normalisasiNamespaceWorkbookExcel,
   normalisasiKunciAsesmen,
   petakanKolomAsesmen,
+  saringBarisAsesmenBaru,
 } from "../src/lib/asesmen-impor-util";
 
 const mataKuliah = [
@@ -69,6 +70,18 @@ test("petakanKolomAsesmen menerima judul kolom yang ditampilkan pada modal impor
 test("normalisasiKunciAsesmen menyamakan kapitalisasi dan pemisah", () => {
   assert.equal(normalisasiKunciAsesmen("  Sistem-Digital "), "sistemdigital");
   assert.equal(normalisasiKunciAsesmen("Elektronika Analog"), "elektronikaanalog");
+});
+
+test("saringBarisAsesmenBaru melewati tugas lama dan mempertahankan tugas baru", () => {
+  const baris = [
+    { nama: "Kuis 1", bobot: 20 },
+    { nama: "Tugas Proyek", bobot: 30 },
+  ];
+
+  assert.deepEqual(saringBarisAsesmenBaru(baris, ["kuis-1"]), {
+    barisBaru: [{ nama: "Tugas Proyek", bobot: 30 }],
+    jumlahDilewati: 1,
+  });
 });
 
 test("normalisasiNamespaceWorkbookExcel mendukung workbook dengan prefix namespace", async () => {

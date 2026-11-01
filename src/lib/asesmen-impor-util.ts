@@ -52,6 +52,15 @@ export function normalisasiKunciAsesmen(teks: string): string {
   return teks.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("id").replace(/[^a-z0-9]/g, "");
 }
 
+export function saringBarisAsesmenBaru<T extends { nama: string }>(
+  baris: T[],
+  namaSudahAda: string[],
+): { barisBaru: T[]; jumlahDilewati: number } {
+  const namaLama = new Set(namaSudahAda.map(normalisasiKunciAsesmen));
+  const barisBaru = baris.filter((row) => !namaLama.has(normalisasiKunciAsesmen(row.nama)));
+  return { barisBaru, jumlahDilewati: baris.length - barisBaru.length };
+}
+
 export function cariMataKuliahDariNamaFile<T extends IdentitasMataKuliah>(
   namaFile: string,
   mataKuliah: T[],

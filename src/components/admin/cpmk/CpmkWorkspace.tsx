@@ -2,7 +2,9 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cekDampakCPMK, hapusCPMK } from "@/lib/actions/cpmk";
+import { hapusSemuaCPMKSubCPMK } from "@/lib/actions/impor-cpmk";
 import { cekDampakSub, hapusSubCPMK, kaitkanSubCPMK, lepasSubCPMK } from "@/lib/actions/sub-cpmk";
 import { BannerMK } from "./BannerMK";
 import { BlokHierarki } from "./BlokHierarki";
@@ -38,6 +40,7 @@ type AksiState =
   | { tipe: "hapus-cpmk"; item: KomponenCpmk; dampak: DampakCpmk | null }
   | { tipe: "hapus-sub"; item: KomponenSub; dampak: DampakSub | null }
   | { tipe: "lepas-sub"; item: KomponenSub; cpmkId: string; cpmkKode: string; dampak: DampakLepas | null }
+  | { tipe: "hapus-semua-pemetaan" }
   | null;
 
 export function CpmkWorkspace({
@@ -55,6 +58,7 @@ export function CpmkWorkspace({
   subMk: KomponenSub[];
   tautanSub: TautanSub[];
 }) {
+  const router = useRouter();
   const mk = daftarMK.find((m) => m.id === selectedId) ?? null;
 
   const [modal, setModal] = useState<ModalState>(null);
@@ -158,18 +162,29 @@ return (
             Pilih mata kuliah dulu, lalu atur CPMK dan Sub-CPMK miliknya · T.A. {taLabel}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setImporBuka(true)}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-full border bg-[#2F6BE8] px-5 text-sm font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <path d="M17 8l-5-5-5 5" />
-            <path d="M12 3v12" />
-          </svg>
-          Impor CPMK &amp; Sub-CPMK
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {mk && (cpmkMk.length > 0 || subMk.length > 0) && (
+            <button
+              type="button"
+              onClick={() => setAksi({ tipe: "hapus-semua-pemetaan" })}
+              className="inline-flex h-10 items-center justify-center rounded-full border border-[#FECACA] bg-white px-4 text-sm font-semibold text-[#B91C1C] hover:bg-[#FEF2F2]"
+            >
+              Hapus Semua CPMK &amp; Sub-CPMK
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setImporBuka(true)}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-full border bg-[#2F6BE8] px-5 text-sm font-semibold text-white [@media(hover:hover)]:hover:bg-[#2459C7]"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <path d="M17 8l-5-5-5 5" />
+              <path d="M12 3v12" />
+            </svg>
+            Impor CPMK &amp; Sub-CPMK
+          </button>
+        </div>
       </div>
 
       {mk ? (
@@ -425,6 +440,32 @@ return (
               )}
             </>
           )}
+        </ModalHapusItem>
+      )}
+
+      {mk && aksi?.tipe === "hapus-semua-pemetaan" && (
+        <ModalHapusItem
+          judul={`Hapus semua CPMK & Sub-CPMK ${mk.kode}?`}
+          memeriksa={false}
+          blokir={null}
+          labelHapus="Hapus Semua CPMK & Sub-CPMK"
+          onTutup={() => setAksi(null)}
+          onHapus={async () => {
+            const hasil = await hapusSemuaCPMKSubCPMK(mk.id);
+            if (!hasil.error) {
+              setAksi(null);
+              tampilToast(`${hasil.jumlahCPMK ?? 0} CPMK dan ${hasil.jumlahSubCPMK ?? 0} Sub-CPMK dihapus dari ${mk.kode}`);
+              router.refresh();
+            }
+            return hasil;
+          }}
+        >
+          <p>
+            Seluruh {cpmkMk.length} CPMK dan {subMk.length} Sub-CPMK untuk {mk.kode} pada T.A. {taLabel}
+            akan dihapus permanen beserta pemetaan, distribusi, dan hasil turunannya. Tugas dan nilai mahasiswa
+            tetap tersimpan.
+          </p>
+          <p>Tindakan ini tidak dapat dibatalkan.</p>
         </ModalHapusItem>
       )}
 

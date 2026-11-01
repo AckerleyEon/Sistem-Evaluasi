@@ -433,6 +433,14 @@ export function InputNilaiWorkspace({
     startTransition(async () => {
       try {
         const hasil = await simpanImporNilaiBanyak(formData);
+        const nilaiTugasAktif = barisValid.filter((baris) => baris.tugasId === tugasDipilih?.id);
+        setNilaiDraft((sebelumnya) => {
+          const berikutnya = { ...sebelumnya };
+          for (const baris of nilaiTugasAktif) {
+            berikutnya[baris.mahasiswaId] = String(baris.nilai);
+          }
+          return berikutnya;
+        });
         setDialogImpor(false);
         setFilesImpor([]);
         setPratinjauImpor(null);
