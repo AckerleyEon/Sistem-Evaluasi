@@ -15,9 +15,9 @@ function BarisCPL({ cpl, onEdit, onDelete }: { cpl: CplItem; onEdit: (c: CplItem
   }, [cpl.deskripsi]);
 
   return (
-    <div className="flex items-center gap-4 border-b border-[#E8EAEE] px-6 py-6">
+    <div className="flex h-full items-center gap-4 border-b border-[#E8EAEE] px-6 py-6">
       <span className="w-27.5  shrink-0 whitespace-nowrap text-sm font-bold text-[#2F6BE8]">{cpl.kode}</span>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 h-full">
         <p ref={ref} className={`text-sm leading-5 text-[#111827] ${expanded ? "" : "line-clamp-2"}`} style={{ overflowWrap: "anywhere" }}>
           {cpl.deskripsi}
         </p>
@@ -89,7 +89,7 @@ export function TabelCPL({ daftar, totalSemua, kataKunci }: { daftar: CplItem[];
         <span className="w-23 shrink-0 text-center">Aksi</span>
       </div>
 
-      <div style={{ maxHeight: "calc(98dvh - 420px)" }} className="min-h-50 overflow-y-auto">
+      <div className="min-h-full overflow-y-auto">
         {daftar.length === 0 ? (
           <div className="px-6 py-12 text-center text-sm text-[#6B7280]">
             {kataKunci ? `Tidak ada CPL yang cocok dengan "${kataKunci}".` : "Belum ada CPL untuk ditampilkan."}

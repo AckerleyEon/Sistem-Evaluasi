@@ -42,7 +42,7 @@ export function CplWorkspace({
           role="tab"
           aria-selected={tab === "cpl"}
           onClick={() => setTab("cpl")}
-          className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition ${tab === "cpl" ? "bg-white text-[#1D4ED8] shadow-sm" : "text-[#64748B] hover:text-[#1D4ED8]"}`}
+          className={`rounded-lg h-full px-5 py-2.5 text-sm font-semibold transition ${tab === "cpl" ? "bg-white text-[#1D4ED8] shadow-sm" : "text-[#64748B] hover:text-[#1D4ED8]"}`}
         >
           Capaian Pembelajaran (CPL)
         </button>
@@ -51,7 +51,7 @@ export function CplWorkspace({
           role="tab"
           aria-selected={tab === "profil"}
           onClick={() => setTab("profil")}
-          className={`rounded-lg px-5 py-2.5 text-sm font-semibold transition ${tab === "profil" ? "bg-white text-[#1D4ED8] shadow-sm" : "text-[#64748B] hover:text-[#1D4ED8]"}`}
+          className={`rounded-lg h-full  px-5 py-2.5 text-sm font-semibold transition ${tab === "profil" ? "bg-white text-[#1D4ED8] shadow-sm" : "text-[#64748B] hover:text-[#1D4ED8]"}`}
         >
           Profil Lulusan (PL)
         </button>
@@ -64,7 +64,7 @@ export function CplWorkspace({
           kodeBerikutnya={kodePLBerikutnya}
         />
       ) : (
-        <div role="tabpanel" className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-stretch">
+        <div role="tabpanel" className="grid gap-6  lg:grid-cols-[358px_minmax(0,1fr)] lg:items-stretch">
           <div className="flex flex-col gap-6">
             <div className="flex h-30 shrink-0 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white">
@@ -85,10 +85,10 @@ export function CplWorkspace({
             <FormCPL key={kodeBerikutnya} kodeBerikutnya={kodeBerikutnya} kodeTerpakai={daftarCPL.map((c) => c.kode)} />
           </div>
           <div className="min-w-0" role="tabpanel">
-            <div className="overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(16,24,40,.04)]">
+            <div className="overflow-hidden rounded-2xl bg-white h full shadow-[0_1px_2px_rgba(16,24,40,.04)]">
               <div className="border-b border-[#E8EAEE] p-5">
                 <div className="relative w-full max-w-95">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
+                  <svg width="18" height="30" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
                     <circle cx="11" cy="11" r="7" />
                     <path d="M21 21l-4-4" />
                   </svg>

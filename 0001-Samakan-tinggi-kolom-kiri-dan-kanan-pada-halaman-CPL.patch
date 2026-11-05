@@ -1,0 +1,125 @@
+From a09879e9874711d8e31945ee46a235b93467635a Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 6 Nov 2026 04:32:52 +0700
+Subject: [PATCH] Samakan tinggi kolom kiri dan kanan pada halaman CPL dan
+ Profil Lulusan
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011hSeoDPsrC8uRvCTzahegA
+---
+ src/components/admin/cpl/CplWorkspace.tsx        |  6 +++---
+ src/components/admin/cpl/FormCPL.tsx             |  8 ++++----
+ .../admin/cpl/ProfilLulusanWorkspace.tsx         | 16 +++++++++-------
+ 3 files changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/src/components/admin/cpl/CplWorkspace.tsx b/src/components/admin/cpl/CplWorkspace.tsx
+index 7d113e9..60f07c1 100644
+--- a/src/components/admin/cpl/CplWorkspace.tsx
++++ b/src/components/admin/cpl/CplWorkspace.tsx
+@@ -64,9 +64,9 @@ export function CplWorkspace({
+           kodeBerikutnya={kodePLBerikutnya}
+         />
+       ) : (
+-        <div role="tabpanel" className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-start">
+-          <div className="space-y-6 lg:sticky lg:top-24">
+-            <div className="flex h-30 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
++        <div role="tabpanel" className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-stretch">
++          <div className="flex flex-col gap-6">
++            <div className="flex h-30 shrink-0 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
+               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white">
+                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2F6BE8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                   <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" />
+diff --git a/src/components/admin/cpl/FormCPL.tsx b/src/components/admin/cpl/FormCPL.tsx
+index 9c8b109..8621a1a 100644
+--- a/src/components/admin/cpl/FormCPL.tsx
++++ b/src/components/admin/cpl/FormCPL.tsx
+@@ -37,11 +37,11 @@ export function FormCPL({ kodeBerikutnya, kodeTerpakai }: { kodeBerikutnya: stri
+   }
+ 
+   return (
+-    <div className="rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
++    <div className="flex flex-1 flex-col rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
+       <h2 className="text-lg font-bold leading-6 text-[#111827]">Tambah CPL</h2>
+       <p className="mb-5 text-[13px] text-[#6B7280]">Isi informasi CPL yang ingin ditambahkan.</p>
+ 
+-      <form action={handleSubmit} className="space-y-5">
++      <form action={handleSubmit} className="flex flex-1 flex-col gap-5">
+         <div>
+           <label htmlFor="kode" className="mb-2 block text-[13px] font-medium text-[#111827]">
+             Kode CPL
+@@ -62,7 +62,7 @@ export function FormCPL({ kodeBerikutnya, kodeTerpakai }: { kodeBerikutnya: stri
+           {errorKode && <p className="mt-1.5 text-xs text-[#DC2626]">{errorKode}</p>}
+         </div>
+ 
+-        <div>
++        <div className="flex flex-1 flex-col">
+           <div className="mb-2 flex items-center justify-between">
+             <label htmlFor="deskripsi" className="text-[13px] font-medium text-[#111827]">
+               Deskripsi
+@@ -76,7 +76,7 @@ export function FormCPL({ kodeBerikutnya, kodeTerpakai }: { kodeBerikutnya: stri
+             onChange={(e) => setDeskripsi(e.target.value.slice(0, 500))}
+             placeholder="Mampu melakukan…"
+             required
+-            className="min-h-38.5 w-full resize-y rounded-[10px] bg-[#EEF3FD] p-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
++            className="min-h-38.5 w-full flex-1 resize-y rounded-[10px] bg-[#EEF3FD] p-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
+           />
+         </div>
+ 
+diff --git a/src/components/admin/cpl/ProfilLulusanWorkspace.tsx b/src/components/admin/cpl/ProfilLulusanWorkspace.tsx
+index fd0c1a6..c6e9ea6 100644
+--- a/src/components/admin/cpl/ProfilLulusanWorkspace.tsx
++++ b/src/components/admin/cpl/ProfilLulusanWorkspace.tsx
+@@ -64,10 +64,10 @@ function FormProfilLulusan({
+   }
+ 
+   return (
+-    <div className="rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
++    <div className="flex min-h-0 flex-1 flex-col rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)] lg:overflow-y-auto">
+       <h2 className="text-lg font-bold leading-6 text-[#111827]">Tambah Profil Lulusan</h2>
+       <p className="mb-5 text-[13px] text-[#6B7280]">Pilih CPL penyusun; nilai PL dihitung sebagai rata-rata nilai CPL terpilih.</p>
+-      <form onSubmit={submit} className="space-y-4">
++      <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col gap-4">
+         <div>
+           <label htmlFor="kode-pl" className="mb-2 block text-[13px] font-medium text-[#111827]">Kode PL</label>
+           <input
+@@ -110,13 +110,13 @@ function FormProfilLulusan({
+             className="min-h-28 w-full resize-y rounded-[10px] bg-[#EEF3FD] p-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
+           />
+         </div>
+-        <div>
++        <div className="flex min-h-28 flex-1 flex-col">
+           <div className="mb-2 flex items-center justify-between">
+             <span className="text-[13px] font-medium text-[#111827]">CPL Penyusun</span>
+             <span className="text-xs text-[#6B7280]">{daftarCPL.length} tersedia</span>
+           </div>
+           {daftarCPL.length ? (
+-            <div className="max-h-44 space-y-1 overflow-y-auto rounded-xl border border-[#E5E9F0] p-2">
++            <div className="max-h-44 min-h-0 space-y-1 overflow-y-auto rounded-xl border border-[#E5E9F0] p-2 lg:max-h-none lg:flex-1">
+               {daftarCPL.map((cpl) => (
+                 <label key={cpl.id} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 text-xs hover:bg-[#F8FAFC]">
+                   <input type="checkbox" name="cplIds" value={cpl.id} className="mt-0.5 accent-[#2F6BE8]" />
+@@ -252,9 +252,10 @@ export function ProfilLulusanWorkspace({
+   }
+ 
+   return (
+-    <div className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-start">
+-      <div className="space-y-6 lg:sticky lg:top-24">
+-        <div className="flex h-30 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
++    <div className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-stretch">
++      <div className="lg:relative lg:min-h-155">
++      <div className="flex flex-col gap-6 lg:absolute lg:inset-0">
++        <div className="flex h-30 shrink-0 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
+           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white">
+             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2F6BE8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+@@ -272,6 +273,7 @@ export function ProfilLulusanWorkspace({
+           daftarCPL={daftarCPL}
+         />
+       </div>
++      </div>
+ 
+       <div className="min-w-0 overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(16,24,40,.04)]">
+         <div className="border-b border-[#E8EAEE] p-5">
+-- 
+2.43.0
+

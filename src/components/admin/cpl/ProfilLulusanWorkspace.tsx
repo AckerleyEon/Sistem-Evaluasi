@@ -64,7 +64,7 @@ function FormProfilLulusan({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)] lg:overflow-y-auto">
+    <div className="flex h-fit flex-1 flex-col rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)] lg:overflow-y-auto">
       <h2 className="text-lg font-bold leading-6 text-[#111827]">Tambah Profil Lulusan</h2>
       <p className="mb-5 text-[13px] text-[#6B7280]">Pilih CPL penyusun; nilai PL dihitung sebagai rata-rata nilai CPL terpilih.</p>
       <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col gap-4">
@@ -177,7 +177,7 @@ function ModalEditProfil({
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="judul-edit-pl" onMouseDown={(event) => {
       if (event.target === event.currentTarget && !loading) onTutup();
     }}>
-      <section className="max-h-[90dvh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+      <section className="max-h-full w-full max-w-xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
         <h2 id="judul-edit-pl" className="text-lg font-bold text-[#111827]">Edit Profil Lulusan</h2>
         <p className="mb-4 text-xs text-[#64748B]">Perubahan pemetaan akan menghitung ulang nilai PL mahasiswa.</p>
         <form onSubmit={submit} className="space-y-4">
@@ -287,7 +287,7 @@ export function ProfilLulusanWorkspace({
         <div className="sticky top-0 z-10 grid grid-cols-[90px_minmax(170px,1fr)_minmax(150px,1fr)_88px] gap-3 border-b border-[#E8EAEE] bg-white px-5 py-3 text-[10px] font-semibold uppercase tracking-wide text-[#6B7280] sm:px-6 sm:text-xs">
           <span>Kode</span><span>Profil Lulusan</span><span>CPL Penyusun</span><span className="text-center">Aksi</span>
         </div>
-        <div className="min-h-50 overflow-y-auto" style={{ maxHeight: "calc(98dvh - 420px)" }}>
+        <div className="h-full overflow-y-auto">
           {hasilCari.length ? hasilCari.map((item) => (
             <div key={item.id} className="grid grid-cols-[90px_minmax(170px,1fr)_minmax(150px,1fr)_88px] items-center gap-3 border-b border-[#E8EAEE] px-5 py-5 sm:px-6">
               <span className="text-sm font-bold text-[#2F6BE8]">{item.kode}</span>

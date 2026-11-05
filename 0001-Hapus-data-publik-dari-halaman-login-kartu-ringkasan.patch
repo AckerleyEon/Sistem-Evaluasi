@@ -1,0 +1,111 @@
+From dc5e7a86d0c4ec809063f86a238fcdcfdbdc09dd Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 6 Nov 2026 03:58:30 +0700
+Subject: [PATCH] Hapus data publik dari halaman login (kartu ringkasan dan
+ endpoint /api/public/ringkasan)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011hSeoDPsrC8uRvCTzahegA
+---
+ CLAUDE.md                             |  2 +-
+ src/app/(auth)/login/page.tsx         | 23 ++++-------------------
+ src/app/api/public/ringkasan/route.ts | 20 --------------------
+ 3 files changed, 5 insertions(+), 40 deletions(-)
+ delete mode 100644 src/app/api/public/ringkasan/route.ts
+
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 15122c4..a10d094 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -29,7 +29,7 @@ src/
+ │   ├── (admin)/admin/     data-master/{cpl,cpmk,mata-kuliah}, dosen, tahun-ajaran,
+ │   │                      laporan, permintaan-reset
+ │   ├── (dosen)/dosen/     komponen-penilaian, input-nilai, hasil
+-│   └── api/               auth, status, public/ringkasan, dan unduhan template/ekspor
++│   └── api/               auth, status, dan unduhan template/ekspor
+ │                          (admin/*, dosen/*)
+ ├── components/            UI per area (admin/, dosen/) + komponen bersama
+ ├── lib/
+diff --git a/src/app/(auth)/login/page.tsx b/src/app/(auth)/login/page.tsx
+index c55b2aa..a6c061c 100644
+--- a/src/app/(auth)/login/page.tsx
++++ b/src/app/(auth)/login/page.tsx
+@@ -94,7 +94,6 @@ export default function LoginPage() {
+   const [errorBanner, setErrorBanner] = useState("");
+   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+ 
+-  const [ringkasan, setRingkasan] = useState<{ rataCapaianCpl: number; persenMatriksTerpetakan: number } | null>(null);
+   const [statusServer, setStatusServer] = useState<"memuat" | "ok" | "gangguan">("memuat");
+ 
+   const identitasRef = useRef<HTMLInputElement>(null);
+@@ -102,11 +101,6 @@ export default function LoginPage() {
+   const siap = identitas.trim() !== "" && kataSandi !== "" && status === "idle";
+ 
+   useEffect(() => {
+-    fetch("/api/public/ringkasan")
+-      .then((r) => r.json())
+-      .then(setRingkasan)
+-      .catch(() => setRingkasan(null));
+-
+     fetch("/api/status")
+       .then((r) => r.json())
+       .then((d) => setStatusServer(d.status === "ok" ? "ok" : "gangguan"))
+@@ -234,24 +228,15 @@ export default function LoginPage() {
+               <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                 <IconArrowRight />
+               </div>
+-              <span className="text-[28px] font-bold leading-8 text-slate-900">
+-                {ringkasan ? `${ringkasan.rataCapaianCpl}%` : "—"}
+-              </span>
+-              <p className="mt-1 text-[13px] text-slate-500">Rata-rata Ketercapaian CPL</p>
+-              {ringkasan && (
+-                <div className="mt-2 h-1 rounded-full bg-blue-100">
+-                  <div className="h-1 rounded-full bg-blue-600" style={{ width: `${ringkasan.rataCapaianCpl}%` }} />
+-                </div>
+-              )}
++              <p className="text-[15px] font-bold leading-5 text-slate-900">Ketercapaian CPL</p>
++              <p className="mt-1 text-[13px] text-slate-500">Pengukuran berjenjang dari nilai tugas hingga CPL</p>
+             </div>
+             <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+               <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                 <IconBuilding />
+               </div>
+-              <span className="text-[28px] font-bold leading-8 text-slate-900">
+-                {ringkasan ? `${ringkasan.persenMatriksTerpetakan}%` : "—"}
+-              </span>
+-              <p className="mt-1 text-[13px] text-slate-500">Otomasi Rekap Nilai &amp; Bobot</p>
++              <p className="text-[15px] font-bold leading-5 text-slate-900">Otomasi Rekap Nilai &amp; Bobot</p>
++              <p className="mt-1 text-[13px] text-slate-500">Distribusi Sub-CPMK dan perhitungan capaian otomatis</p>
+             </div>
+           </div>
+ 
+diff --git a/src/app/api/public/ringkasan/route.ts b/src/app/api/public/ringkasan/route.ts
+deleted file mode 100644
+index e53c83a..0000000
+--- a/src/app/api/public/ringkasan/route.ts
++++ /dev/null
+@@ -1,20 +0,0 @@
+-import { NextResponse } from "next/server";
+-import { prisma } from "@/lib/prisma";
+-
+-export async function GET() {
+-  const [hasilCPL, totalSubCpmk, subCpmkTerhubung] = await Promise.all([
+-    prisma.hasilCPL.findMany({ select: { nilai: true } }),
+-    prisma.subCPMK.count(),
+-    prisma.subCPMK.count({ where: { distribusi: { some: {} } } }),
+-  ]);
+-
+-  const rataCapaianCpl =
+-    hasilCPL.length > 0
+-      ? Math.round((hasilCPL.reduce((sum, h) => sum + h.nilai, 0) / hasilCPL.length) * 10) / 10
+-      : 0;
+-
+-  const persenMatriksTerpetakan =
+-    totalSubCpmk > 0 ? Math.round((subCpmkTerhubung / totalSubCpmk) * 1000) / 10 : 0;
+-
+-  return NextResponse.json({ rataCapaianCpl, persenMatriksTerpetakan });
+-}
+\ No newline at end of file
+-- 
+2.43.0
+
