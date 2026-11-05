@@ -29,7 +29,7 @@ src/
 │   ├── (admin)/admin/     data-master/{cpl,cpmk,mata-kuliah}, dosen, tahun-ajaran,
 │   │                      laporan, permintaan-reset
 │   ├── (dosen)/dosen/     komponen-penilaian, input-nilai, hasil
-│   └── api/               auth, status, public/ringkasan, dan unduhan template/ekspor
+│   └── api/               auth, status, dan unduhan template/ekspor
 │                          (admin/*, dosen/*)
 ├── components/            UI per area (admin/, dosen/) + komponen bersama
 ├── lib/

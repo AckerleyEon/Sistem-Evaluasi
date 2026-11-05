@@ -94,7 +94,6 @@ export default function LoginPage() {
   const [errorBanner, setErrorBanner] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
-  const [ringkasan, setRingkasan] = useState<{ rataCapaianCpl: number; persenMatriksTerpetakan: number } | null>(null);
   const [statusServer, setStatusServer] = useState<"memuat" | "ok" | "gangguan">("memuat");
 
   const identitasRef = useRef<HTMLInputElement>(null);
@@ -102,11 +101,6 @@ export default function LoginPage() {
   const siap = identitas.trim() !== "" && kataSandi !== "" && status === "idle";
 
   useEffect(() => {
-    fetch("/api/public/ringkasan")
-      .then((r) => r.json())
-      .then(setRingkasan)
-      .catch(() => setRingkasan(null));
-
     fetch("/api/status")
       .then((r) => r.json())
       .then((d) => setStatusServer(d.status === "ok" ? "ok" : "gangguan"))
@@ -234,24 +228,15 @@ export default function LoginPage() {
               <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                 <IconArrowRight />
               </div>
-              <span className="text-[28px] font-bold leading-8 text-slate-900">
-                {ringkasan ? `${ringkasan.rataCapaianCpl}%` : "—"}
-              </span>
-              <p className="mt-1 text-[13px] text-slate-500">Rata-rata Ketercapaian CPL</p>
-              {ringkasan && (
-                <div className="mt-2 h-1 rounded-full bg-blue-100">
-                  <div className="h-1 rounded-full bg-blue-600" style={{ width: `${ringkasan.rataCapaianCpl}%` }} />
-                </div>
-              )}
+              <p className="text-[15px] font-bold leading-5 text-slate-900">Ketercapaian CPL</p>
+              <p className="mt-1 text-[13px] text-slate-500">Pengukuran berjenjang dari nilai tugas hingga CPL</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                 <IconBuilding />
               </div>
-              <span className="text-[28px] font-bold leading-8 text-slate-900">
-                {ringkasan ? `${ringkasan.persenMatriksTerpetakan}%` : "—"}
-              </span>
-              <p className="mt-1 text-[13px] text-slate-500">Otomasi Rekap Nilai &amp; Bobot</p>
+              <p className="text-[15px] font-bold leading-5 text-slate-900">Otomasi Rekap Nilai &amp; Bobot</p>
+              <p className="mt-1 text-[13px] text-slate-500">Distribusi Sub-CPMK dan perhitungan capaian otomatis</p>
             </div>
           </div>
 
