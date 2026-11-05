@@ -26,23 +26,23 @@ function GrafikCakupanCPL({ data }: { data: CPLItem[] }) {
   const maksimum = Math.max(1, ...data.map((item) => item.jumlahMataKuliah));
 
   return (
-    <section className="rounded-2xl border border-[#E5EAF3] bg-white p-5 shadow-[0_2px_8px_rgba(23,43,77,.04)] sm:p-6 lg:flex lg:h-86.25 lg:min-h-0 lg:flex-col">
+    <section className="rounded-2xl border border-[#E5EAF3] bg-white p-5 shadow-[0_2px_8px_rgba(23,43,77,.04)] sm:p-6 lg:flex lg:flex-col">
       <div className="mb-5">
         <h2 className="text-base font-bold text-[#111827]">Cakupan Mata Kuliah per CPL</h2>
         <p className="mt-1 text-xs text-[#64748B]">Jumlah mata kuliah yang dipetakan ke setiap CPL.</p>
       </div>
       {data.length ? (
-        <div className="min-w-0 pb-2">
+        <div className="min-w-0 flex-1 pb-2">
           <div
             role="img"
             aria-label={`Grafik jumlah mata kuliah per CPL: ${data.map((item) => `${item.kode} ${item.jumlahMataKuliah} mata kuliah`).join(", ")}`}
-            className="grid h-56 w-full items-end gap-1 border-b border-[#E5EAF3] px-1 sm:gap-2 sm:px-2"
+            className="grid h-full min-h-60 w-full items-end gap-1 border-b border-[#E5EAF3] px-1 sm:gap-2 sm:px-2"
             style={{ gridTemplateColumns: `repeat(${data.length}, minmax(0, 1fr))` }}
           >
             {data.map((item) => (
               <div key={item.id} className="flex h-full min-w-0 flex-col items-center justify-end gap-2">
                 <span className="text-[11px] font-semibold text-[#475569]">{item.jumlahMataKuliah}</span>
-                <div className="flex h-40 w-full items-end justify-center">
+                <div className="flex w-full flex-1 items-end justify-center">
                   <div
                     className="w-full max-w-13 rounded-t-lg bg-[#2F6BE8] transition-[height]"
                     style={{ height: `${Math.max(4, (item.jumlahMataKuliah / maksimum) * 100)}%` }}
@@ -63,12 +63,12 @@ function GrafikCakupanCPL({ data }: { data: CPLItem[] }) {
 
 function KartuRataRataCPL({ data }: { data: CPLItem[] }) {
   return (
-    <section className="rounded-2xl border border-[#E5EAF3] bg-white p-5 shadow-[0_2px_8px_rgba(23,43,77,.04)] sm:p-6 lg:flex lg:h-86.25 lg:min-h-0 lg:flex-col">
+    <section className="rounded-2xl border border-[#E5EAF3] bg-white p-5 shadow-[0_2px_8px_rgba(23,43,77,.04)] sm:p-6 lg:flex lg:flex-col">
       <div className="mb-4">
         <h2 className="text-base font-bold text-[#111827]">Rata-rata Capaian per CPL</h2>
         <p className="mt-1 text-xs text-[#64748B]">Rata-rata nilai hasil CPL untuk filter tahun ajaran dan angkatan terpilih.</p>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:min-h-0 lg:flex-1 lg:content-start lg:overflow-y-auto lg:pr-1">
+      <div className="grid gap-3 sm:grid-cols-2">
         {data.map((item) => (
           <article key={item.id} className="rounded-xl border border-[#E8EDF5] bg-[#FAFBFE] p-4">
             <div className="flex items-start justify-between gap-3">
@@ -129,7 +129,7 @@ function GrafikProfilMahasiswa({
             <div key={profil.id}>
               <div className="mb-1 flex items-center justify-between gap-3 text-[11px]">
                 <span className="min-w-0 truncate font-medium text-[#334155]" title={`${profil.kode} — ${profil.nama}`}>
-                  {profil.kode} · {profil.nama}
+                  <span className="font-bold text-[#1D4ED8]">{profil.kode}</span> · {profil.nama}
                 </span>
                 <span className="shrink-0 font-semibold tabular-nums text-[#111827]">
                   {hasil ? hasil.nilai.toFixed(1) : "—"}
@@ -202,8 +202,8 @@ export function LaporanAdminWorkspace({
         </span>
       </header>
 
-      <form className="flex flex-col gap-3 rounded-2xl border border-[#E5EAF3] bg-white p-4 shadow-[0_2px_8px_rgba(23,43,77,.04)] sm:flex-row sm:items-end">
-        <label className="flex-1 text-xs font-semibold text-[#334155]">
+      <form className="flex flex-wrap items-end gap-3 rounded-2xl border border-[#E5EAF3] bg-white p-4 shadow-[0_2px_8px_rgba(23,43,77,.04)]">
+        <label className="w-full text-xs font-semibold text-[#334155] sm:w-44">
           Tahun Ajaran
           <select
             name="ta"
@@ -215,7 +215,7 @@ export function LaporanAdminWorkspace({
             ))}
           </select>
         </label>
-        <label className="flex-1 text-xs font-semibold text-[#334155]">
+        <label className="w-full text-xs font-semibold text-[#334155] sm:w-44">
           Angkatan
           <select
             name="angkatan"
@@ -228,7 +228,7 @@ export function LaporanAdminWorkspace({
         </label>
         <button
           type="submit"
-          className="h-10 rounded-lg bg-[#2F6BE8] px-5 text-sm font-semibold text-white hover:bg-[#2459C7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F6BE8]"
+          className="h-10 w-full rounded-lg bg-[#2F6BE8] px-6 text-sm font-semibold text-white hover:bg-[#2459C7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F6BE8] sm:w-auto"
         >
           Tampilkan
         </button>
@@ -240,7 +240,7 @@ export function LaporanAdminWorkspace({
         </section>
       ) : (
         <>
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-stretch">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-stretch">
             <GrafikCakupanCPL data={dataCPL} />
             <KartuRataRataCPL data={dataCPL} />
           </div>
@@ -249,10 +249,14 @@ export function LaporanAdminWorkspace({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 className="text-base font-bold text-[#111827]">Capaian Profil Lulusan per Mahasiswa</h2>
-                <p className="mt-1 text-xs text-[#64748B]">Grafik menampilkan nilai setiap PL untuk mahasiswa yang terdaftar pada tahun ajaran terpilih.</p>
+                <p className="mt-1 text-xs text-[#64748B]">Nilai setiap PL untuk mahasiswa yang terdaftar pada tahun ajaran terpilih.</p>
+                <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#64748B]">
+                  <span className="inline-flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-[#2F6BE8]" />Lengkap</span>
+                  <span className="inline-flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-[#F59E0B]" />Belum lengkap</span>
+                </p>
               </div>
-              <label className="text-xs font-medium text-[#64748B]">
-                Cari mahasiswa
+              <label className="block">
+                <span className="sr-only">Cari mahasiswa</span>
                 <input
                   type="search"
                   value={pencarian}
@@ -260,8 +264,8 @@ export function LaporanAdminWorkspace({
                     setPencarian(event.target.value);
                     setHalaman(1);
                   }}
-                  placeholder="Nama atau NIM"
-                  className="mt-1.5 h-10 w-full rounded-lg border border-[#D8E0EC] bg-white px-3 text-sm text-[#111827] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30 sm:w-64"
+                  placeholder="Cari nama atau NIM"
+                  className="h-10 w-full rounded-lg border border-[#D8E0EC] bg-white px-3 text-sm text-[#111827] outline-none focus:ring-2 focus:ring-[#2F6BE8]/30 sm:w-64"
                 />
               </label>
             </div>
