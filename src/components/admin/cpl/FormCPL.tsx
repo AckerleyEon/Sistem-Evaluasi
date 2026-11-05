@@ -37,11 +37,11 @@ export function FormCPL({ kodeBerikutnya, kodeTerpakai }: { kodeBerikutnya: stri
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
+    <div className="flex flex-1 flex-col rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
       <h2 className="text-lg font-bold leading-6 text-[#111827]">Tambah CPL</h2>
       <p className="mb-5 text-[13px] text-[#6B7280]">Isi informasi CPL yang ingin ditambahkan.</p>
 
-      <form action={handleSubmit} className="space-y-5">
+      <form action={handleSubmit} className="flex flex-1 flex-col gap-5">
         <div>
           <label htmlFor="kode" className="mb-2 block text-[13px] font-medium text-[#111827]">
             Kode CPL
@@ -62,7 +62,7 @@ export function FormCPL({ kodeBerikutnya, kodeTerpakai }: { kodeBerikutnya: stri
           {errorKode && <p className="mt-1.5 text-xs text-[#DC2626]">{errorKode}</p>}
         </div>
 
-        <div>
+        <div className="flex flex-1 flex-col">
           <div className="mb-2 flex items-center justify-between">
             <label htmlFor="deskripsi" className="text-[13px] font-medium text-[#111827]">
               Deskripsi
@@ -76,7 +76,7 @@ export function FormCPL({ kodeBerikutnya, kodeTerpakai }: { kodeBerikutnya: stri
             onChange={(e) => setDeskripsi(e.target.value.slice(0, 500))}
             placeholder="Mampu melakukan…"
             required
-            className="min-h-38.5 w-full resize-y rounded-[10px] bg-[#EEF3FD] p-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
+            className="min-h-38.5 w-full flex-1 resize-y rounded-[10px] bg-[#EEF3FD] p-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
           />
         </div>
 

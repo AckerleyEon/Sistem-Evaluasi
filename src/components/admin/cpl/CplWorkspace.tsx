@@ -64,9 +64,9 @@ export function CplWorkspace({
           kodeBerikutnya={kodePLBerikutnya}
         />
       ) : (
-        <div role="tabpanel" className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-start">
-          <div className="space-y-6 lg:sticky lg:top-24">
-            <div className="flex h-30 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
+        <div role="tabpanel" className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-stretch">
+          <div className="flex flex-col gap-6">
+            <div className="flex h-30 shrink-0 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2F6BE8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" />

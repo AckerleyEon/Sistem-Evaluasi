@@ -64,10 +64,10 @@ function FormProfilLulusan({
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)]">
+    <div className="flex min-h-0 flex-1 flex-col rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgba(16,24,40,.04)] lg:overflow-y-auto">
       <h2 className="text-lg font-bold leading-6 text-[#111827]">Tambah Profil Lulusan</h2>
       <p className="mb-5 text-[13px] text-[#6B7280]">Pilih CPL penyusun; nilai PL dihitung sebagai rata-rata nilai CPL terpilih.</p>
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col gap-4">
         <div>
           <label htmlFor="kode-pl" className="mb-2 block text-[13px] font-medium text-[#111827]">Kode PL</label>
           <input
@@ -110,13 +110,13 @@ function FormProfilLulusan({
             className="min-h-28 w-full resize-y rounded-[10px] bg-[#EEF3FD] p-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40"
           />
         </div>
-        <div>
+        <div className="flex min-h-28 flex-1 flex-col">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[13px] font-medium text-[#111827]">CPL Penyusun</span>
             <span className="text-xs text-[#6B7280]">{daftarCPL.length} tersedia</span>
           </div>
           {daftarCPL.length ? (
-            <div className="max-h-44 space-y-1 overflow-y-auto rounded-xl border border-[#E5E9F0] p-2">
+            <div className="max-h-44 min-h-0 space-y-1 overflow-y-auto rounded-xl border border-[#E5E9F0] p-2 lg:max-h-none lg:flex-1">
               {daftarCPL.map((cpl) => (
                 <label key={cpl.id} className="flex cursor-pointer items-start gap-2 rounded-lg px-2 py-2 text-xs hover:bg-[#F8FAFC]">
                   <input type="checkbox" name="cplIds" value={cpl.id} className="mt-0.5 accent-[#2F6BE8]" />
@@ -252,9 +252,10 @@ export function ProfilLulusanWorkspace({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-start">
-      <div className="space-y-6 lg:sticky lg:top-24">
-        <div className="flex h-30 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
+    <div className="grid gap-6 lg:grid-cols-[358px_minmax(0,1fr)] lg:items-stretch">
+      <div className="lg:relative lg:min-h-155">
+      <div className="flex flex-col gap-6 lg:absolute lg:inset-0">
+        <div className="flex h-30 shrink-0 items-center gap-4 rounded-2xl bg-[#2F6BE8] p-6 text-white">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2F6BE8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
@@ -271,6 +272,7 @@ export function ProfilLulusanWorkspace({
           kodeTerpakai={daftarProfil.map((item) => item.kode)}
           daftarCPL={daftarCPL}
         />
+      </div>
       </div>
 
       <div className="min-w-0 overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(16,24,40,.04)]">
