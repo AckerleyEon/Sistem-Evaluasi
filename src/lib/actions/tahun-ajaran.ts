@@ -57,35 +57,51 @@ export async function createTahunAjaran(formData: FormData) {
         });
       }
 
-            // 2. CPMK (milik mata kuliahnya masing-masing, bobot ikut tersalin)
+      // 2. CPMK (milik mata kuliahnya masing-masing, bobot ikut tersalin)
       const petaCpmk = new Map<string, string>();
       const cpmkLama = await tx.cPMK.findMany({ where: { tahunAjaranId: sumberId } });
-      for (const c of cpmkLama) {
-        const cpmkBaru = await tx.cPMK.create({
-          data: {
+      if (cpmkLama.length > 0) {
+        await tx.cPMK.createMany({
+          data: cpmkLama.map((c) => ({
             kode: c.kode,
             deskripsi: c.deskripsi,
             bobot: c.bobot,
             mataKuliahId: c.mataKuliahId,
             tahunAjaranId: baru.id,
-          },
+          })),
         });
-        petaCpmk.set(c.id, cpmkBaru.id);
+      }
+      const cpmkBaru = await tx.cPMK.findMany({
+        where: { tahunAjaranId: baru.id },
+        select: { id: true, kode: true, mataKuliahId: true },
+      });
+      const idCpmkBaru = new Map(cpmkBaru.map((c) => [JSON.stringify([c.mataKuliahId, c.kode]), c.id]));
+      for (const c of cpmkLama) {
+        const idBaru = idCpmkBaru.get(JSON.stringify([c.mataKuliahId, c.kode]));
+        if (idBaru) petaCpmk.set(c.id, idBaru);
       }
 
       // 3. Sub-CPMK
       const petaSub = new Map<string, string>();
       const subLama = await tx.subCPMK.findMany({ where: { tahunAjaranId: sumberId } });
-      for (const s of subLama) {
-        const baruSub = await tx.subCPMK.create({
-          data: {
+      if (subLama.length > 0) {
+        await tx.subCPMK.createMany({
+          data: subLama.map((s) => ({
             kode: s.kode,
             deskripsi: s.deskripsi,
             mataKuliahId: s.mataKuliahId,
             tahunAjaranId: baru.id,
-          },
+          })),
         });
-        petaSub.set(s.id, baruSub.id);
+      }
+      const subBaru = await tx.subCPMK.findMany({
+        where: { tahunAjaranId: baru.id },
+        select: { id: true, kode: true, mataKuliahId: true },
+      });
+      const idSubBaru = new Map(subBaru.map((s) => [JSON.stringify([s.mataKuliahId, s.kode]), s.id]));
+      for (const s of subLama) {
+        const idBaru = idSubBaru.get(JSON.stringify([s.mataKuliahId, s.kode]));
+        if (idBaru) petaSub.set(s.id, idBaru);
       }
 
       // 3b. Kaitan CPMK <-> Sub-CPMK beserta bobotnya
@@ -100,16 +116,24 @@ export async function createTahunAjaran(formData: FormData) {
       // 4. Kelas dan tugas
       const petaKelas = new Map<string, string>();
       const kelasLama = await tx.kelasMK.findMany({ where: { tahunAjaranId: sumberId } });
-      for (const kelas of kelasLama) {
-        const kelasBaru = await tx.kelasMK.create({
-          data: {
+      if (kelasLama.length > 0) {
+        await tx.kelasMK.createMany({
+          data: kelasLama.map((kelas) => ({
             nama: kelas.nama,
             mataKuliahId: kelas.mataKuliahId,
             dosenId: kelas.dosenId,
             tahunAjaranId: baru.id,
-          },
+          })),
         });
-        petaKelas.set(kelas.id, kelasBaru.id);
+      }
+      const kelasBaru = await tx.kelasMK.findMany({
+        where: { tahunAjaranId: baru.id },
+        select: { id: true, mataKuliahId: true, nama: true },
+      });
+      const idKelasBaru = new Map(kelasBaru.map((kelas) => [JSON.stringify([kelas.mataKuliahId, kelas.nama]), kelas.id]));
+      for (const kelas of kelasLama) {
+        const idBaru = idKelasBaru.get(JSON.stringify([kelas.mataKuliahId, kelas.nama]));
+        if (idBaru) petaKelas.set(kelas.id, idBaru);
       }
 
       const petaTugas = new Map<string, string>();
@@ -143,7 +167,7 @@ export async function createTahunAjaran(formData: FormData) {
         await tx.distribusiSubCPMK.createMany({ data: dataDistribusi });
       }
     },
-    { timeout: 30000, maxWait: 10000 }
+    { timeout: 60000, maxWait: 10000 }
   );
 
   revalidatePath("/", "layout");
