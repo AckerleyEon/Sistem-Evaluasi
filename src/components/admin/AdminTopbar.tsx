@@ -78,18 +78,23 @@ export function AdminTopbar({
     e.preventDefault();
     setErrorTambah("");
     setLoadingTambah(true);
-    const fd = new FormData();
-    fd.set("label", labelBaru);
-    fd.set("mode", modeTambah);
-    if (modeTambah === "salin") fd.set("sumberId", sumberId);
-    const hasil = await createTahunAjaran(fd);
-    setLoadingTambah(false);
-    if (hasil?.error) {
-      setErrorTambah(hasil.error);
-      return;
+    try {
+      const fd = new FormData();
+      fd.set("label", labelBaru);
+      fd.set("mode", modeTambah);
+      if (modeTambah === "salin") fd.set("sumberId", sumberId);
+      const hasil = await createTahunAjaran(fd);
+      if (hasil?.error) {
+        setErrorTambah(hasil.error);
+        return;
+      }
+      setModalTambah(false);
+      router.refresh();
+    } catch {
+      setErrorTambah("Gagal menambahkan Tahun Ajaran. Silakan coba lagi.");
+    } finally {
+      setLoadingTambah(false);
     }
-    setModalTambah(false);
-    router.refresh();
   }
 
   async function bukaDialogHapus(ta: TahunAjaranItem) {

@@ -8,6 +8,11 @@ import { kodeBerikutnya, type KomponenSub, type KonteksSub } from "./tipe";
 
 const POLA_KODE = /^Sub-CPMK-\d{1,3}$/;
 
+function normalisasiKodeSub(kode: string) {
+  const cocok = kode.match(/^sub-cpmk-(\d{1,3})$/i);
+  return cocok ? `Sub-CPMK-${cocok[1]}` : kode;
+}
+
 const kelasInput =
   "h-11 w-full rounded-[10px] bg-[#EEF3FD] px-4 text-sm text-[#111827] outline-none placeholder:text-[#9AA4B2] focus:ring-2 focus:ring-[#2F6BE8]/40";
 
@@ -28,7 +33,9 @@ export function ModalSub({
   onTutup: () => void;
   onBerhasil: (pesan: string) => void;
 }) {
-  const kodeAwal = sub?.kode ?? kodeBerikutnya("Sub-CPMK", subMk.map((s) => s.kode));
+  const kodeAwal = sub
+    ? normalisasiKodeSub(sub.kode)
+    : kodeBerikutnya("Sub-CPMK", subMk.map((s) => s.kode));
   const bobotAwal = konteks ? String(konteks.bobotAwal) : "";
   const [kode, setKode] = useState(kodeAwal);
   const [deskripsi, setDeskripsi] = useState(sub?.deskripsi ?? "");
