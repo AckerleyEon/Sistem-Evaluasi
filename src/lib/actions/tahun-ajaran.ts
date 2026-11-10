@@ -138,20 +138,37 @@ export async function createTahunAjaran(formData: FormData) {
 
       const petaTugas = new Map<string, string>();
       const tugasLama = await tx.tugas.findMany({ where: { tahunAjaranId: sumberId } });
-      for (const t of tugasLama) {
+      const dataTugas = tugasLama.map((t) => {
         const kelasId = petaKelas.get(t.kelasId);
         if (!kelasId) throw new Error(`Kelas tugas "${t.nama}" tidak ditemukan pada Tahun Ajaran sumber.`);
-        const baruTugas = await tx.tugas.create({
-          data: {
+        return {
             nama: t.nama,
             pertemuanKe: t.pertemuanKe,
             bobot: t.bobot,
             mataKuliahId: t.mataKuliahId,
             tahunAjaranId: baru.id,
             kelasId,
-          },
-        });
-        petaTugas.set(t.id, baruTugas.id);
+        };
+      });
+      const tugasBaru = dataTugas.length > 0
+        ? await tx.tugas.createManyAndReturn({
+            data: dataTugas,
+            select: { id: true, nama: true, pertemuanKe: true, bobot: true, mataKuliahId: true, kelasId: true },
+          })
+        : [];
+      const antreanIdTugas = new Map<string, string[]>();
+      for (const tugas of tugasBaru) {
+        const kunci = JSON.stringify([tugas.nama, tugas.pertemuanKe, tugas.bobot, tugas.mataKuliahId, tugas.kelasId]);
+        const antrean = antreanIdTugas.get(kunci) ?? [];
+        antrean.push(tugas.id);
+        antreanIdTugas.set(kunci, antrean);
+      }
+      for (const [indeks, t] of tugasLama.entries()) {
+        const tugasBaruData = dataTugas[indeks];
+        const kunci = JSON.stringify([tugasBaruData.nama, tugasBaruData.pertemuanKe, tugasBaruData.bobot, tugasBaruData.mataKuliahId, tugasBaruData.kelasId]);
+        const idBaru = antreanIdTugas.get(kunci)?.shift();
+        if (!idBaru) throw new Error(`Tugas "${t.nama}" gagal dipetakan ke Tahun Ajaran baru.`);
+        petaTugas.set(t.id, idBaru);
       }
 
       // 5. Pemetaan Sub-CPMK <-> Tugas
